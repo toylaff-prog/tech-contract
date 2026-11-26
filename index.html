@@ -25,45 +25,45 @@
 --mute:light-dark(#5c6068,#a3a6ad);--line:light-dark(#dcdde0,#33363d);--field:light-dark(#f4f5f6,#23262c);
 --seal:light-dark(#b8121f,#ff5a5f);--ok:light-dark(#1d6b45,#6fd39f);--warn:light-dark(#9a4a00,#ffb366);--warnbg:light-dark(#fff1e0,#3a2a17);--okbg:light-dark(#e8f5ee,#16291f)}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
 h1,h2,h3{font-family:"Noto Serif TC",serif;line-height:1.15;margin:0;text-wrap:balance}
 button,input,select{font:inherit;color:inherit}
 header{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px max(3vw,16px);border-bottom:2px solid var(--ink)}
-header h1{font-size:clamp(20px,2.6vw,28px);font-weight:900}
-header .sub{color:var(--mute);font-size:14px}
+header h1{font-size:clamp(22px,2.6vw,30px);font-weight:900}
+header .sub{color:var(--mute);font-size:16px}
 .savebox{margin-inline-start:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-#sync{font-size:14px;color:var(--mute)}#sync.dirty{color:var(--warn);font-weight:700}
-#saveBtn{min-height:44px;padding:8px 22px;border:0;border-radius:6px;background:var(--seal);color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+#sync{font-size:16px;color:var(--mute)}#sync.dirty{color:var(--warn);font-weight:700}
+#saveBtn{min-height:44px;padding:8px 22px;border:0;border-radius:6px;background:var(--seal);color:#fff;font-weight:700;font-size:18px;cursor:pointer}
 #saveBtn:disabled{opacity:.45;cursor:default}
-.wrap{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 70px)}
+.wrap{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:calc(100vh - 70px)}
 aside.side{border-inline-end:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:10px}
 .newbtn{min-height:44px;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:6px;font-weight:700;cursor:pointer}
-#psearch{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px}
+#psearch{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px}
 #plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto}
 #plist button{width:100%;text-align:start;padding:9px 12px;border:1px solid transparent;border-radius:6px;background:none;cursor:pointer;min-height:44px}
 #plist button:hover{background:var(--field)}
 #plist button[aria-current=true]{border-color:var(--ink);background:var(--paper);box-shadow:3px 3px 0 var(--seal)}
-#plist .n{display:block;font-weight:700}#plist .m{display:block;font-size:13px;color:var(--mute)}
+#plist .n{display:block;font-weight:700}#plist .m{display:block;font-size:15px;color:var(--mute)}
 #plist .d{color:var(--warn);font-weight:700}
-.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;font-size:14px}
-.side-foot input{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px}
-.link{background:none;border:0;padding:6px 0;text-align:start;color:var(--mute);text-decoration:underline;cursor:pointer;font-size:14px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.side-foot input{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px}
+.link{background:none;border:0;padding:6px 0;text-align:start;color:var(--mute);text-decoration:underline;cursor:pointer;font-size:16px}
 main{padding:0 max(2.5vw,16px) 48px}
 nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:70px;background:var(--bg);z-index:3}
 nav.tabs button{flex:none;border:0;background:none;padding:14px 12px 12px;min-height:44px;cursor:pointer;color:var(--mute);border-bottom:3px solid transparent;font-weight:500}
 nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--seal);font-weight:700}
 .view{display:none;padding-top:22px}.view.on{display:block}
-.banner{padding:10px 14px;border-radius:6px;background:var(--warnbg);color:var(--warn);margin:14px 0 0;font-size:15px}
+.banner{padding:10px 14px;border-radius:6px;background:var(--warnbg);color:var(--warn);margin:14px 0 0;font-size:17px}
 .banner.ok{background:var(--okbg);color:var(--ok)}
 .banner button{margin-inline-start:8px}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:start}
 section.card{border-top:1px solid var(--line);padding:18px 0 8px}
-section.card h2{font-size:20px;margin-bottom:12px;display:flex;gap:10px;align-items:baseline}
-section.card h2 .no{font:700 13px "Noto Sans TC";color:var(--seal);border:1.5px solid var(--seal);border-radius:50%;width:26px;height:26px;display:inline-grid;place-items:center;flex:none}
+section.card h2{font-size:22px;margin-bottom:12px;display:flex;gap:10px;align-items:baseline}
+section.card h2 .no{font:700 15px "Noto Sans TC";color:var(--seal);border:1.5px solid var(--seal);border-radius:50%;width:26px;height:26px;display:inline-grid;place-items:center;flex:none}
 .f{display:grid;gap:4px;margin-bottom:14px;align-content:start}
-.f label,.f .lb{font-weight:500;font-size:15px}
-.hint{font-size:13px;color:var(--mute)}
-.f input[type=text],.f select,.inp{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px;width:100%}
+.f label,.f .lb{font-weight:500;font-size:17px}
+.hint{font-size:15px;color:var(--mute)}
+.f input[type=text],.f select,.inp{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px;width:100%}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
 .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
@@ -71,41 +71,41 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .seg button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--bg);font-weight:700}
 .calc{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--field);border-radius:6px;margin-bottom:14px}
 .calc b{font:900 clamp(24px,3.2vw,32px) "Noto Serif TC",serif;white-space:nowrap}
-.calc span{color:var(--mute);font-size:14px}
+.calc span{color:var(--mute);font-size:16px}
 .seal{position:sticky;top:132px;border:1.5px solid var(--ink);border-radius:8px;padding:18px;background:var(--paper)}
-.seal h3{font-size:18px;margin-bottom:12px;padding-inline-end:84px;min-height:56px}
-.stamp{position:absolute;top:14px;right:16px;width:64px;height:64px;border:3px solid var(--seal);border-radius:6px;color:var(--seal);display:grid;place-items:center;font:900 17px/1.1 "Noto Serif TC";text-align:center;transform:rotate(-6deg);transition:opacity .3s}
+.seal h3{font-size:20px;margin-bottom:12px;padding-inline-end:84px;min-height:56px}
+.stamp{position:absolute;top:14px;right:16px;width:64px;height:64px;border:3px solid var(--seal);border-radius:6px;color:var(--seal);display:grid;place-items:center;font:900 19px/1.1 "Noto Serif TC";text-align:center;transform:rotate(-6deg);transition:opacity .3s}
 .stamp.dim{opacity:.3}
-.dl{width:100%;min-height:52px;border:0;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:700;font-size:17px;cursor:pointer;margin-top:10px}
+.dl{width:100%;min-height:52px;border:0;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:700;font-size:19px;cursor:pointer;margin-top:10px}
 .dl:disabled{opacity:.5;cursor:default}
-.chk{list-style:none;padding:0;margin:8px 0;font-size:14px}
+.chk{list-style:none;padding:0;margin:8px 0;font-size:16px}
 .chk li{padding:6px 10px;border-radius:4px;background:var(--warnbg);color:var(--warn);margin-bottom:4px}
 .chk.info li{background:var(--field);color:var(--ink)}
 .est{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:4px 0 16px}
-.est table{font-size:13px;margin:6px 0}.est td,.est th{padding:4px 6px}.est .r{text-align:right;white-space:nowrap}
+.est table{font-size:15px;margin:6px 0}.est td,.est th{padding:4px 6px}.est .r{text-align:right;white-space:nowrap}
 .estbig{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;margin:4px 0 6px}.estbig b{font:900 clamp(22px,3vw,28px) "Noto Serif TC",serif;white-space:nowrap}
 .chk li.ok{background:none;color:var(--ok);padding-inline:0}
-.stat{font-size:14px;color:var(--mute);margin:8px 0}
-.att{font-size:13px;color:var(--mute);margin:6px 0 0;padding-inline-start:18px}
-.msg{font-size:14px;margin-top:8px;min-height:1.4em}
+.stat{font-size:16px;color:var(--mute);margin:8px 0}
+.att{font-size:15px;color:var(--mute);margin:6px 0 0;padding-inline-start:18px}
+.msg{font-size:16px;margin-top:8px;min-height:1.4em}
 .danger{color:var(--seal)}
 .acts{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
-table{width:100%;border-collapse:collapse;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:16px}
 th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-weight:700;background:var(--field)}
-td textarea.ta{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--field);font:14px/1.5 ui-monospace,Menlo,Consolas,monospace}
-td input,td select{width:100%;min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--field);font-size:16px}
+td textarea.ta{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--field);font:16px/1.5 ui-monospace,Menlo,Consolas,monospace}
+td input,td select{width:100%;min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--field);font-size:18px}
 tr.todo td:first-child{box-shadow:inset 4px 0 var(--warn)}
-.src{font-size:12px;color:var(--mute);white-space:nowrap}
+.src{font-size:14px;color:var(--mute);white-space:nowrap}
 .tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:center}
-.tools input,.tools select{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px}
+.tools input,.tools select{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px}
 .ghost{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer}
 .primary{min-height:44px;padding:8px 18px;border:0;border-radius:6px;background:var(--seal);color:#fff;font-weight:700;cursor:pointer}
 .empty{padding:48px 0;text-align:center;color:var(--mute)}
-.note{font-size:14px;color:var(--mute);max-width:72ch}
+.note{font-size:16px;color:var(--mute);max-width:72ch}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
 .kpi{border:1px solid var(--line);border-radius:6px;padding:10px 12px}
-.kpi b{display:block;font:900 28px "Noto Serif TC",serif}.kpi span{font-size:13px;color:var(--mute)}
+.kpi b{display:block;font:900 30px "Noto Serif TC",serif}.kpi span{font-size:15px;color:var(--mute)}
 .kpi.w b{color:var(--warn)}
 .drop{border:2px dashed var(--line);border-radius:8px;padding:22px;text-align:center;margin:12px 0}
 .drop.over{border-color:var(--seal)}
@@ -113,51 +113,51 @@ details{margin:10px 0}summary{cursor:pointer;font-weight:700;min-height:36px}
 .old{color:var(--mute);text-decoration:line-through}.used{color:var(--seal);font-weight:700;white-space:nowrap}
 .bar{height:10px;background:var(--field);border-radius:5px;overflow:hidden;min-width:80px}.bar i{display:block;height:100%;background:var(--ok)}
 .kd{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 16px;margin:10px 0 18px}
-.kd .f input{min-height:44px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px;width:100%}
-.stg{font-size:18px;margin:22px 0 6px;display:flex;gap:10px;align-items:baseline}.stg small{font:400 13px "Noto Sans TC";color:var(--mute)}
-.badge{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;white-space:nowrap;margin-top:2px}
+.kd .f input{min-height:44px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px;width:100%}
+.stg{font-size:20px;margin:22px 0 6px;display:flex;gap:10px;align-items:baseline}.stg small{font:400 15px "Noto Sans TC";color:var(--mute)}
+.badge{display:inline-block;font-size:14px;padding:1px 7px;border-radius:10px;white-space:nowrap;margin-top:2px}
 .b-late{background:var(--seal);color:#fff}.b-soon{background:var(--warnbg);color:var(--warn)}.b-ok{background:var(--field);color:var(--mute)}
 tr.s-done td{color:var(--mute)}tr.s-done td:first-child{box-shadow:inset 4px 0 var(--ok)}tr.s-late td:first-child{box-shadow:inset 4px 0 var(--seal)}
-.files a{display:block;font-size:13px;color:var(--ink);margin-top:2px}
+.files a{display:block;font-size:15px;color:var(--ink);margin-top:2px}
 #dashBody tr{cursor:pointer}#dashBody tbody tr:hover{background:var(--field)}
 .lineb{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px}
-.lbtn{display:inline-grid;place-items:center;min-height:36px;padding:4px 12px;border-radius:6px;background:#06c755;color:#fff;font-size:14px;font-weight:700;text-decoration:none;border:0;cursor:pointer}
+.lbtn{display:inline-grid;place-items:center;min-height:36px;padding:4px 12px;border-radius:6px;background:#06c755;color:#fff;font-size:16px;font-weight:700;text-decoration:none;border:0;cursor:pointer}
 .lbtn.ghostb{background:var(--paper);color:var(--ink);border:1px solid var(--line);font-weight:500}
 nav.tabs.sub{top:118px;margin-top:10px;border-bottom:1px solid var(--line);gap:2px;z-index:2}
-nav.tabs.sub button{padding:10px 12px 9px;font-size:15px}
-nav.tabs.sub .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;font-size:12px;margin-inline-end:6px}
-nav.tabs.sub .minor{margin-inline-start:auto;font-size:14px}nav.tabs.sub .minor+.minor{margin-inline-start:0}
+nav.tabs.sub button{padding:10px 12px 9px;font-size:17px}
+nav.tabs.sub .sn{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;font-size:14px;margin-inline-end:6px}
+nav.tabs.sub .minor{margin-inline-start:auto;font-size:16px}nav.tabs.sub .minor+.minor{margin-inline-start:0}
 .sview{display:none;padding-top:18px}.sview.on{display:block}
-.whead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;padding-top:18px}.whead h2{font-size:clamp(22px,2.6vw,28px)}
+.whead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;padding-top:18px}.whead h2{font-size:clamp(24px,2.6vw,30px)}
 .phase{font-weight:700;color:var(--seal)}
 .steps{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0;margin:12px 0 0;counter-reset:s}
 .steps li button{width:100%;text-align:start;display:grid;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);cursor:pointer;min-height:44px;position:relative}
 .steps li.cur button{border-color:var(--ink);box-shadow:3px 3px 0 var(--seal)}
-.steps .sn{font:700 12px "Noto Sans TC";color:var(--seal)}.steps b{font-size:16px}
-.steps li:not(:last-child) button::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:14px}
-.ministeps{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--mute);margin-top:2px}
+.steps .sn{font:700 14px "Noto Sans TC";color:var(--seal)}.steps b{font-size:18px}
+.steps li:not(:last-child) button::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:16px}
+.ministeps{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:14px;color:var(--mute);margin-top:2px}
 .nextcard{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px;padding:12px 16px;border:1.5px solid var(--seal);border-radius:8px;background:light-dark(#fff7f7,#2a1517)}
 .nextcard.done{border-color:var(--ok);background:var(--okbg)}
 .nextcard .nlabel{font-weight:700;color:var(--seal);white-space:nowrap}.nextcard.done .nlabel{color:var(--ok)}
-.nextcard .nbody{flex:1 1 260px;display:grid;gap:2px}.nextcard .nbody b{font-size:17px}
+.nextcard .nbody{flex:1 1 260px;display:grid;gap:2px}.nextcard .nbody b{font-size:19px}
 .flash{outline:3px solid var(--seal)!important;outline-offset:3px;transition:outline-color .3s}
 .autonote{color:var(--ok)}
 .exc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}select.isauto{color:var(--mute)}
-.kn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:12px;margin-inline-end:6px}
-details.stgd{border-top:1px solid var(--line);padding:4px 0}details.stgd>summary{display:flex;gap:10px;align-items:baseline;padding:10px 0;font:700 18px "Noto Serif TC",serif;list-style-position:inside}
-details.stgd>summary small{font:400 13px "Noto Sans TC";color:var(--mute)}
-.calsync{font-size:13px;padding:0 4px;text-decoration:none}.calsync.bad{color:var(--seal);text-decoration:underline}
-.calcard{border-top:0;padding-top:4px}.calcard .stack td{padding:8px 10px;vertical-align:middle}details.calhelp{margin-top:10px}details.calhelp summary{cursor:pointer;font-size:15px}
-.upl{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin-top:4px}.upl .link{padding:2px 0;font-size:13px}
-.chip{display:inline-block;max-width:100%;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kn{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:14px;margin-inline-end:6px}
+details.stgd{border-top:1px solid var(--line);padding:4px 0}details.stgd>summary{display:flex;gap:10px;align-items:baseline;padding:10px 0;font:700 20px "Noto Serif TC",serif;list-style-position:inside}
+details.stgd>summary small{font:400 15px "Noto Sans TC";color:var(--mute)}
+.calsync{font-size:15px;padding:0 4px;text-decoration:none}.calsync.bad{color:var(--seal);text-decoration:underline}
+.calcard{border-top:0;padding-top:4px}.calcard .stack td{padding:8px 10px;vertical-align:middle}details.calhelp{margin-top:10px}details.calhelp summary{cursor:pointer;font-size:17px}
+.upl{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin-top:4px}.upl .link{padding:2px 0;font-size:15px}
+.chip{display:inline-block;max-width:100%;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:15px;color:var(--ink);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wtools{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin-top:4px}.wtools .link{padding:2px 0}
 .missing{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:6px 0 14px;background:var(--paper)}.missing ol{margin:6px 0 10px 1.4em}.missing li{margin:3px 0}
 .dashtop{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-start;justify-content:space-between}.dashtop .tools{margin:0}
 .govgrid{display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,1.4fr);gap:18px;margin-top:14px;align-items:start}
 .govform{grid-template-columns:1fr!important}.govform textarea{width:100%;min-height:96px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font:inherit}
-.govprev pre{white-space:pre-wrap;margin:0 0 10px;padding:16px 18px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font:15px/1.8 "Noto Serif TC",serif}
+.govprev pre{white-space:pre-wrap;margin:0 0 10px;padding:16px 18px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font:17px/1.8 "Noto Serif TC",serif}
 .ptab{width:100%;border-collapse:collapse;margin:6px 0}.ptab input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink);cursor:pointer}
-.svc a.ghost{display:inline-grid;place-items:center;text-decoration:none;color:var(--ink)}.ptab th,.ptab td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:start;font-size:14px}.ptab td.c,.ptab th.c{text-align:center;width:4.5em}
+.svc a.ghost{display:inline-grid;place-items:center;text-decoration:none;color:var(--ink)}.ptab th,.ptab td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:start;font-size:16px}.ptab td.c,.ptab th.c{text-align:center;width:4.5em}
 .svc{display:grid;gap:8px;margin:8px 0 14px}.svc>div{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px}.svc b{min-width:8.5em}
 dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:var(--bg);color:var(--ink)}dialog.dlg::backdrop{background:rgba(0,0,0,.35)}
 .dlgh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -169,14 +169,14 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
 .dlgf{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
 .impbtn{width:100%;margin:8px 0 4px;min-height:44px}dialog.dlg.wide{width:min(980px,96vw)}.impt input.inp,.impt select.inp{width:100%}.cand{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}.impsum{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--field);line-height:1.7}
 .deskh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}.deskh select{max-width:14em;margin-inline-start:auto}
-.tagc{display:inline-block;font-size:13px;padding:1px 8px;border-radius:10px;margin-inline-start:4px;white-space:nowrap}.tagc.chase{background:#b8121f;color:#fff}.tagc.inside{background:var(--ink);color:var(--bg)}
-.desk .dname{font-weight:700;text-align:left}.flog{margin:6px 0 0;padding-inline-start:1.4em;font-size:14px}.flowtag{font-size:13px;margin-top:4px}
-.sum{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}.sum td{overflow-wrap:anywhere}.sum th{white-space:nowrap;text-align:left;width:7em;color:var(--mute);font-weight:500;padding:7px 10px 7px 0;vertical-align:top}.sum td{padding:7px 0;border-bottom:1px solid var(--line,#ddd)}
+.tagc{display:inline-block;font-size:15px;padding:1px 8px;border-radius:10px;margin-inline-start:4px;white-space:nowrap}.tagc.chase{background:#b8121f;color:#fff}.tagc.inside{background:var(--ink);color:var(--bg)}
+.desk .dname{font-weight:700;text-align:left}.flog{margin:6px 0 0;padding-inline-start:1.4em;font-size:16px}.flowtag{font-size:15px;margin-top:4px}
+.sum{width:100%;border-collapse:collapse;font-size:17px;table-layout:fixed}.sum td{overflow-wrap:anywhere}.sum th{white-space:nowrap;text-align:left;width:7em;color:var(--mute);font-weight:500;padding:7px 10px 7px 0;vertical-align:top}.sum td{padding:7px 0;border-bottom:1px solid var(--line,#ddd)}
 .sum .warn{color:#b8121f}
-@media(max-width:760px){.savebox{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);justify-content:space-between;flex-wrap:nowrap}.savebox #sync{font-size:14px;line-height:1.35}.savebox #saveBtn{flex:none}body{padding-bottom:84px}
+@media(max-width:760px){.savebox{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);justify-content:space-between;flex-wrap:nowrap}.savebox #sync{font-size:16px;line-height:1.35}.savebox #saveBtn{flex:none}body{padding-bottom:84px}
 body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{order:-1}body.ondash .dashtop .note{display:none}body.ondash .side{border-top:1px solid var(--line)}
-.side-more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--mute);font-size:15px}.side-more>summary::before{content:"▸";margin-inline-end:6px}.side-more[open]>summary::before{content:"▾"}.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
-@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}}
+.side-more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--mute);font-size:17px}.side-more>summary::before{content:"▸";margin-inline-end:6px}.side-more[open]>summary::before{content:"▾"}.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
+@media(max-width:600px){table{font-size:15px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -249,14 +249,14 @@ body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{orde
 
     <div class="view" id="v-school">
       <section class="card calcard" aria-labelledby="shareH"><h2 id="shareH">同仁共用與通知</h2><div id="shareBody"></div></section>
-      <h2 style="font-size:20px;margin:18px 0 6px">契約共用條件</h2>
+      <h2 style="font-size:22px;margin:18px 0 6px">契約共用條件</h2>
       <p class="note">每個工程共用的條件，設定一次即可（改完記得按右上角「暫存」）。已帶入範本「未載明者為○○」的預設值；左側橘線為範本沒有預設、需由學校決定的項目，不填則契約該處保留空白。</p>
       <div class="tools"><button class="ghost" id="resetSchool" type="button">全部恢復預設值</button><span class="msg" id="schoolMsg"></span></div>
       <table class="stack" id="schoolTbl"><thead><tr><th>項目</th><th>設定值</th><th>範本規定</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div class="view" id="v-tpl">
-      <h2 style="font-size:22px;margin-bottom:6px">契約範本版本</h2>
+      <h2 style="font-size:24px;margin-bottom:6px">契約範本版本</h2>
       <p class="note">工程會修正範本時，在這裡上傳新版 Word（.docx）。網站會自動找出新範本所有填寫底線與勾選框，依前後文字和目前版本比對，把舊設定對應過去；比對結果確認後再啟用。舊版本都會保留，可隨時切回。</p>
       <table class="stack" style="margin:12px 0"><thead><tr><th>版本</th><th>來源</th><th>狀態</th><th></th></tr></thead><tbody id="tplList"></tbody></table>
       <div class="drop" id="drop">
@@ -269,7 +269,7 @@ body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{orde
     </div>
 
     <div class="view help" id="v-help">
-      <h2 style="font-size:22px;margin-bottom:10px">怎麼用</h2>
+      <h2 style="font-size:24px;margin-bottom:10px">怎麼用</h2>
       <p><b>最簡單的用法：照「下一步」做。</b>每個工程頁上方的紅框會告訴你現在該做什麼，按「前往」就跳到要填的欄位；工程總表也列出每案的下一步，點一下直接帶到那一格。</p>
       <p>每個工程依時間分三個階段，在「工程」頁上方可以看到目前進度：</p>
       <ol>
@@ -279,7 +279,7 @@ body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{orde
         <li><b>施工</b>（營造廠）：填施工廠商、預算與契約金額、開工日、工期與展延，自動算出預定竣工日；工程發包後，設計階段的期程自動視為完成。</li>
         <li><b>竣工驗收至保固</b>：報竣、驗收、結算、付款到保固共 33 項，<b>不必逐項勾</b>——依序填 10 個關鍵日期，前面的例行項目自動完成；依預算金額自動排除免初驗、未達查核金額的項目。只有驗收不合格、保固瑕疵這類例外，按「發生例外時」的按鈕，或在清單手動改狀態；改回「自動」即恢復判斷。</li>
       </ol>
-      <h3 style="font-size:18px;margin:16px 0 6px">其他</h3>
+      <h3 style="font-size:20px;margin:16px 0 6px">其他</h3>
       <ul>
         <li>第一次使用先到「學校設定」確認一次（保險、違約金、仲裁、申訴會、放假日等），橘線項目請依學校規定補上。每年人事行政總處公告新年度行政機關辦公日曆表後，補上放假日。</li>
         <li>「工程總表」上方「近期該通知」列出各工程 7 日內到期的事項，可直接用 LINE 傳給廠商。委託監造時，監造即為技術服務廠商。</li>
@@ -310,19 +310,21 @@ body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{orde
 <dialog id="dlDlg" class="dlg" aria-labelledby="dlH"><div class="dlgh"><h2 id="dlH">下載前核對</h2><button type="button" class="ghost" data-close="1">取消</button></div><div id="dlBody"></div><div class="dlgf"><button type="button" class="ghost" data-close="1">取消</button><button type="button" class="primary" id="dlGo">確認並下載</button></div></dialog>
 <dialog id="histDlg" class="dlg" aria-labelledby="histH"><div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div><div id="histBody"></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="config.js?v=20261127h"></script>
-<script src="engine.js?v=20261127h"></script>
-<script src="templater.js?v=20261127h"></script>
-<script src="checklist.js?v=20261127h"></script>
-<script src="lifecycle.js?v=20261127h"></script>
-<script src="govdocs.js?v=20261127h"></script>
-<script src="exporter.js?v=20261127h"></script>
-<script src="contract-import.js?v=20261127h"></script>
+<script src="config.js?v=20261127i"></script>
+<script src="engine.js?v=20261127i"></script>
+<script src="templater.js?v=20261127i"></script>
+<script src="checklist.js?v=20261127i"></script>
+<script src="lifecycle.js?v=20261127i"></script>
+<script src="govdocs.js?v=20261127i"></script>
+<script src="exporter.js?v=20261127i"></script>
+<script src="contract-import.js?v=20261127i"></script>
 <script>
 {
 const E = window.ContractEngine, T = window.Templater, CFG = window.TSC_CONFIG || {};
 const API = String(CFG.API || "").trim();
 const $ = s => document.querySelector(s);
+// 只允許 http(s) 連結（附件、資料夾網址來自共用資料，不能讓 javascript: 之類的網址被點開）
+const safeUrl = u => /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "#";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const nf = v => { const n = String(v || "").replace(/,/g, ""); return /^\d+(\.\d+)?$/.test(n) ? Number(n).toLocaleString("en-US") : ""; };
 const tm = iso => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
@@ -467,9 +469,9 @@ $("#banners").addEventListener("click", e => {
   const b = e.target.closest("button[data-b]"); if (!b) return;
   const act = b.dataset.b, id = b.dataset.id;
   if (act === "note") { st.notices.splice(Number(b.dataset.i), 1); renderBanners(); return; }
-  if (act === "restore") { st.pending.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p.data)); st.base[p.id] = p.base; st.rev[p.id] = (st.rev[p.id] || 0) + 1; st.dirty.add(p.id); }); st.pending = null; if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null; renderAll(); updSync(); }
+  if (act === "restore") { st.pending.forEach(p => { st.projects[p.id] = Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, p.data))); st.base[p.id] = p.base; st.rev[p.id] = (st.rev[p.id] || 0) + 1; st.dirty.add(p.id); }); st.pending = null; if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null; renderAll(); updSync(); }
   if (act === "discard") { st.pending.forEach(p => dropDraft(p.id)); st.pending = null; renderBanners(); }
-  if (act === "theirs") { const c = st.conflicts.find(x => x.id === id); st.projects[id] = Lifecycle.normalize(Object.assign(NEWP(), c)); st.base[id] = c.updatedAt; st.snap[id] = JSON.stringify(st.projects[id]); st.dirty.delete(id); dropDraft(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderAll(); updSync(); }
+  if (act === "theirs") { const c = st.conflicts.find(x => x.id === id); st.projects[id] = Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, c))); st.base[id] = c.updatedAt; st.snap[id] = JSON.stringify(st.projects[id]); st.dirty.delete(id); dropDraft(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderAll(); updSync(); }
   if (act === "defall") { st.defAlerts.forEach(a => applyDefault(a.key, a.newVal)); st.defAlerts = []; renderBanners(); return; }
   if (act === "defkeep") { st.defAlerts = []; renderBanners(); return; }
   if (act === "mine") { const c = st.conflicts.find(x => x.id === id); st.force = new Map([[id, c ? c.updatedAt : ""]]); st.dirty.add(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderBanners(); saveAll(); }
@@ -495,7 +497,7 @@ function seg(k) { const f = F[k], p = st.projects[st.cur]; return `<div class="f
 function tog(k) { const p = st.projects[st.cur]; return `<button type="button" data-tog="${k}" aria-pressed="${p[k] === "是"}">${esc(F[k].label)}</button>`; }
 function renderProject() {
   const host = $("#projBody"), p = st.projects[st.cur];
-  if (!p) { host.innerHTML = `<div class="empty"><h2 style="font-size:24px;margin-bottom:10px">還沒有選擇工程</h2><p>按左上「＋ 新增工程」開始，或從清單選一個。</p></div>`; return; }
+  if (!p) { host.innerHTML = `<div class="empty"><h2 style="font-size:26px;margin-bottom:10px">還沒有選擇工程</h2><p>按左上「＋ 新增工程」開始，或從清單選一個。</p></div>`; return; }
   const m = p.method, num = 'inputmode="decimal" autocomplete="off"';
   host.innerHTML = `<div class="grid"><div>
   <section class="card"><h2><span class="no">1</span>基本資料</h2>${p.importedFrom ? `<p class="note">由去年契約「${esc(p.importedFrom.file)}」匯入（${esc(tm(p.importedFrom.at))}${p.importedFrom.by ? "・" + esc(p.importedFrom.by) : ""}）。去年的廠商、金額與履約紀錄沒有帶入。</p>` : ""}${txt("name")}${txt("title")}${txt("vendor")}</section>
@@ -504,7 +506,7 @@ function renderProject() {
     <div class="f"><span class="lb" id="l-ex">附加服務</span><div class="seg" role="group" aria-labelledby="l-ex">${tog("permit")}${tog("tender")}</div><span class="hint">對應第2條附件的「代辦申請建照與圖說送審」「協辦招標及決標」</span></div></section>
   <section class="card"><h2><span class="no">3</span>計價</h2>
     <div class="f"><label for="f-method">計價方式</label><select id="f-method" data-k="method"><option value="">請選擇</option>${F.method.opts.map(o => `<option ${o === m ? "selected" : ""}>${esc(o)}</option>`).join("")}</select><span class="hint">套用到上面選取的每個委託階段</span></div>
-    <div class="est"><h3 style="font-size:17px;margin:0 0 10px">服務費參考試算</h3>
+    <div class="est"><h3 style="font-size:19px;margin:0 0 10px">服務費參考試算</h3>
       ${txt("cost", num)}${p.type !== "非建築公共工程" ? seg("bclass") + '<span class="hint" style="display:block;margin:-8px 0 12px">第一類：五層以下辦公室、教室、宿舍等；第二類：四層以下實驗室、禮堂、餐廳、運動場、游泳池等；第三類：圖書館、體育館等</span>' : ""}
       <div id="estOut"></div></div>
     ${m === "建造費用百分比法" ? `<div class="row2">${txt("rate", num)}${txt("range", num)}</div>${seg("shape")}<span class="hint" style="display:block;margin:-8px 0 12px">範本原檔預先勾了「開口契約」。一般單一工程請選「單一工程」，附件2的分期／分區／開口契約三格都不會勾。</span><div class="calc"><span>服務費小計＝預估建造費用 × 費率</span><b id="calcOut">—</b></div>${txt("fee", num)}` : ""}
@@ -518,7 +520,7 @@ function renderProject() {
     <h3 id="sealTitle"></h3>
     <div class="f"><span class="lb" id="l-stage">版本</span><div class="seg" role="group" aria-labelledby="l-stage"><button type="button" data-stage="tender" aria-pressed="${st.stage === "tender"}">招標版</button><button type="button" data-stage="sign" aria-pressed="${st.stage === "sign"}">簽約版</button></div><span class="hint" id="stageHint"></span></div>
     <div class="f"><label for="naMode">不適用的附件</label><select id="naMode"><option value="mark">保留標題，註明本案不適用</option><option value="delete">整段刪除</option><option value="keep">保留原樣（空白）</option></select></div>
-    <label style="display:flex;gap:8px;align-items:center;font-size:15px;min-height:44px"><input type="checkbox" id="dropGuide" ${st.dropGuide ? "checked" : ""}> 刪除開頭「契約範本使用說明」框</label>
+    <label style="display:flex;gap:8px;align-items:center;font-size:17px;min-height:44px"><input type="checkbox" id="dropGuide" ${st.dropGuide ? "checked" : ""}> 刪除開頭「契約範本使用說明」框</label>
     <ul class="chk" id="chk"></ul>
     <ul class="chk info" id="rem"></ul>
     <div class="stat" id="stat"></div>
@@ -600,7 +602,7 @@ $("#projBody").addEventListener("click", e => {
 /* ---------- 下載 ---------- */
 async function tplParts() {
   if (st.tpl.parts) return st.tpl.parts;
-  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261127h").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
+  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261127i").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
   if (!Array.isArray(r)) throw new Error("範本檔讀取失敗");
   st.tpl.parts = r; return r;
 }
@@ -736,7 +738,7 @@ function rowTable(rows, ph) {
   return `<table class="stack"><thead><tr><th style="width:2.5em">#</th><th>事項</th><th style="width:8.5em">應完成日</th><th style="width:7em">主辦</th><th style="width:11em">狀態</th><th style="width:9.5em">完成日期</th><th style="width:9em">備註／文號</th></tr></thead><tbody>
   ${rows.map(r => { const k = esc(String(r.key)), n = ph === "tech" ? r.key : r.key + 1;
     return `<tr class="${r.s === "已完成" ? "s-done" : r.open && r.left !== null && r.left < 0 ? "s-late" : ""}"><td data-l="#">${esc(String(n))}</td>
-    <td data-l="事項">${esc(r.item)}<div class="hint">${esc([r.when, r.basis].filter(Boolean).join("｜"))}</div>${r.autoNote ? `<div class="hint autonote">⚙ ${esc(r.autoNote)}</div>` : ""}${r.files && r.files.length ? `<div class="files">${r.files.map(f => `<a href="${esc(f.url)}" target="_blank" rel="noopener">📄 ${esc(f.name)}</a>`).join("")}</div>` : ""}${(fl => fl.status ? `<div class="flowtag">📋 ${esc(fl.status)}・${esc(fl.owner || "經手待確認")}${fl.follow ? "・追蹤 " + esc(C.roc(fl.follow)) : ""} <button type="button" class="link" data-form-id="${esc(st.cur)}" data-form-key="${ph === "tech" ? "tech-" : "acc-"}${k}">更新進度</button></div>` : "")(flowOf(ph, r))}${LC.notifiable(r) ? lineBtns(st.cur, r) : ""}${upCell(ph, r)}</td>
+    <td data-l="事項">${esc(r.item)}<div class="hint">${esc([r.when, r.basis].filter(Boolean).join("｜"))}</div>${r.autoNote ? `<div class="hint autonote">⚙ ${esc(r.autoNote)}</div>` : ""}${r.files && r.files.length ? `<div class="files">${r.files.map(f => `<a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener">📄 ${esc(f.name)}</a>`).join("")}</div>` : ""}${(fl => fl.status ? `<div class="flowtag">📋 ${esc(fl.status)}・${esc(fl.owner || "經手待確認")}${fl.follow ? "・追蹤 " + esc(C.roc(fl.follow)) : ""} <button type="button" class="link" data-form-id="${esc(st.cur)}" data-form-key="${ph === "tech" ? "tech-" : "acc-"}${k}">更新進度</button></div>` : "")(flowOf(ph, r))}${LC.notifiable(r) ? lineBtns(st.cur, r) : ""}${upCell(ph, r)}</td>
     <td data-l="應完成日">${r.due ? esc(C.roc(r.due)) : '<span class="hint">—</span>'}<br>${badge(r)}</td>
     <td data-l="主辦">${esc(r.who.replace("技服廠商", "技術服務廠商"))}</td>
     <td data-l="狀態"><select data-ph="${ph}" data-key="${k}" data-f="s" aria-label="${esc(String(n))} 狀態" class="${r.auto ? "isauto" : ""}"><option value="" ${r.auto ? "selected" : ""}>自動：${esc(r.autoS)}</option>${C.STATUS.map(o => `<option value="${o}" ${!r.auto && o === r.s ? "selected" : ""}>${o}</option>`).join("")}</select></td>
@@ -758,7 +760,7 @@ function rowChange(t) {
 function renderWorkHead() {
   const p = st.projects[st.cur], host = $("#workHead");
   $("#subNav").hidden = !p;
-  if (!p) { host.innerHTML = `<div class="empty"><h2 style="font-size:24px;margin-bottom:10px">還沒有選擇工程</h2><p>按左上「＋ 新增工程」開始，或從清單選一個。</p></div>`; return; }
+  if (!p) { host.innerHTML = `<div class="empty"><h2 style="font-size:26px;margin-bottom:10px">還沒有選擇工程</h2><p>按左上「＋ 新增工程」開始，或從清單選一個。</p></div>`; return; }
   const ev = evalP(st.cur), go = { tech: "tech", build: "build", accept: "chk" };
   host.innerHTML = `<div class="whead"><h2>${esc(p.name || p.title || "未命名工程")}</h2><span class="note">${esc(p.title && p.name ? p.title : "")}</span><span class="phase">${esc(ev.label)}</span>${ev.overdue ? `<b class="danger">逾期 ${ev.overdue} 項</b>` : ""}</div>
   <div class="wtools">${p.updatedAt ? `<span class="hint">最後暫存：${esc(p.updatedBy || "（未填名字）")} ${esc(tm(p.updatedAt))}</span>` : ""}${API ? `<button type="button" class="link" data-folder="1">📁 雲端資料夾</button><button type="button" class="link" data-hist="1">🕘 修改紀錄</button>` : ""}<span class="hint" id="wmsg" role="status"></span></div>
@@ -1009,7 +1011,7 @@ function openFlow(id, key) {
   const x = formEntries(id, p, evalP(id), todayTW()).find(e => e.key === key); if (!x) return;
   flowCtx = { id, key, phase: x.r.phase, rkey: x.r.key };
   $("#flowTitle").textContent = x.project + "・" + x.name;
-  const files = x.files.length ? x.files.map(f => `<a class="chip" href="${esc(f.url)}" target="_blank" rel="noopener">📎 ${esc(f.name)}</a>`).join("") : `<span class="hint">尚無附件</span>`;
+  const files = x.files.length ? x.files.map(f => `<a class="chip" href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener">📎 ${esc(f.name)}</a>`).join("") : `<span class="hint">尚無附件</span>`;
   $("#flowInfo").innerHTML = `<table class="sum">
     <tr><th>目前狀態</th><td>${esc(x.flow.status || "待確認")}</td></tr>
     <tr><th>目前等誰</th><td>${esc(x.flow.owner || "待確認")}</td></tr>
@@ -1245,14 +1247,14 @@ function renderTplReport() {
   const r = st.newTpl.report, host = $("#tplReport");
   const usedLost = r.removed.filter(x => x.used), missingReg = T.REGIONS.filter(k => !r.regions.includes(k));
   const li = (arr, f) => arr.length ? `<table class="stack"><tbody>${arr.map(f).join("")}</tbody></table>` : `<p class="note">無</p>`;
-  host.innerHTML = `<h3 style="font-size:19px;margin-top:18px">比對結果</h3>
+  host.innerHTML = `<h3 style="font-size:21px;margin-top:18px">比對結果</h3>
   <div class="kpis"><div class="kpi"><b>${r.total}</b><span>新範本填寫點</span></div><div class="kpi"><b>${r.exact}</b><span>與目前版本完全相同</span></div>
   <div class="kpi ${r.fuzzy.length ? "w" : ""}"><b>${r.fuzzy.length}</b><span>文字有改、已自動對應</span></div><div class="kpi ${r.added.length ? "w" : ""}"><b>${r.added.length}</b><span>新增（到進階頁填）</span></div>
   <div class="kpi ${r.removed.length ? "w" : ""}"><b>${r.removed.length}</b><span>舊版有、新版沒有</span></div></div>
   ${defBlock(r)}
   ${usedLost.length ? `<div class="banner">有 ${usedLost.length} 個「每案填寫／學校設定會自動填」的位置在新範本找不到，這些設定將不會出現在契約中：${esc(usedLost.map(x => x.id).join("、"))}。請把下方清單傳給 Claude 調整表單。</div>` : `<div class="banner ok">表單會自動填寫的位置都已對應到新範本。</div>`}
   ${missingReg.length ? `<div class="banner">找不到這些附件的標題，「不適用附件」處理將略過它們：${esc(missingReg.join("、"))}</div>` : ""}
-  <details ${r.fuzzy.length ? "open" : ""}><summary>文字有改、已自動對應（${r.fuzzy.length}）——請確認對應正確</summary>${li(r.fuzzy, x => `<tr><td data-l="編號">${esc(x.id)}${x.used ? ` <span class="used">自動填</span><label style="display:block;font-size:14px;margin-top:4px"><input type="checkbox" data-tok="${esc(x.id)}" ${st.newTpl.ok && st.newTpl.ok.has(x.id) ? "checked" : ""}> 已核對</label>` : ""}</td><td data-l="舊"><span class="old">${esc(x.oldCtx)}</span></td><td data-l="新">${x.oldCtx === x.newCtx ? '<span class="note">內容相同（所屬段落標題有改）</span>' : esc(x.newCtx)}</td><td data-l="相似">${x.sim}%</td></tr>`)}</details>
+  <details ${r.fuzzy.length ? "open" : ""}><summary>文字有改、已自動對應（${r.fuzzy.length}）——請確認對應正確</summary>${li(r.fuzzy, x => `<tr><td data-l="編號">${esc(x.id)}${x.used ? ` <span class="used">自動填</span><label style="display:block;font-size:16px;margin-top:4px"><input type="checkbox" data-tok="${esc(x.id)}" ${st.newTpl.ok && st.newTpl.ok.has(x.id) ? "checked" : ""}> 已核對</label>` : ""}</td><td data-l="舊"><span class="old">${esc(x.oldCtx)}</span></td><td data-l="新">${x.oldCtx === x.newCtx ? '<span class="note">內容相同（所屬段落標題有改）</span>' : esc(x.newCtx)}</td><td data-l="相似">${x.sim}%</td></tr>`)}</details>
   <details><summary>新增的填寫點（${r.added.length}）</summary>${li(r.added, x => `<tr><td data-l="編號">${esc(x.id)}</td><td data-l="條次">${esc(x.sec)}</td><td data-l="內容">${esc(x.ctx)}</td></tr>`)}</details>
   <details ${usedLost.length ? "open" : ""}><summary>舊版有、新版沒有（${r.removed.length}）</summary>${li(r.removed, x => `<tr><td data-l="編號">${esc(x.id)}${x.used ? ' <span class="used">自動填</span>' : ""}</td><td data-l="條次">${esc(x.sec)}</td><td data-l="內容">${esc(x.ctx)}</td></tr>`)}</details>
   <div class="f" style="max-width:320px;margin-top:14px"><label for="tplVer">版本名稱</label><input class="inp" type="text" id="tplVer" value="${esc(r.version || "")}" placeholder="例如 116.3.1"></div>
@@ -1307,7 +1309,7 @@ drop.addEventListener("drop", e => handleTplFile(e.dataTransfer.files[0]));
 
 async function useTemplate(id) {
   if (id === "builtin" || !API) {
-    const [points, regions] = await Promise.all([fetch("points.json?v=20261127h").then(r => r.json()), fetch("regions.json?v=20261127h").then(r => r.json())]);
+    const [points, regions] = await Promise.all([fetch("points.json?v=20261127i").then(r => r.json()), fetch("regions.json?v=20261127i").then(r => r.json())]);
     st.tpl = { id: "builtin", version: "115.4.23", points, regions, parts: null };
   } else {
     const g = part => fetch(API + "?" + new URLSearchParams({ action: "tplfile", id, part, code: st.code })).then(r => r.text()).then(t => JSON.parse(t));
@@ -1353,7 +1355,7 @@ $("#exp").addEventListener("click", () => {
 $("#imp").addEventListener("change", async e => {
   const f = e.target.files[0]; if (!f) return;
   try { const d = JSON.parse(await f.text()); let n = 0;
-    for (const [id, p] of Object.entries(d.projects || {})) { if (!p || typeof p !== "object" || !/^[A-Za-z0-9_-]{1,40}$/.test(id)) continue; st.projects[id] = Lifecycle.normalize(Object.assign(NEWP(), p)); markDirty(id); n++; }
+    for (const [id, p] of Object.entries(d.projects || {})) { if (!p || typeof p !== "object" || !/^[A-Za-z0-9_-]{1,40}$/.test(id)) continue; st.projects[id] = Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, p))); markDirty(id); n++; }
     if (d.school && typeof d.school === "object") { Object.assign(st.school, d.school); markSchool(); }
     $("#bkmsg").textContent = `已匯入 ${n} 個工程，按「暫存」存到雲端`; if (!st.cur) st.cur = sortedIds()[0] || null; renderAll();
   } catch (err) { $("#bkmsg").textContent = "檔案格式不對"; }
@@ -1364,7 +1366,7 @@ $("#reload").addEventListener("click", () => { if ((st.dirty.size || st.schoolDi
 /* ---------- 存取碼 ---------- */
 function askCode(msg) {
   showTab("dash");
-  $("#dashBody").innerHTML = `<form class="gate" id="gate"><h2 style="font-size:22px;margin-bottom:10px">請輸入存取碼</h2><p class="note">${esc(msg || "向承辦人索取。輸入一次後這台電腦會記住。")}</p><input class="inp" id="codeIn" type="password" autocomplete="off" aria-label="存取碼" style="margin:10px 0"><button class="primary" type="submit" style="width:100%">進入</button></form>`;
+  $("#dashBody").innerHTML = `<form class="gate" id="gate"><h2 style="font-size:24px;margin-bottom:10px">請輸入存取碼</h2><p class="note">${esc(msg || "向承辦人索取。輸入一次後這台電腦會記住。")}</p><input class="inp" id="codeIn" type="password" autocomplete="off" aria-label="存取碼" style="margin:10px 0"><button class="primary" type="submit" style="width:100%">進入</button></form>`;
   $("#gate").addEventListener("submit", ev => { ev.preventDefault(); st.code = $("#codeIn").value.trim(); ls.set("code", st.code); boot(); });
   setTimeout(() => { const el = $("#codeIn"); if (el) el.focus(); }, 0);
   updSync("需要存取碼");
@@ -1397,7 +1399,7 @@ async function runSync() {
   ids.forEach(id => {
     if (!st.projects[id]) { items[id] = { name: "", list: [] }; return; }          // 已刪除
     if (!st.snap[id] || !st.base[id]) return;                                       // 還沒暫存過
-    const p = Lifecycle.normalize(Object.assign(NEWP(), JSON.parse(st.snap[id])));    // 已暫存的版本，不是畫面上的
+    const p = Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, JSON.parse(st.snap[id]))));    // 已暫存的版本，不是畫面上的
     items[id] = { name: p.name || p.title || "", at: st.base[id], list: LC.calendarEvents(p, Object.assign(E.defaultSchool(), JSON.parse(st.schoolBase || "{}")), calLink(id)) };
   });
   const cal = st.share && st.share.cal && st.share.cal.created;
@@ -1434,7 +1436,7 @@ function renderShare() {
     : !c.created ? `<div><b>共用日曆</b><span class="note">尚未建立</span><button class="primary" type="button" data-sh="calCreate">建立「${esc(calName())}」</button></div>`
     : `<div><b>共用日曆</b><span>「${esc(c.name)}」${c.owner ? "（" + esc(c.owner) + "）" : ""}${c.synced ? "，最近同步 " + esc(tm(c.synced)) : ""}</span><button class="ghost" type="button" data-sh="full">全部重新同步</button></div>`;
   const docRow = !d.created ? `<div><b>工程文件資料夾</b><span class="note">${d.error ? esc(d.error) : "尚未建立；第一次上傳檔案時也會自動建立"}</span><button class="ghost" type="button" data-sh="docsCreate">建立「${esc(docsName())}」</button></div>`
-    : `<div><b>工程文件資料夾</b><span>「${esc(d.name)}」</span><a class="ghost" href="${esc(d.url)}" target="_blank" rel="noopener">開啟資料夾</a></div>`;
+    : `<div><b>工程文件資料夾</b><span>「${esc(d.name)}」</span><a class="ghost" href="${esc(safeUrl(d.url))}" target="_blank" rel="noopener">開啟資料夾</a></div>`;
   const mailRow = `<div><b>每週摘要信</b><span>${g.on ? "已開啟：每週一早上 7～8 點寄給勾選「週報」的同仁（沒有到期事項的週不寄）" : "未開啟"}${g.last ? "；上次寄出 " + esc(tm(g.last)) : ""}</span><button class="${g.on ? "ghost" : "primary"}" type="button" data-sh="digest" data-on="${g.on ? "" : "1"}">${g.on ? "關閉" : "開啟"}</button><button class="ghost" type="button" data-sh="test">現在寄一封測試信</button></div>`;
   box.innerHTML = `<p class="note">${intro}</p>
   ${s.lastError ? `<div class="banner">同步問題：${esc(s.lastError)}</div>` : ""}
@@ -1489,7 +1491,7 @@ function upCell(ph, r) {
   const p = st.projects[st.cur], key = (ph === "tech" ? "tech-" : "acc-") + r.key, list = ((p && p.files) || {})[key] || [];
   const gov = ph !== "tech" && GOV_ITEM[r.key];
   if (!list.length && !API && !gov) return "";
-  return `<div class="upl">${list.map(f => `<a class="chip" href="${esc(f.url)}" target="_blank" rel="noopener" title="${esc([f.by, tm(f.at)].filter(Boolean).join(" "))}">📎 ${esc(f.name)}</a>`).join("")}${API ? `<button type="button" class="link" data-up="${esc(key)}" data-dir="${ph === "tech" ? 0 : 2 + r.stage}" data-pre="${esc(docName(ph, r))}">上傳檔案</button>` : ""}${gov ? `<button type="button" class="link" data-gov="${gov}">產生簽稿</button>` : ""}</div>`;
+  return `<div class="upl">${list.map(f => `<a class="chip" href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener" title="${esc([f.by, tm(f.at)].filter(Boolean).join(" "))}">📎 ${esc(f.name)}</a>`).join("")}${API ? `<button type="button" class="link" data-up="${esc(key)}" data-dir="${ph === "tech" ? 0 : 2 + r.stage}" data-pre="${esc(docName(ph, r))}">上傳檔案</button>` : ""}${gov ? `<button type="button" class="link" data-gov="${gov}">產生簽稿</button>` : ""}</div>`;
 }
 const upInput = document.createElement("input"); upInput.type = "file"; upInput.hidden = true; document.body.appendChild(upInput);
 let upCtx = null;
@@ -1518,8 +1520,8 @@ async function openFolder() {
   if (m) m.textContent = "開啟中…";
   try {
     const r = await apiPost({ action: "folder", pid: st.cur, pname: p.name || p.title || "" });
-    if (w) { w.location.href = r.url; if (m) m.textContent = ""; }
-    else if (m) m.innerHTML = `<a href="${esc(r.url)}" target="_blank" rel="noopener">開啟雲端資料夾</a>`;
+    if (w) { w.location.href = safeUrl(r.url); if (m) m.textContent = ""; }
+    else if (m) m.innerHTML = `<a href="${esc(safeUrl(r.url))}" target="_blank" rel="noopener">開啟雲端資料夾</a>`;
   } catch (err) { if (w) w.close(); if (m) m.textContent = "無法開啟資料夾：" + (err.message || err); }
 }
 function missingList(p) {
@@ -1611,7 +1613,7 @@ function restoreDrafts() {
     const server = st.projects[id];
     if (!v || !v.data) continue;
     // 內容和雲端一樣就不必還原；其他一律保留，交給暫存時比對版本（不以裝置時間判斷新舊）
-    if (server && strip(Lifecycle.normalize(Object.assign(NEWP(), v.data))) === strip(server)) { dropDraft(id); continue; }
+    if (server && strip(Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, v.data)))) === strip(server)) { dropDraft(id); continue; }
     pending.push({ id, data: v.data, base: v.base === undefined ? null : v.base });
   }
   st.pending = pending.length ? pending : null;
@@ -1637,7 +1639,7 @@ async function boot() {
   try {
     const d = await apiGet({ action: "load" });
     st.projects = {}; st.base = {};
-    d.projects.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p)); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
+    d.projects.forEach(p => { st.projects[p.id] = Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, p))); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
     st.school = Object.assign(E.defaultSchool(), d.school || {});
     st.schoolAt = d.schoolUpdatedAt || ""; st.schoolBase = JSON.stringify(st.school);
     st.templates = d.templates || [];
@@ -1655,7 +1657,7 @@ async function boot() {
     const c = ls.get("cache", null);
     if (c) {   // 離線：先顯示上次的資料與本機草稿，連線後暫存時再由伺服器比對版本
       st.offline = c.at; st.projects = {}; st.base = {};
-      (c.projects || []).forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p)); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
+      (c.projects || []).forEach(p => { st.projects[p.id] = Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, p))); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
       st.school = Object.assign(E.defaultSchool(), c.school || {}); st.schoolAt = c.schoolUpdatedAt || ""; st.schoolBase = JSON.stringify(st.school); st.templates = c.templates || [];
       restoreDrafts();
       if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null;
@@ -1689,7 +1691,7 @@ async function pullLatest() {
   cacheLoad(d); if (st.offline) { st.offline = null; updSync(); }
   if (same) return;
   st.projects = {}; st.base = {};
-  d.projects.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p)); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
+  d.projects.forEach(p => { st.projects[p.id] = Object.assign(NEWP(), Lifecycle.normalize(Object.assign({}, p))); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
   st.school = school; st.schoolAt = d.schoolUpdatedAt || ""; st.schoolBase = JSON.stringify(school); st.templates = d.templates || st.templates;
   if (!st.projects[st.cur]) { st.cur = sortedIds()[0] || null; ls.set("cur", st.cur); }
   renderAll(); updSync("已同步其他裝置的最新資料");
