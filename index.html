@@ -287,13 +287,13 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
 </div>
 <dialog id="histDlg" class="dlg" aria-labelledby="histH"><div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div><div id="histBody"></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="config.js?v=20261126c"></script>
-<script src="engine.js?v=20261126c"></script>
-<script src="templater.js?v=20261126c"></script>
-<script src="checklist.js?v=20261126c"></script>
-<script src="lifecycle.js?v=20261126c"></script>
-<script src="govdocs.js?v=20261126c"></script>
-<script src="exporter.js?v=20261126c"></script>
+<script src="config.js?v=20261127a"></script>
+<script src="engine.js?v=20261127a"></script>
+<script src="templater.js?v=20261127a"></script>
+<script src="checklist.js?v=20261127a"></script>
+<script src="lifecycle.js?v=20261127a"></script>
+<script src="govdocs.js?v=20261127a"></script>
+<script src="exporter.js?v=20261127a"></script>
 <script>
 {
 const E = window.ContractEngine, T = window.Templater, CFG = window.TSC_CONFIG || {};
@@ -304,8 +304,9 @@ const nf = v => { const n = String(v || "").replace(/,/g, ""); return /^\d+(\.\d
 const tm = iso => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
 const ls = { get(k, d) { try { const v = localStorage.getItem("tsc-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem("tsc-" + k, JSON.stringify(v)); } catch (e) {} } };
 const st = { projects: {}, base: {}, dirty: new Set(), schoolDirty: false, school: E.defaultSchool(), cur: ls.get("cur", null), stage: ls.get("stage", "sign"), naMode: ls.get("naMode", "mark"), dropGuide: ls.get("dropGuide", true),
-  snap: {}, templates: [], tpl: { id: "builtin", version: "115.4.23", points: [], regions: null, parts: null }, code: ls.get("code", ""), saving: false, conflicts: [], pending: null };
-const NEWP = () => ({ name: "", title: "", vendor: "", type: "建築工程", plan: "否", design: "是", super: "是", method: "", fee: "", feeFixed: "否", rate: "", range: "", cost: "", bclass: "第一類", days: "", permit: "否", tender: "是", adv: {}, vendorLine: "", tech: {}, build: { ext: [] }, v: 2 });
+  snap: {}, templates: [], tpl: { id: "builtin", version: "115.4.23", points: [], regions: null, parts: null }, code: ls.get("code", ""), saving: false, conflicts: [], pending: null,
+  rev: {}, schoolRev: 0, schoolAt: "", schoolBase: "{}", epoch: 0, force: null, notices: [] };
+const NEWP = () => ({ name: "", title: "", vendor: "", type: "建築工程", plan: "否", design: "是", super: "是", method: "", fee: "", feeFixed: "否", rate: "", range: "", shape: "單一工程", cost: "", bclass: "第一類", days: "", permit: "否", tender: "是", adv: {}, vendorLine: "", tech: {}, build: { ext: [] }, v: 2 });
 $("#who").value = ls.get("who", "");
 $("#who").addEventListener("input", e => ls.set("who", e.target.value.trim()));
 
@@ -334,10 +335,20 @@ async function apiPost(body) {
 
 /* ---------- 狀態列與暫存 ---------- */
 function drafts() { return ls.get("drafts", {}); }
-function putDraft(id) { const d = drafts(); d[id] = { at: new Date().toISOString(), data: st.projects[id] }; ls.set("drafts", d); }
+function putDraft(id) { const d = drafts(); d[id] = { at: new Date().toISOString(), base: st.base[id] || null, data: st.projects[id] }; ls.set("drafts", d); }
 function dropDraft(id) { const d = drafts(); delete d[id]; ls.set("drafts", d); }
-function markDirty(id) { st.dirty.add(id); putDraft(id); updSync(); renderList(); if (id === st.cur && $("#v-work").classList.contains("on")) renderWorkHead(); }
-function markSchool() { st.schoolDirty = true; ls.set("schoolDraft", st.school); updSync(); }
+function markDirty(id) { st.rev[id] = (st.rev[id] || 0) + 1; st.epoch++; st.dirty.add(id); putDraft(id); updSync(); renderList(); if (id === st.cur && $("#v-work").classList.contains("on")) renderWorkHead(); }
+function markSchool() { st.schoolRev++; st.epoch++; st.schoolDirty = true; ls.set("schoolDraft", { v: 2, at: st.schoolAt, base: st.schoolBase, data: st.school }); updSync(); }
+/* 三方合併學校設定：base＝我開始改之前的版本；local 改過的欄位保留我的，其餘用伺服器最新值 */
+function mergeSchool(baseJson, server, local) {
+  const base = JSON.parse(baseJson || "{}"), out = Object.assign({}, server), both = [];
+  const J = v => JSON.stringify(v ?? "");
+  new Set([...Object.keys(server), ...Object.keys(local)]).forEach(k => {
+    if (J(local[k]) !== J(base[k])) { out[k] = local[k]; if (J(server[k]) !== J(base[k]) && J(server[k]) !== J(local[k])) both.push(k); }
+  });
+  return { school: out, both };
+}
+function schoolLabel(k) { const f = E.FIXED.find(x => x[1] === k); return f ? f[2] : k; }
 function updSync(msg) {
   const n = st.dirty.size + (st.schoolDirty ? 1 : 0), el = $("#sync");
   $("#saveBtn").disabled = st.saving || n === 0;
@@ -353,13 +364,39 @@ async function saveAll() {
   st.saving = true; updSync();
   try {
     if (ids.length) {
-      const res = await apiPost({ action: "saveProjects", projects: ids.map(id => Object.assign({}, st.projects[id], { id, baseUpdatedAt: st.base[id] || "", force: !!st.force && st.force.has(id), changes: st.snap[id] ? LC.changeList(st.snap[id], st.projects[id]) : [] })) });
-      res.saved.forEach(s => { st.base[s.id] = s.updatedAt; st.dirty.delete(s.id); dropDraft(s.id); st.projects[s.id].updatedAt = s.updatedAt; st.projects[s.id].updatedBy = ls.get("who", ""); st.snap[s.id] = JSON.stringify(st.projects[s.id]); });
+      const sentRev = {}, sent = {};
+      ids.forEach(id => { sentRev[id] = st.rev[id] || 0; sent[id] = JSON.stringify(st.projects[id]); });
+      const force = st.force || new Map();
+      const res = await apiPost({ action: "saveProjects", projects: ids.map(id => Object.assign(JSON.parse(sent[id]), { id, baseUpdatedAt: st.base[id] || "", force: force.has(id), forceAgainst: force.get(id) || "", changes: st.snap[id] ? LC.changeList(st.snap[id], JSON.parse(sent[id])) : [] })) });
+      res.saved.forEach(s => {
+        st.base[s.id] = s.updatedAt; st.epoch++;
+        const saved = Object.assign(JSON.parse(sent[s.id]), { updatedAt: s.updatedAt, updatedBy: ls.get("who", "") });
+        st.snap[s.id] = JSON.stringify(saved);
+        if (st.projects[s.id]) { st.projects[s.id].updatedAt = s.updatedAt; st.projects[s.id].updatedBy = saved.updatedBy; }
+        if ((st.rev[s.id] || 0) === sentRev[s.id] && st.projects[s.id]) { st.dirty.delete(s.id); dropDraft(s.id); }
+        else if (st.projects[s.id]) putDraft(s.id);   // 暫存途中又改了：保留未暫存狀態，下次再存
+      });
       queueSync(res.saved.map(s => s.id));
       st.force = null;
-      st.conflicts = res.conflicts || [];
+      const all = res.conflicts || [];
+      all.filter(c => c.deleted).forEach(c => keepDeleted(c));
+      st.conflicts = all.filter(c => !c.deleted);
     }
-    if (st.schoolDirty) { await apiPost({ action: "saveSchool", school: st.school }); st.schoolDirty = false; ls.set("schoolDraft", null); queueSync([], true); }
+    if (st.schoolDirty) {
+      const rev = st.schoolRev, sentJson = JSON.stringify(st.school);
+      let r = await apiPost({ action: "saveSchool", school: JSON.parse(sentJson), base: st.schoolAt || "" });
+      if (r.conflict) {
+        const server = Object.assign(E.defaultSchool(), r.school || {}), m = mergeSchool(st.schoolBase, server, JSON.parse(sentJson));
+        st.school = m.school; st.schoolBase = JSON.stringify(server); st.schoolAt = r.updatedAt;
+        r = await apiPost({ action: "saveSchool", school: st.school, base: st.schoolAt });
+        if (r.conflict) throw new Error("學校設定剛好又被其他人修改，請再按一次暫存");
+        st.notices.push("學校設定已和其他人的修改合併" + (m.both.length ? "；以下項目兩人都改過，採用你的值：" + m.both.map(schoolLabel).join("、") : "") + "。");
+        renderSchool();
+      }
+      st.schoolAt = r.updatedAt; st.schoolBase = JSON.stringify(st.school);
+      if (st.schoolRev === rev) { st.schoolDirty = false; ls.set("schoolDraft", null); }
+      queueSync([], true);
+    }
     st.lastSaved = new Date().toISOString();
     st.saving = false; updSync(); renderList(); renderBanners();
     return st.conflicts.length === 0;
@@ -369,6 +406,16 @@ async function saveAll() {
     updSync("暫存失敗：" + (e.message || e) + "（資料仍在本機草稿，可再按一次）");
     return false;
   }
+}
+function keepDeleted(c) {
+  const old = st.projects[c.id]; if (!old) return;
+  const nid = newId(), cp = JSON.parse(JSON.stringify(old)); delete cp.updatedAt; delete cp.updatedBy;
+  cp.name = (old.name || old.title || "工程") + "（你的版本）";
+  delete st.projects[c.id]; delete st.base[c.id]; delete st.snap[c.id]; st.dirty.delete(c.id); dropDraft(c.id);
+  st.projects[nid] = cp; if (st.cur === c.id) { st.cur = nid; ls.set("cur", nid); }
+  markDirty(nid);
+  st.notices.push(`「${old.name || old.title || "工程"}」已被${c.deletedBy ? " " + c.deletedBy + " " : "其他人"}刪除。你的修改已另存為「${cp.name}」，要保留就再按一次暫存，不需要就刪除它。`);
+  renderAll();
 }
 $("#saveBtn").addEventListener("click", saveAll);
 document.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); saveAll(); } });
@@ -381,18 +428,20 @@ function renderBanners() {
   if (st.pending) b.push(`<div class="banner">找到 ${st.pending.length} 份上次沒暫存的草稿（${esc(st.pending.map(p => p.data.name || p.data.title || "未命名").join("、"))}）。<button class="ghost" data-b="restore" type="button">還原草稿</button><button class="link" data-b="discard" type="button">捨棄</button></div>`);
   const da = (st.defAlerts || []).filter(a => String(st.school[a.key] ?? "").replace(/,/g, "") !== a.newVal);
   if (da.length) b.push(`<div class="banner">新範本的預設值改了，但學校設定仍是舊值：${esc(da.map(a => a.label + "（" + (st.school[a.key] ?? "") + " → 新預設 " + a.newVal + "）").join("、"))}。<button class="ghost" data-b="defall" type="button">全部改成新預設值</button><button class="link" data-b="defkeep" type="button">保留學校設定</button></div>`);
+  st.notices.forEach((n, i) => b.push(`<div class="banner">${esc(n)}<button class="link" data-b="note" data-i="${i}" type="button">知道了</button></div>`));
   st.conflicts.forEach(c => b.push(`<div class="banner">「${esc(c.name || c.title || c.id)}」已被 ${esc(c.updatedBy || "其他人")} 在 ${esc(tm(c.updatedAt))} 更新，你的版本沒有存入。<button class="ghost" data-b="theirs" data-id="${esc(c.id)}" type="button">改用對方版本</button><button class="ghost" data-b="mine" data-id="${esc(c.id)}" type="button">用我的版本覆蓋</button></div>`));
   $("#banners").innerHTML = b.join("");
 }
 $("#banners").addEventListener("click", e => {
   const b = e.target.closest("button[data-b]"); if (!b) return;
   const act = b.dataset.b, id = b.dataset.id;
-  if (act === "restore") { st.pending.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p.data)); st.dirty.add(p.id); }); st.pending = null; if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null; renderAll(); updSync(); }
+  if (act === "note") { st.notices.splice(Number(b.dataset.i), 1); renderBanners(); return; }
+  if (act === "restore") { st.pending.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p.data)); st.base[p.id] = p.base; st.rev[p.id] = (st.rev[p.id] || 0) + 1; st.dirty.add(p.id); }); st.pending = null; if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null; renderAll(); updSync(); }
   if (act === "discard") { st.pending.forEach(p => dropDraft(p.id)); st.pending = null; renderBanners(); }
   if (act === "theirs") { const c = st.conflicts.find(x => x.id === id); st.projects[id] = Lifecycle.normalize(Object.assign(NEWP(), c)); st.base[id] = c.updatedAt; st.snap[id] = JSON.stringify(st.projects[id]); st.dirty.delete(id); dropDraft(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderAll(); updSync(); }
   if (act === "defall") { st.defAlerts.forEach(a => applyDefault(a.key, a.newVal)); st.defAlerts = []; renderBanners(); return; }
   if (act === "defkeep") { st.defAlerts = []; renderBanners(); return; }
-  if (act === "mine") { st.force = new Set([id]); st.dirty.add(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderBanners(); saveAll(); }
+  if (act === "mine") { const c = st.conflicts.find(x => x.id === id); st.force = new Map([[id, c ? c.updatedAt : ""]]); st.dirty.add(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderBanners(); saveAll(); }
 });
 
 /* ---------- 工程清單 ---------- */
@@ -427,7 +476,7 @@ function renderProject() {
     <div class="est"><h3 style="font-size:17px;margin:0 0 10px">服務費參考試算</h3>
       ${txt("cost", num)}${p.type !== "非建築公共工程" ? seg("bclass") + '<span class="hint" style="display:block;margin:-8px 0 12px">第一類：五層以下辦公室、教室、宿舍等；第二類：四層以下實驗室、禮堂、餐廳、運動場、游泳池等；第三類：圖書館、體育館等</span>' : ""}
       <div id="estOut"></div></div>
-    ${m === "建造費用百分比法" ? `<div class="row2">${txt("rate", num)}${txt("range", num)}</div><div class="calc"><span>服務費小計＝預估建造費用 × 費率</span><b id="calcOut">—</b></div>${txt("fee", num)}` : ""}
+    ${m === "建造費用百分比法" ? `<div class="row2">${txt("rate", num)}${txt("range", num)}</div>${seg("shape")}<span class="hint" style="display:block;margin:-8px 0 12px">範本原檔預先勾了「開口契約」。一般單一工程請選「單一工程」，附件2的分期／分區／開口契約三格都不會勾。</span><div class="calc"><span>服務費小計＝預估建造費用 × 費率</span><b id="calcOut">—</b></div>${txt("fee", num)}` : ""}
     ${m && m !== "建造費用百分比法" ? txt("fee", num) : ""}
     ${m === "總包價法" ? seg("feeFixed") : ""}
   </section>
@@ -462,9 +511,12 @@ function refreshDerived() {
     : `<div class="estbig"><span>本案委託階段參考服務費 <b>${nf(est.fee)} 元</b></span><span class="hint">約為建造費用 ${est.feeRate.toFixed(2)}%</span></div>
       <div class="hint">${esc(est.basis)}｜全部階段合計 ${nf(est.total)} 元（平均 ${est.totalRate.toFixed(2)}%）</div>
       <table><thead><tr><th>建造費用級距</th><th class="r">費率</th><th class="r">金額</th></tr></thead><tbody>${est.rows.map(r => `<tr><td>${nf(Math.round(r.from)) || 0}～${nf(Math.round(r.to))} 元</td><td class="r">${r.rate}%</td><td class="r">${nf(Math.round(r.fee))}</td></tr>`).join("")}</tbody></table>
-      <div class="seg"><button type="button" data-est="fee">服務費帶入 ${nf(est.fee)}</button>${p.method === "建造費用百分比法" ? `<button type="button" data-est="rate">費率帶入 ${est.totalRate.toFixed(2)}%</button>` : ""}</div>
+      <div class="seg"><button type="button" data-est="fee">服務費帶入 ${nf(est.fee)}</button>${p.method === "建造費用百分比法" ? `<button type="button" data-est="rate">費率帶入 ${est.feeRate.toFixed(2)}%</button>` : ""}</div>
       <p class="hint" style="margin:8px 0 0">附表為編列預算之參考，實際費率仍須簽報機關首長核定並載明於招標文件。</p>`;
-  $("#rem").innerHTML = E.reminders(p, st.school).map(x => `<li>ⓘ ${esc(x)}</li>`).join("");
+  const vals = E.computeValues(p, st.school, st.stage).values;
+  const pre = [["F099", "第11條「甲方不收取保證金」"], ["F121", "第14條「以乙方為著作人」"], ["F131", "第14條「乙方取得著作財產權，授權甲方利用」"], ["F159", "第14條「可再授權」"]].filter(([id]) => !vals[id]).map(x => x[1]);
+  const rems = E.reminders(p, st.school).concat(pre.length ? [`範本原檔已預先勾選：${pre.join("、")}。送出前請確認是否適用本案；要改可到「契約進階欄位」。`] : []);
+  $("#rem").innerHTML = rems.map(x => `<li>ⓘ ${esc(x)}</li>`).join("");
   const ck = E.checks(p, st.stage);
   $("#chk").innerHTML = ck.length ? ck.map(x => `<li>${esc(x)}</li>`).join("") : `<li class="ok">✓ 必要欄位都填好了</li>`;
   $("#stamp").textContent = ck.length ? "待填" : "備妥"; $("#stamp").classList.toggle("dim", ck.length > 0);
@@ -494,24 +546,30 @@ $("#projBody").addEventListener("click", e => {
   if (b.dataset.tog) { const k = b.dataset.tog; p[k] = p[k] === "是" ? "否" : "是"; b.setAttribute("aria-pressed", p[k] === "是"); markDirty(st.cur); refreshDerived(); return; }
   if (b.dataset.est) {
     const est = E.feeEstimate(p); if (!est) return;
-    if (b.dataset.est === "fee") p.fee = String(est.fee); else p.rate = est.totalRate.toFixed(2);
+    if (b.dataset.est === "fee") p.fee = String(est.fee); else p.rate = est.feeRate.toFixed(2);
     markDirty(st.cur); renderProject(); return;
   }
   if (b.dataset.stage) { st.stage = b.dataset.stage; ls.set("stage", st.stage); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); refreshDerived(); return; }
   if (b.id === "dl") return download(b);
-  if (b.id === "dup") { const id = newId(); const cp = JSON.parse(JSON.stringify(p)); delete cp.updatedAt; delete cp.updatedBy; delete cp.chk; cp.tech = {}; cp.build = { ext: [] }; cp.vendorLine = ""; cp.name = (p.name || p.title || "工程") + "（複製）"; cp.vendor = ""; st.projects[id] = cp; st.cur = id; ls.set("cur", id); markDirty(id); showTab("proj"); return; }
+  if (b.id === "dup") { const id = newId(); const cp = JSON.parse(JSON.stringify(p)); ["updatedAt", "updatedBy", "chk", "files", "docs", "gov", "notified"].forEach(k => delete cp[k]); if (cp.adv) delete cp.adv.F002; cp.tech = {}; cp.build = { ext: [] }; cp.vendorLine = ""; cp.name = (p.name || p.title || "工程") + "（複製）"; cp.vendor = ""; st.projects[id] = cp; st.cur = id; ls.set("cur", id); markDirty(id); showTab("proj"); return; }
   if (b.id === "del") { $("#delc").innerHTML = `確定刪除？ <button class="link danger" id="delyes" type="button">刪除</button> <button class="link" id="delno" type="button">取消</button>`; return; }
   if (b.id === "delno") { $("#delc").textContent = ""; return; }
-  if (b.id === "delyes") { const id = st.cur; delete st.projects[id]; st.dirty.delete(id); dropDraft(id); st.cur = sortedIds()[0] || null; ls.set("cur", st.cur);
-    if (API && st.base[id]) apiPost({ action: "deleteProject", id }).then(() => { updSync("已刪除"); queueSync([id]); }).catch(err => updSync("刪除失敗：" + err.message));
-    else if (!API) ls.set("local", { projects: st.projects, school: st.school });
-    renderAll(); updSync(); }
+  if (b.id === "delyes") { const id = st.cur;
+    const drop = () => { delete st.projects[id]; delete st.base[id]; delete st.snap[id]; st.dirty.delete(id); dropDraft(id); if (st.cur === id) { st.cur = sortedIds()[0] || null; ls.set("cur", st.cur); } renderAll(); };
+    if (API && st.base[id]) {
+      $("#delc").textContent = "刪除中…";
+      apiPost({ action: "deleteProject", id, base: st.base[id] }).then(() => { drop(); updSync("已刪除"); queueSync([id]); })
+        .catch(err => { $("#delc").textContent = err.code === "changed" ? "沒有刪除：這個工程剛被其他人修改過，請按左下「重新載入最新資料」看過後再決定。" : "刪除失敗：" + err.message; });
+      return;
+    }
+    drop(); if (!API) ls.set("local", { projects: st.projects, school: st.school });
+    updSync(); }
 });
 
 /* ---------- 下載 ---------- */
 async function tplParts() {
   if (st.tpl.parts) return st.tpl.parts;
-  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261126c").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
+  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261127a").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
   if (!Array.isArray(r)) throw new Error("範本檔讀取失敗");
   st.tpl.parts = r; return r;
 }
@@ -846,7 +904,7 @@ drop.addEventListener("drop", e => handleTplFile(e.dataTransfer.files[0]));
 
 async function useTemplate(id) {
   if (id === "builtin" || !API) {
-    const [points, regions] = await Promise.all([fetch("points.json?v=20261126c").then(r => r.json()), fetch("regions.json?v=20261126c").then(r => r.json())]);
+    const [points, regions] = await Promise.all([fetch("points.json?v=20261127a").then(r => r.json()), fetch("regions.json?v=20261127a").then(r => r.json())]);
     st.tpl = { id: "builtin", version: "115.4.23", points, regions, parts: null };
   } else {
     const g = part => fetch(API + "?" + new URLSearchParams({ action: "tplfile", id, part, code: st.code })).then(r => r.text()).then(t => JSON.parse(t));
@@ -928,11 +986,16 @@ function queueSync(ids, full) {
 }
 async function runSync() {
   if (st.syncBusy) { syncTimer = setTimeout(runSync, 1500); return; }
-  const full = syncFullQ, ids = full ? Object.keys(st.projects) : [...syncQ];
+  const full = syncFullQ, ids = full ? Object.keys(st.projects).filter(id => st.snap[id]) : [...syncQ];
   syncQ.clear(); syncFullQ = false;
   if (!ids.length && !full) return;
   const items = {};
-  ids.forEach(id => { const p = st.projects[id]; items[id] = p ? { name: p.name || p.title || "", list: LC.calendarEvents(p, st.school, calLink(id)) } : { name: "", list: [] }; });
+  ids.forEach(id => {
+    if (!st.projects[id]) { items[id] = { name: "", list: [] }; return; }          // 已刪除
+    if (!st.snap[id] || !st.base[id]) return;                                       // 還沒暫存過
+    const p = Lifecycle.normalize(Object.assign(NEWP(), JSON.parse(st.snap[id])));    // 已暫存的版本，不是畫面上的
+    items[id] = { name: p.name || p.title || "", at: st.base[id], list: LC.calendarEvents(p, Object.assign(E.defaultSchool(), JSON.parse(st.schoolBase || "{}")), calLink(id)) };
+  });
   const cal = st.share && st.share.cal && st.share.cal.created;
   st.syncBusy = true; if (cal) calStatus("日曆同步中…");
   try {
@@ -1138,15 +1201,23 @@ window.addEventListener("hashchange", openHash);
 /* ---------- 啟動 ---------- */
 function restoreDrafts() {
   const d = drafts(), pending = [];
+  const strip = o => { const c = Object.assign({}, o); delete c.updatedAt; delete c.updatedBy; return JSON.stringify(c); };
   for (const [id, v] of Object.entries(d)) {
     const server = st.projects[id];
     if (!v || !v.data) continue;
-    if (!server || !server.updatedAt || v.at > server.updatedAt) pending.push({ id, data: v.data });
-    else dropDraft(id);
+    // 內容和雲端一樣就不必還原；其他一律保留，交給暫存時比對版本（不以裝置時間判斷新舊）
+    if (server && strip(Lifecycle.normalize(Object.assign(NEWP(), v.data))) === strip(server)) { dropDraft(id); continue; }
+    pending.push({ id, data: v.data, base: v.base === undefined ? null : v.base });
   }
   st.pending = pending.length ? pending : null;
   const sd = ls.get("schoolDraft", null);
-  if (sd) { st.school = Object.assign(E.defaultSchool(), sd); st.schoolDirty = true; }
+  if (sd) {
+    if (sd.v === 2) {
+      const local = Object.assign(E.defaultSchool(), sd.data || {});
+      st.school = sd.at === st.schoolAt ? local : mergeSchool(sd.base, st.school, local).school;
+    } else st.school = Object.assign(E.defaultSchool(), sd);
+    st.schoolDirty = true;
+  }
 }
 async function boot() {
   updSync("載入中…");
@@ -1163,6 +1234,7 @@ async function boot() {
     st.projects = {}; st.base = {};
     d.projects.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p)); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
     st.school = Object.assign(E.defaultSchool(), d.school || {});
+    st.schoolAt = d.schoolUpdatedAt || ""; st.schoolBase = JSON.stringify(st.school);
     st.templates = d.templates || [];
     restoreDrafts();
     if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null;
@@ -1180,7 +1252,7 @@ async function boot() {
 renderBanners(); boot();
 
 /* ---------- 與其他裝置同步：回到畫面時、每 2 分鐘自動取得最新資料（有未暫存修改時不動） ---------- */
-let lastPull = Date.now();
+let lastPull = Date.now(), pullSeq = 0;
 function busyEditing() {
   if (st.saving || st.dirty.size || st.schoolDirty || st.conflicts.length || st.pending) return true;
   const a = document.activeElement;
@@ -1189,15 +1261,16 @@ function busyEditing() {
 async function pullLatest() {
   if (!API || !st.code || document.hidden || busyEditing()) return;
   lastPull = Date.now();
+  const epoch = st.epoch, seq = ++pullSeq;
   let d; try { d = await apiGet({ action: "load" }); } catch (e) { return; }
-  if (busyEditing()) return;
+  if (busyEditing() || epoch !== st.epoch || seq !== pullSeq) return;
   const sig = list => JSON.stringify(list.map(p => [p.id, p.updatedAt]).sort());
   const school = Object.assign(E.defaultSchool(), d.school || {});
-  const same = sig(d.projects) === sig(Object.keys(st.projects).map(id => ({ id, updatedAt: st.base[id] || "" }))) && JSON.stringify(school) === JSON.stringify(st.school);
+  const same = sig(d.projects) === sig(Object.keys(st.projects).map(id => ({ id, updatedAt: st.base[id] || "" }))) && (d.schoolUpdatedAt || "") === st.schoolAt;
   if (same) return;
   st.projects = {}; st.base = {};
   d.projects.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p)); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
-  st.school = school; st.templates = d.templates || st.templates;
+  st.school = school; st.schoolAt = d.schoolUpdatedAt || ""; st.schoolBase = JSON.stringify(school); st.templates = d.templates || st.templates;
   if (!st.projects[st.cur]) { st.cur = sortedIds()[0] || null; ls.set("cur", st.cur); }
   renderAll(); updSync("已同步其他裝置的最新資料");
 }

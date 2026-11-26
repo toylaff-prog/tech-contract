@@ -32,7 +32,8 @@
   // 關鍵日期（依時間先後）；填了某個日期，它之前的例行項目都推定已完成
   const DATES = [
     ["report", "機關收受竣工報告日", "廠商報竣、監造轉核"],
-    ["verify", "會同查證屬實日（實際竣工日）", "即結算驗收證明書之「實際竣工日期」"],
+    ["verify", "會同查證屬實日", "學校會同監造、廠商查證竣工之日"],
+    ["actual", "實際竣工日", "經查證確認的竣工日期（結算驗收證明書的「實際竣工日期」）；未填時暫以查證日計算"],
     ["docs", "機關收受竣工文件日", "監造送審全部竣工文件之日"],
     ["pre", "初驗合格日", "無初驗程序者免填"],
     ["accept", "驗收合格日", "驗收紀錄簽認合格之日"],
@@ -63,7 +64,7 @@
     [0, "學校會同監造、廠商依契約、圖說核對竣工項目及數量，查證是否竣工", "收受竣工報告日起7日內", ["report", 7], "學校／監造／廠商", ["04"], "基準17；工契15(二)4"],
     [0, "確認廠商施工期間損壞或遷移之學校設施、公共設施已修復或回復", "會同查證時", null, "學校／監造", ["04"], "基準17"],
     [0, "監造做成「竣工查驗紀錄」報請學校核定", "查證屬實後2日內", ["verify", 2], "監造", ["04"], "基準17"],
-    [1, "廠商提送竣工圖、結算明細表、結算數量計算書等竣工文件", "竣工次日起15日內", ["verify", 15], "廠商", ["05C", "05A"], "工契15(二)3"],
+    [1, "廠商提送竣工圖、結算明細表、結算數量計算書等竣工文件", "竣工次日起15日內", ["actual", 15], "廠商", ["05C", "05A"], "工契15(二)3"],
     [1, "監造審查結算資料並轉學校核定（會同丈量清點）", "審查期限7日", null, "監造", ["06"], "基準18"],
     [1, "備妥驗收抽核資料：契約文件、履約文件（估驗、契約變更、施工過程異動紀錄統計表）、竣工文件、檢（查、試）驗紀錄統計表", "初驗／驗收前", null, "監造", ["00"], "流程圖註3"],
     [1, "督促廠商辦理驗收前事項：環境清理、餘料土方運離、拆除臨時設施、玻璃地板清潔、損鄰處理等", "驗收前", null, "監造／廠商", ["00"], "基準19；流程圖註4"],
@@ -98,12 +99,14 @@
   const roc = s => { const d = pd(s); return d ? (d.getFullYear() - 1911) + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0") : ""; };
   function dueOf(rule, dates, ctx) {
     if (!rule) return "";
-    const baseS = rule[0] === "plan" ? (ctx && ctx.plan) || "" : dates[rule[0]];
+    const baseS = rule[0] === "plan" ? (ctx && ctx.plan) || "" : rule[0] === "actual" ? (dates.actual || dates.verify) : dates[rule[0]];
     const base = pd(baseS); if (!base) return "";
     if (rule[1] !== "years" && ctx && ctx.countDays && ctx.cal) return ctx.countDays(baseS, rule[1], "日曆天", false, ctx.cal);
     if (rule[1] === "years") {
       const y = parseFloat(dates.years); if (!isFinite(y) || y <= 0) return "";
-      const d = new Date(base); d.setMonth(d.getMonth() + Math.round(y * 12)); return iso(d);
+      // 加月數時，目標月份沒有同一天（如 2/29、1/31）就取該月最後一天（民法第121條）
+      const mm = base.getMonth() + Math.round(y * 12), last = new Date(base.getFullYear(), mm + 1, 0).getDate();
+      return iso(new Date(base.getFullYear(), mm, Math.min(base.getDate(), last)));
     }
     const d = new Date(base); d.setDate(d.getDate() + rule[1]); return iso(d);
   }

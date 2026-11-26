@@ -50,8 +50,8 @@
         return {
           subject: `本校「${f.proj}」業已竣工，擬於${rocLong(v.accDate)}${val(v.accTime, "")}辦理${act}，並請指派主驗、會驗及監辦人員，簽請核示。`,
           items: [
-            `本工程由${val(f.vendor, "○○營造有限公司")}承攬，契約金額${amt(f.amount)}，於${rocLong(f.start)}開工，${f.d.verify ? `經會同監造單位及廠商於${rocLong(f.d.verify)}查證竣工屬實` : "業已報請竣工"}。`,
-            f.d.docs ? `監造單位已於${rocLong(f.d.docs)}送達竣工圖表及結算資料，經審查完竣，依政府採購法及其施行細則規定辦理${act}。` : `監造單位已送達竣工圖表及結算資料，依政府採購法及其施行細則規定辦理${act}。`,
+            `本工程由${val(f.vendor, "○○營造有限公司")}承攬，契約金額${amt(f.amount)}，於${rocLong(f.start)}開工，${f.d.verify ? `經會同監造單位及廠商於${rocLong(f.d.verify)}查證竣工屬實${f.d.actual ? `，實際竣工日為${rocLong(f.d.actual)}` : ""}` : "業已報請竣工"}。`,
+            f.d.docs ? `監造單位已於${rocLong(f.d.docs)}送達竣工圖表及結算資料，經審查完竣，依政府採購法及其施行細則規定辦理${act}。` : `竣工圖表及結算資料收件情形：○○（請承辦確認，並填「機關收受竣工文件日」）；俟資料齊備後，依政府採購法及其施行細則規定辦理${act}。`,
             `擬請指派${val(v.chief, "○○○")}為主驗人員、${val(v.co)}為會驗人員，並請${val(v.sup)}派員監辦${f.audit ? "；本工程達查核金額，另函報請上級機關派員監辦" : ""}。`,
             `${act}時間：${rocLong(v.accDate)}${val(v.accTime, "")}；地點：${val(v.place)}。`,
           ],

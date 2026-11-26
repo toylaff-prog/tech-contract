@@ -17,6 +17,7 @@
     { k: "feeFixed", label: "招標時公告固定服務費", opts: ["是", "否"] },
     { k: "rate", label: "費率（%）" },
     { k: "range", label: "適用建造費用範圍（元）" },
+    { k: "shape", label: "契約型態（附件2 是否分案計算服務費）", opts: ["單一工程", "分期", "分區", "開口契約"] },
     { k: "cost", label: "預估建造費用（元）" },
     { k: "bclass", label: "建築物類別", opts: ["第一類", "第二類", "第三類", "第四類"] },
     { k: "days", label: "規劃設計交付期限（日）" },
@@ -217,6 +218,9 @@
       if (p.rate) pr.F339 = String(p.rate).trim();
       if (p.range) pr.F340 = fmt(p.range);
       if (fee && stage !== "tender") pr.F341 = fee;
+      // 範本原檔預先勾了「開口契約」；依本案型態重設三格，單一工程三格都不勾
+      const shape = p.shape || "單一工程";
+      [["F369", "分期"], ["F370", "分區"], ["F371", "開口契約"]].forEach(([id, v]) => { pr[id] = shape === v ? "V" : "X"; });
     } else if (m === "服務成本加公費法") {
       phases.forEach(ph => { pr[{ plan: "F477", design: "F478", super: "F479" }[ph]] = "V"; });
       if (fee) pr.F421 = fee;
@@ -231,6 +235,13 @@
     const ao = {};
     for (const k in adv) { const v = String(adv[k] ?? "").trim(); if (v) ao[k] = v; }
     put(ao, "adv");
+    // 招標版的遮蔽規則放在進階覆寫之後，避免舊案或複製案的覆寫值把乙方、決標金額帶進招標文件
+    if (stage === "tender") {
+      const hide = ["F002"];
+      if (m === "建造費用百分比法") hide.push("F341");
+      if (m === "總包價法" && p.feeFixed !== "是") hide.push("F285");
+      hide.forEach(id => { delete vals[id]; delete src[id]; });
+    }
     return { values: vals, source: src };
   }
 
