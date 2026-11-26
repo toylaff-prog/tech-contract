@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>工程契約與驗收管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
+<style>
+/* VOICE: 公文承辦的工作台——正式、安靜、精準
+   IDEA: 一份等待用印的契約：白紙、黑字、一枚朱紅印
+   PICTURE: 表單本身；右側「用印欄」顯示契約狀態與下載
+   COLOUR and TYPE: 白紙＋墨黑＋朱紅一色；標題 Noto Serif TC，內文 Noto Sans TC
+   LAYOUT: 頂列暫存鍵、左欄工程清單、中間單欄表單、右側用印欄；窄螢幕依序堆疊 */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#121316);--paper:light-dark(#ffffff,#1a1c20);--ink:light-dark(#17181b,#ecebe8);
+--mute:light-dark(#5c6068,#a3a6ad);--line:light-dark(#dcdde0,#33363d);--field:light-dark(#f4f5f6,#23262c);
+--seal:light-dark(#b8121f,#ff5a5f);--ok:light-dark(#1d6b45,#6fd39f);--warn:light-dark(#9a4a00,#ffb366);--warnbg:light-dark(#fff1e0,#3a2a17);--okbg:light-dark(#e8f5ee,#16291f)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Noto Serif TC",serif;line-height:1.15;margin:0;text-wrap:balance}
+button,input,select{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px max(3vw,16px);border-bottom:2px solid var(--ink)}
+header h1{font-size:clamp(20px,2.6vw,28px);font-weight:900}
+header .sub{color:var(--mute);font-size:14px}
+.savebox{margin-inline-start:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#sync{font-size:14px;color:var(--mute)}#sync.dirty{color:var(--warn);font-weight:700}
+#saveBtn{min-height:44px;padding:8px 22px;border:0;border-radius:6px;background:var(--seal);color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+#saveBtn:disabled{opacity:.45;cursor:default}
+.wrap{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 70px)}
+aside.side{border-inline-end:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:10px}
+.newbtn{min-height:44px;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:6px;font-weight:700;cursor:pointer}
+#psearch{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px}
+#plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto}
+#plist button{width:100%;text-align:start;padding:9px 12px;border:1px solid transparent;border-radius:6px;background:none;cursor:pointer;min-height:44px}
+#plist button:hover{background:var(--field)}
+#plist button[aria-current=true]{border-color:var(--ink);background:var(--paper);box-shadow:3px 3px 0 var(--seal)}
+#plist .n{display:block;font-weight:700}#plist .m{display:block;font-size:13px;color:var(--mute)}
+#plist .d{color:var(--warn);font-weight:700}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.side-foot input{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px}
+.link{background:none;border:0;padding:6px 0;text-align:start;color:var(--mute);text-decoration:underline;cursor:pointer;font-size:14px}
+main{padding:0 max(2.5vw,16px) 48px}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:70px;background:var(--bg);z-index:3}
+nav.tabs button{flex:none;border:0;background:none;padding:14px 12px 12px;min-height:44px;cursor:pointer;color:var(--mute);border-bottom:3px solid transparent;font-weight:500}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--seal);font-weight:700}
+.view{display:none;padding-top:22px}.view.on{display:block}
+.banner{padding:10px 14px;border-radius:6px;background:var(--warnbg);color:var(--warn);margin:14px 0 0;font-size:15px}
+.banner.ok{background:var(--okbg);color:var(--ok)}
+.banner button{margin-inline-start:8px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:start}
+section.card{border-top:1px solid var(--line);padding:18px 0 8px}
+section.card h2{font-size:20px;margin-bottom:12px;display:flex;gap:10px;align-items:baseline}
+section.card h2 .no{font:700 13px "Noto Sans TC";color:var(--seal);border:1.5px solid var(--seal);border-radius:50%;width:26px;height:26px;display:inline-grid;place-items:center;flex:none}
+.f{display:grid;gap:4px;margin-bottom:14px;align-content:start}
+.f label,.f .lb{font-weight:500;font-size:15px}
+.hint{font-size:13px;color:var(--mute)}
+.f input[type=text],.f select,.inp{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{min-height:44px;padding:8px 16px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer}
+.seg button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--bg);font-weight:700}
+.calc{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--field);border-radius:6px;margin-bottom:14px}
+.calc b{font:900 clamp(24px,3.2vw,32px) "Noto Serif TC",serif;white-space:nowrap}
+.calc span{color:var(--mute);font-size:14px}
+.seal{position:sticky;top:132px;border:1.5px solid var(--ink);border-radius:8px;padding:18px;background:var(--paper)}
+.seal h3{font-size:18px;margin-bottom:12px;padding-inline-end:84px;min-height:56px}
+.stamp{position:absolute;top:14px;right:16px;width:64px;height:64px;border:3px solid var(--seal);border-radius:6px;color:var(--seal);display:grid;place-items:center;font:900 17px/1.1 "Noto Serif TC";text-align:center;transform:rotate(-6deg);transition:opacity .3s}
+.stamp.dim{opacity:.3}
+.dl{width:100%;min-height:52px;border:0;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:700;font-size:17px;cursor:pointer;margin-top:10px}
+.dl:disabled{opacity:.5;cursor:default}
+.chk{list-style:none;padding:0;margin:8px 0;font-size:14px}
+.chk li{padding:6px 10px;border-radius:4px;background:var(--warnbg);color:var(--warn);margin-bottom:4px}
+.chk.info li{background:var(--field);color:var(--ink)}
+.est{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:4px 0 16px}
+.est table{font-size:13px;margin:6px 0}.est td,.est th{padding:4px 6px}.est .r{text-align:right;white-space:nowrap}
+.estbig{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;margin:4px 0 6px}.estbig b{font:900 clamp(22px,3vw,28px) "Noto Serif TC",serif;white-space:nowrap}
+.chk li.ok{background:none;color:var(--ok);padding-inline:0}
+.stat{font-size:14px;color:var(--mute);margin:8px 0}
+.att{font-size:13px;color:var(--mute);margin:6px 0 0;padding-inline-start:18px}
+.msg{font-size:14px;margin-top:8px;min-height:1.4em}
+.danger{color:var(--seal)}
+.acts{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;background:var(--field)}
+td textarea.ta{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--field);font:14px/1.5 ui-monospace,Menlo,Consolas,monospace}
+td input,td select{width:100%;min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--field);font-size:16px}
+tr.todo td:first-child{box-shadow:inset 4px 0 var(--warn)}
+.src{font-size:12px;color:var(--mute);white-space:nowrap}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:center}
+.tools input,.tools select{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px}
+.ghost{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer}
+.primary{min-height:44px;padding:8px 18px;border:0;border-radius:6px;background:var(--seal);color:#fff;font-weight:700;cursor:pointer}
+.empty{padding:48px 0;text-align:center;color:var(--mute)}
+.note{font-size:14px;color:var(--mute);max-width:72ch}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
+.kpi{border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.kpi b{display:block;font:900 28px "Noto Serif TC",serif}.kpi span{font-size:13px;color:var(--mute)}
+.kpi.w b{color:var(--warn)}
+.drop{border:2px dashed var(--line);border-radius:8px;padding:22px;text-align:center;margin:12px 0}
+.drop.over{border-color:var(--seal)}
+details{margin:10px 0}summary{cursor:pointer;font-weight:700;min-height:36px}
+.old{color:var(--mute);text-decoration:line-through}.used{color:var(--seal);font-weight:700;white-space:nowrap}
+.bar{height:10px;background:var(--field);border-radius:5px;overflow:hidden;min-width:80px}.bar i{display:block;height:100%;background:var(--ok)}
+.kd{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 16px;margin:10px 0 18px}
+.kd .f input{min-height:44px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:16px;width:100%}
+.stg{font-size:18px;margin:22px 0 6px;display:flex;gap:10px;align-items:baseline}.stg small{font:400 13px "Noto Sans TC";color:var(--mute)}
+.badge{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;white-space:nowrap;margin-top:2px}
+.b-late{background:var(--seal);color:#fff}.b-soon{background:var(--warnbg);color:var(--warn)}.b-ok{background:var(--field);color:var(--mute)}
+tr.s-done td{color:var(--mute)}tr.s-done td:first-child{box-shadow:inset 4px 0 var(--ok)}tr.s-late td:first-child{box-shadow:inset 4px 0 var(--seal)}
+.files a{display:block;font-size:13px;color:var(--ink);margin-top:2px}
+#dashBody tr{cursor:pointer}#dashBody tbody tr:hover{background:var(--field)}
+.lineb{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px}
+.lbtn{display:inline-grid;place-items:center;min-height:36px;padding:4px 12px;border-radius:6px;background:#06c755;color:#fff;font-size:14px;font-weight:700;text-decoration:none;border:0;cursor:pointer}
+.lbtn.ghostb{background:var(--paper);color:var(--ink);border:1px solid var(--line);font-weight:500}
+nav.tabs.sub{top:118px;margin-top:10px;border-bottom:1px solid var(--line);gap:2px;z-index:2}
+nav.tabs.sub button{padding:10px 12px 9px;font-size:15px}
+nav.tabs.sub .sn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;font-size:12px;margin-inline-end:6px}
+nav.tabs.sub .minor{margin-inline-start:auto;font-size:14px}nav.tabs.sub .minor+.minor{margin-inline-start:0}
+.sview{display:none;padding-top:18px}.sview.on{display:block}
+.whead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;padding-top:18px}.whead h2{font-size:clamp(22px,2.6vw,28px)}
+.phase{font-weight:700;color:var(--seal)}
+.steps{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0;margin:12px 0 0;counter-reset:s}
+.steps li button{width:100%;text-align:start;display:grid;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);cursor:pointer;min-height:44px;position:relative}
+.steps li.cur button{border-color:var(--ink);box-shadow:3px 3px 0 var(--seal)}
+.steps .sn{font:700 12px "Noto Sans TC";color:var(--seal)}.steps b{font-size:16px}
+.steps li:not(:last-child) button::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:14px}
+.ministeps{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--mute);margin-top:2px}
+.nextcard{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px;padding:12px 16px;border:1.5px solid var(--seal);border-radius:8px;background:light-dark(#fff7f7,#2a1517)}
+.nextcard.done{border-color:var(--ok);background:var(--okbg)}
+.nextcard .nlabel{font-weight:700;color:var(--seal);white-space:nowrap}.nextcard.done .nlabel{color:var(--ok)}
+.nextcard .nbody{flex:1 1 260px;display:grid;gap:2px}.nextcard .nbody b{font-size:17px}
+.flash{outline:3px solid var(--seal)!important;outline-offset:3px;transition:outline-color .3s}
+.autonote{color:var(--ok)}
+.exc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}select.isauto{color:var(--mute)}
+.kn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:12px;margin-inline-end:6px}
+details.stgd{border-top:1px solid var(--line);padding:4px 0}details.stgd>summary{display:flex;gap:10px;align-items:baseline;padding:10px 0;font:700 18px "Noto Serif TC",serif;list-style-position:inside}
+details.stgd>summary small{font:400 13px "Noto Sans TC";color:var(--mute)}
+.calsync{font-size:13px;padding:0 4px;text-decoration:none}.calsync.bad{color:var(--seal);text-decoration:underline}
+.calcard{border-top:0;padding-top:4px}.calcard .stack td{padding:8px 10px;vertical-align:middle}details.calhelp{margin-top:10px}details.calhelp summary{cursor:pointer;font-size:15px}
+.upl{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin-top:4px}.upl .link{padding:2px 0;font-size:13px}
+.chip{display:inline-block;max-width:100%;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wtools{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin-top:4px}.wtools .link{padding:2px 0}
+.missing{border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:6px 0 14px;background:var(--paper)}.missing ol{margin:6px 0 10px 1.4em}.missing li{margin:3px 0}
+.dashtop{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-start;justify-content:space-between}.dashtop .tools{margin:0}
+.govgrid{display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,1.4fr);gap:18px;margin-top:14px;align-items:start}
+.govform{grid-template-columns:1fr!important}.govform textarea{width:100%;min-height:96px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font:inherit}
+.govprev pre{white-space:pre-wrap;margin:0 0 10px;padding:16px 18px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font:15px/1.8 "Noto Serif TC",serif}
+.ptab{width:100%;border-collapse:collapse;margin:6px 0}.ptab input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink);cursor:pointer}
+.svc a.ghost{display:inline-grid;place-items:center;text-decoration:none;color:var(--ink)}.ptab th,.ptab td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:start;font-size:14px}.ptab td.c,.ptab th.c{text-align:center;width:4.5em}
+.svc{display:grid;gap:8px;margin:8px 0 14px}.svc>div{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px}.svc b{min-width:8.5em}
+dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:var(--bg);color:var(--ink)}dialog.dlg::backdrop{background:rgba(0,0,0,.35)}
+.dlgh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+@media(max-width:900px){.govgrid{grid-template-columns:1fr}}
+.gate{max-width:420px;margin:60px auto;text-align:center}
+.help li,.help p{max-width:72ch}
+@media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr)}.seal{position:relative;top:0}}
+@media(max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>工程契約與驗收管理</h1>
+  <span class="sub" id="tplName">範本載入中…</span>
+  <div class="savebox"><button type="button" class="link calsync" id="calSync" hidden title="到學校設定查看共用行事曆"></button><span id="sync">載入中…</span><button id="saveBtn" type="button" disabled title="Ctrl+S">暫存</button></div>
+</header>
+<div class="wrap">
+  <aside class="side">
+    <button class="newbtn" id="newp" type="button">＋ 新增工程</button>
+    <input type="search" id="psearch" placeholder="搜尋工程" aria-label="搜尋工程">
+    <ul id="plist" aria-label="工程清單"></ul>
+    <div class="side-foot">
+      <label for="who" class="hint">你的名字（記錄是誰暫存的）</label>
+      <input type="text" id="who" autocomplete="name">
+      <button class="link" id="reload" type="button">重新載入最新資料</button>
+      <button class="link" id="exp" type="button">匯出備份（.json）</button>
+      <label class="link" for="imp" style="cursor:pointer">匯入備份</label>
+      <input type="file" id="imp" accept=".json,application/json" hidden>
+      <span class="msg" id="bkmsg"></span>
+    </div>
+  </aside>
+  <main>
+    <div id="banners"></div>
+    <nav class="tabs" id="mainNav" role="tablist" aria-label="主選單">
+      <button role="tab" data-v="dash" aria-selected="true">工程總表</button>
+      <button role="tab" data-v="work" aria-selected="false">工程</button>
+      <button role="tab" data-v="school" aria-selected="false">學校設定</button>
+      <button role="tab" data-v="tpl" aria-selected="false">範本管理</button>
+      <button role="tab" data-v="help" aria-selected="false">使用說明</button>
+    </nav>
+
+    <div class="view on" id="v-dash">
+      <div class="dashtop"><p class="note">所有工程從技術服務、施工到竣工驗收保固的期限，依最近到期排序，逾期的排最前面。點工程可直接開啟。</p><div class="tools"><button class="ghost" id="xlsBtn" type="button">匯出 Excel 報表</button><span class="msg" id="xlsMsg" role="status"></span></div></div>
+      <div id="dashBody"></div>
+    </div>
+
+    <div class="view" id="v-work">
+      <div id="workHead"></div>
+      <nav class="tabs sub" id="subNav" role="tablist" aria-label="工程分頁">
+        <button role="tab" data-v="proj" aria-selected="true"><span class="sn">1</span>技術服務契約</button>
+        <button role="tab" data-v="tech" aria-selected="false"><span class="sn">1</span>技術服務履約</button>
+        <button role="tab" data-v="build" aria-selected="false"><span class="sn">2</span>施工</button>
+        <button role="tab" data-v="chk" aria-selected="false"><span class="sn">3</span>竣工驗收至保固</button>
+        <button role="tab" data-v="gov" aria-selected="false" class="minor">公文簽稿</button>
+        <button role="tab" data-v="adv" aria-selected="false" class="minor">契約進階欄位</button>
+      </nav>
+      <div class="sview on" id="s-proj"><div id="projBody"></div></div>
+      <div class="sview" id="s-tech"><div id="techBody"></div></div>
+      <div class="sview" id="s-build"><div id="buildBody"></div></div>
+      <div class="sview" id="s-chk"><div id="chkBody"></div></div>
+      <div class="sview" id="s-gov"><div id="govBody"></div></div>
+    <div class="sview" id="s-adv">
+      <p class="note">範本全部填寫點。「目前」是依學校設定與「技術服務契約」頁算出的結果；只有特殊需求（例如加勾綠建築標章、BIM、生態檢核）才在「本案覆寫」填值，優先權最高。</p>
+      <div class="tools">
+        <select id="advSec" aria-label="條次篩選"><option value="">全部條次</option></select>
+        <input type="search" id="advQ" placeholder="搜尋文字，例如 BIM" aria-label="搜尋">
+        <label><input type="checkbox" id="advOnly"> 只看已覆寫</label>
+      </div>
+      <div id="advInfo" class="stat"></div>
+      <table class="stack"><thead><tr><th style="width:4.5em">編號</th><th style="width:9em">條次</th><th>範本內容</th><th style="width:7em">目前</th><th style="width:9em">本案覆寫</th></tr></thead><tbody id="advBody"></tbody></table>
+    </div>
+
+    </div>
+
+    <div class="view" id="v-school">
+      <section class="card calcard" aria-labelledby="shareH"><h2 id="shareH">同仁共用與通知</h2><div id="shareBody"></div></section>
+      <h2 style="font-size:20px;margin:18px 0 6px">契約共用條件</h2>
+      <p class="note">每個工程共用的條件，設定一次即可（改完記得按右上角「暫存」）。已帶入範本「未載明者為○○」的預設值；左側橘線為範本沒有預設、需由學校決定的項目，不填則契約該處保留空白。</p>
+      <div class="tools"><button class="ghost" id="resetSchool" type="button">全部恢復預設值</button><span class="msg" id="schoolMsg"></span></div>
+      <table class="stack" id="schoolTbl"><thead><tr><th>項目</th><th>設定值</th><th>範本規定</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="view" id="v-tpl">
+      <h2 style="font-size:22px;margin-bottom:6px">契約範本版本</h2>
+      <p class="note">工程會修正範本時，在這裡上傳新版 Word（.docx）。網站會自動找出新範本所有填寫底線與勾選框，依前後文字和目前版本比對，把舊設定對應過去；比對結果確認後再啟用。舊版本都會保留，可隨時切回。</p>
+      <table class="stack" style="margin:12px 0"><thead><tr><th>版本</th><th>來源</th><th>狀態</th><th></th></tr></thead><tbody id="tplList"></tbody></table>
+      <div class="drop" id="drop">
+        <p style="margin:0 0 8px"><b>上傳新版範本</b>（拖曳 .docx 到這裡，或）</p>
+        <label class="ghost" for="tplFile" style="display:inline-grid;place-items:center;cursor:pointer">選擇檔案</label>
+        <input type="file" id="tplFile" accept=".docx" hidden>
+        <div class="msg" id="tplMsg" role="status"></div>
+      </div>
+      <div id="tplReport"></div>
+    </div>
+
+    <div class="view help" id="v-help">
+      <h2 style="font-size:22px;margin-bottom:10px">怎麼用</h2>
+      <p><b>最簡單的用法：照「下一步」做。</b>每個工程頁上方的紅框會告訴你現在該做什麼，按「前往」就跳到要填的欄位；工程總表也列出每案的下一步，點一下直接帶到那一格。</p>
+      <p>每個工程依時間分三個階段，在「工程」頁上方可以看到目前進度：</p>
+      <ol>
+        <li><b>技術服務</b>（委託建築師／技術顧問設計監造）
+          <ul><li>「技術服務契約」：填案名、委託階段、計價方式與金額，下載招標版或簽約版 Word。</li>
+          <li>「技術服務履約」：填簽約日與通知開始日，自動算出服務實施計畫書、設計成果交付及學校審查的期限。</li></ul></li>
+        <li><b>施工</b>（營造廠）：填施工廠商、預算與契約金額、開工日、工期與展延，自動算出預定竣工日；工程發包後，設計階段的期程自動視為完成。</li>
+        <li><b>竣工驗收至保固</b>：報竣、驗收、結算、付款到保固共 33 項，<b>不必逐項勾</b>——依序填 10 個關鍵日期，前面的例行項目自動完成；依預算金額自動排除免初驗、未達查核金額的項目。只有驗收不合格、保固瑕疵這類例外，按「發生例外時」的按鈕，或在清單手動改狀態；改回「自動」即恢復判斷。</li>
+      </ol>
+      <h3 style="font-size:18px;margin:16px 0 6px">其他</h3>
+      <ul>
+        <li>第一次使用先到「學校設定」確認一次（保險、違約金、仲裁、申訴會、放假日等），橘線項目請依學校規定補上。每年人事行政總處公告新年度行政機關辦公日曆表後，補上放假日。</li>
+        <li>「工程總表」上方「近期該通知」列出各工程 7 日內到期的事項，可直接用 LINE 傳給廠商。委託監造時，監造即為技術服務廠商。</li>
+        <li>任何修改按右上角「暫存」才會存到雲端；特殊契約項目到「契約進階欄位」覆寫；範本改版到「範本管理」上傳。</li>
+        <li>「學校設定 → 同仁共用與通知」：一份名單，每人可勾選「日曆」（各工程期限同步到共用 Google 日曆）、「資料夾」（可開啟上傳的工程文件）、「週報」（每週一收到期限週報）。</li>
+        <li>工程文件：清單每一項都能「上傳檔案」，自動存到該工程的雲端資料夾；「竣工驗收至保固」的「缺件檢查」列出還沒上傳的文件，可複製或用 LINE 傳給監造、廠商補件。</li>
+        <li>「工程 → 公文簽稿」：簽請辦理驗收、驗收通知、限期改正、付款簽呈、保固金發還五種草稿，自動帶入工程資料，可複製到公文系統或下載 Word。</li>
+        <li>工程頁上方「🕘 修改紀錄」看誰改了什麼（請在左下填「你的名字」）；「工程總表 → 匯出 Excel 報表」產生總表與期限明細。</li>
+        <li>中途才建檔的工程：直接到「施工」頁填決標日或開工日，下一步就會略過技術服務契約的步驟。</li>
+        <li>初驗與查核金額的門檻在「學校設定」（預設：預算逾 2,000 萬元須初驗、5,000 萬元以上為查核金額），法規或市府規定調整時改那裡即可。</li>
+      </ul>
+      <p class="note">還沒按「暫存」的修改會先存成這台電腦上的草稿，關掉網頁再打開會提示還原；但只有按了暫存，其他同仁才看得到。下載 Word 前會自動暫存。產生的 Word 只動填寫處，其餘條文與範本一字不差；送出前仍請承辦人核對。</p>
+    </div>
+  </main>
+</div>
+<dialog id="histDlg" class="dlg" aria-labelledby="histH"><div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div><div id="histBody"></div></dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="config.js"></script>
+<script src="engine.js"></script>
+<script src="templater.js"></script>
+<script src="checklist.js"></script>
+<script src="lifecycle.js"></script>
+<script src="govdocs.js"></script>
+<script src="exporter.js"></script>
+<script>
+{
+const E = window.ContractEngine, T = window.Templater, CFG = window.TSC_CONFIG || {};
+const API = String(CFG.API || "").trim();
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nf = v => { const n = String(v || "").replace(/,/g, ""); return /^\d+(\.\d+)?$/.test(n) ? Number(n).toLocaleString("en-US") : ""; };
+const tm = iso => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
+const ls = { get(k, d) { try { const v = localStorage.getItem("tsc-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem("tsc-" + k, JSON.stringify(v)); } catch (e) {} } };
+const st = { projects: {}, base: {}, dirty: new Set(), schoolDirty: false, school: E.defaultSchool(), cur: ls.get("cur", null), stage: ls.get("stage", "sign"), naMode: ls.get("naMode", "mark"), dropGuide: ls.get("dropGuide", true),
+  snap: {}, templates: [], tpl: { id: "builtin", version: "115.4.23", points: [], regions: null, parts: null }, code: ls.get("code", ""), saving: false, conflicts: [], pending: null };
+const NEWP = () => ({ name: "", title: "", vendor: "", type: "建築工程", plan: "否", design: "是", super: "是", method: "", fee: "", feeFixed: "否", rate: "", range: "", cost: "", bclass: "第一類", days: "", permit: "否", tender: "是", adv: {}, vendorLine: "", tech: {}, build: { ext: [] }, v: 2 });
+$("#who").value = ls.get("who", "");
+$("#who").addEventListener("input", e => ls.set("who", e.target.value.trim()));
+
+/* ---------- 下載檔案 ---------- */
+async function saveBlob(blob, fname) {
+  /*DL*/
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/* ---------- 與 Apps Script 溝通 ---------- */
+async function apiGet(params) {
+  const q = new URLSearchParams(Object.assign({ code: st.code }, params));
+  const r = await fetch(API + "?" + q.toString());
+  const txt = await r.text(); let d; try { d = JSON.parse(txt); } catch (e) { throw new Error("後端回應格式錯誤"); }
+  if (d && d.ok === false) { const er = new Error(d.error); er.code = d.error; throw er; }
+  return d;
+}
+async function apiPost(body) {
+  const r = await fetch(API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(Object.assign({ code: st.code, who: ls.get("who", "") }, body)) });
+  const d = JSON.parse(await r.text());
+  if (d.ok === false) { const er = new Error(d.error); er.code = d.error; throw er; }
+  return d;
+}
+
+/* ---------- 狀態列與暫存 ---------- */
+function drafts() { return ls.get("drafts", {}); }
+function putDraft(id) { const d = drafts(); d[id] = { at: new Date().toISOString(), data: st.projects[id] }; ls.set("drafts", d); }
+function dropDraft(id) { const d = drafts(); delete d[id]; ls.set("drafts", d); }
+function markDirty(id) { st.dirty.add(id); putDraft(id); updSync(); renderList(); if (id === st.cur && $("#v-work").classList.contains("on")) renderWorkHead(); }
+function markSchool() { st.schoolDirty = true; ls.set("schoolDraft", st.school); updSync(); }
+function updSync(msg) {
+  const n = st.dirty.size + (st.schoolDirty ? 1 : 0), el = $("#sync");
+  $("#saveBtn").disabled = st.saving || n === 0;
+  if (msg) { el.textContent = msg; el.className = ""; return; }
+  if (st.saving) { el.textContent = "暫存中…"; el.className = ""; return; }
+  el.textContent = n ? `有 ${n} 項未暫存` : (st.lastSaved ? "已暫存 " + tm(st.lastSaved) : (API ? "已載入" : "資料只存在這台電腦"));
+  el.className = n ? "dirty" : "";
+}
+async function saveAll() {
+  if (st.saving) return false;
+  const ids = [...st.dirty].filter(id => st.projects[id]);
+  if (!API) { ls.set("local", { projects: st.projects, school: st.school }); ids.forEach(dropDraft); st.dirty.clear(); st.schoolDirty = false; ls.set("schoolDraft", null); st.lastSaved = new Date().toISOString(); updSync(); renderList(); return true; }
+  st.saving = true; updSync();
+  try {
+    if (ids.length) {
+      const res = await apiPost({ action: "saveProjects", projects: ids.map(id => Object.assign({}, st.projects[id], { id, baseUpdatedAt: st.base[id] || "", force: !!st.force && st.force.has(id), changes: st.snap[id] ? LC.changeList(st.snap[id], st.projects[id]) : [] })) });
+      res.saved.forEach(s => { st.base[s.id] = s.updatedAt; st.dirty.delete(s.id); dropDraft(s.id); st.projects[s.id].updatedAt = s.updatedAt; st.projects[s.id].updatedBy = ls.get("who", ""); st.snap[s.id] = JSON.stringify(st.projects[s.id]); });
+      queueSync(res.saved.map(s => s.id));
+      st.force = null;
+      st.conflicts = res.conflicts || [];
+    }
+    if (st.schoolDirty) { await apiPost({ action: "saveSchool", school: st.school }); st.schoolDirty = false; ls.set("schoolDraft", null); queueSync([], true); }
+    st.lastSaved = new Date().toISOString();
+    st.saving = false; updSync(); renderList(); renderBanners();
+    return st.conflicts.length === 0;
+  } catch (e) {
+    st.saving = false;
+    if (e.code === "code") { askCode("存取碼錯誤，請重新輸入"); return false; }
+    updSync("暫存失敗：" + (e.message || e) + "（資料仍在本機草稿，可再按一次）");
+    return false;
+  }
+}
+$("#saveBtn").addEventListener("click", saveAll);
+document.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); saveAll(); } });
+window.addEventListener("beforeunload", e => { if (st.dirty.size || st.schoolDirty) { e.preventDefault(); e.returnValue = ""; } });
+
+/* ---------- 提示列 ---------- */
+function renderBanners() {
+  const b = [];
+  if (!API) b.push(`<div class="banner">尚未連接 Google 試算表：資料只存在這台電腦的瀏覽器。部署後在 config.js 填入 Apps Script 網址即可共用。</div>`);
+  if (st.pending) b.push(`<div class="banner">找到 ${st.pending.length} 份上次沒暫存的草稿（${esc(st.pending.map(p => p.data.name || p.data.title || "未命名").join("、"))}）。<button class="ghost" data-b="restore" type="button">還原草稿</button><button class="link" data-b="discard" type="button">捨棄</button></div>`);
+  const da = (st.defAlerts || []).filter(a => String(st.school[a.key] ?? "").replace(/,/g, "") !== a.newVal);
+  if (da.length) b.push(`<div class="banner">新範本的預設值改了，但學校設定仍是舊值：${esc(da.map(a => a.label + "（" + (st.school[a.key] ?? "") + " → 新預設 " + a.newVal + "）").join("、"))}。<button class="ghost" data-b="defall" type="button">全部改成新預設值</button><button class="link" data-b="defkeep" type="button">保留學校設定</button></div>`);
+  st.conflicts.forEach(c => b.push(`<div class="banner">「${esc(c.name || c.title || c.id)}」已被 ${esc(c.updatedBy || "其他人")} 在 ${esc(tm(c.updatedAt))} 更新，你的版本沒有存入。<button class="ghost" data-b="theirs" data-id="${esc(c.id)}" type="button">改用對方版本</button><button class="ghost" data-b="mine" data-id="${esc(c.id)}" type="button">用我的版本覆蓋</button></div>`));
+  $("#banners").innerHTML = b.join("");
+}
+$("#banners").addEventListener("click", e => {
+  const b = e.target.closest("button[data-b]"); if (!b) return;
+  const act = b.dataset.b, id = b.dataset.id;
+  if (act === "restore") { st.pending.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p.data)); st.dirty.add(p.id); }); st.pending = null; if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null; renderAll(); updSync(); }
+  if (act === "discard") { st.pending.forEach(p => dropDraft(p.id)); st.pending = null; renderBanners(); }
+  if (act === "theirs") { const c = st.conflicts.find(x => x.id === id); st.projects[id] = Lifecycle.normalize(Object.assign(NEWP(), c)); st.base[id] = c.updatedAt; st.snap[id] = JSON.stringify(st.projects[id]); st.dirty.delete(id); dropDraft(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderAll(); updSync(); }
+  if (act === "defall") { st.defAlerts.forEach(a => applyDefault(a.key, a.newVal)); st.defAlerts = []; renderBanners(); return; }
+  if (act === "defkeep") { st.defAlerts = []; renderBanners(); return; }
+  if (act === "mine") { st.force = new Set([id]); st.dirty.add(id); st.conflicts = st.conflicts.filter(x => x.id !== id); renderBanners(); saveAll(); }
+});
+
+/* ---------- 工程清單 ---------- */
+function sortedIds() { return Object.keys(st.projects).sort((a, b) => String(st.projects[b].updatedAt || "9").localeCompare(String(st.projects[a].updatedAt || "9"))); }
+function renderList() {
+  const q = $("#psearch").value.trim();
+  const ids = sortedIds().filter(id => { const p = st.projects[id]; return !q || (p.name + p.title + p.vendor).includes(q); });
+  $("#plist").innerHTML = ids.map(id => { const p = st.projects[id];
+    return `<li><button type="button" data-id="${esc(id)}" aria-current="${id === st.cur}"><span class="n">${esc(p.name || p.title || "未命名工程")}${st.dirty.has(id) ? ' <span class="d" title="未暫存">●</span>' : ""}</span><span class="m">${p.updatedAt ? "更新 " + esc(tm(p.updatedAt)) : "尚未暫存"}</span><span class="m">${(() => { const ev = Lifecycle.evaluate(p, st.school); return esc(ev.label) + (ev.overdue ? ` <b class="danger">逾期${ev.overdue}</b>` : ""); })()}</span></button></li>`; }).join("") || `<li class="note">${q ? "找不到" : "尚無工程"}</li>`;
+}
+$("#psearch").addEventListener("input", renderList);
+$("#plist").addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (!b) return; st.cur = b.dataset.id; ls.set("cur", st.cur); renderList(); showTab(st.sub || "proj"); });
+const newId = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+$("#newp").addEventListener("click", () => { const id = newId(); st.projects[id] = NEWP(); st.cur = id; ls.set("cur", id); markDirty(id); showTab("proj"); setTimeout(() => { const el = $("#f-name"); if (el) el.focus(); }, 0); });
+
+/* ---------- 每案填寫 ---------- */
+const F = Object.fromEntries(E.PROJECT_FIELDS.map(f => [f.k, f]));
+function txt(k, extra = "") { const f = F[k], p = st.projects[st.cur]; return `<div class="f"><label for="f-${k}">${esc(f.label)}</label><input type="text" id="f-${k}" data-k="${k}" value="${esc(p[k])}" ${extra}>${f.hint ? `<span class="hint">${esc(f.hint)}</span>` : ""}<span class="hint" id="h-${k}"></span></div>`; }
+function seg(k) { const f = F[k], p = st.projects[st.cur]; return `<div class="f"><span class="lb" id="l-${k}">${esc(f.label)}</span><div class="seg" role="group" aria-labelledby="l-${k}">${f.opts.map(o => `<button type="button" data-k="${k}" data-v="${esc(o)}" aria-pressed="${p[k] === o}">${esc(o)}</button>`).join("")}</div></div>`; }
+function tog(k) { const p = st.projects[st.cur]; return `<button type="button" data-tog="${k}" aria-pressed="${p[k] === "是"}">${esc(F[k].label)}</button>`; }
+function renderProject() {
+  const host = $("#projBody"), p = st.projects[st.cur];
+  if (!p) { host.innerHTML = `<div class="empty"><h2 style="font-size:24px;margin-bottom:10px">還沒有選擇工程</h2><p>按左上「＋ 新增工程」開始，或從清單選一個。</p></div>`; return; }
+  const m = p.method, num = 'inputmode="decimal" autocomplete="off"';
+  host.innerHTML = `<div class="grid"><div>
+  <section class="card"><h2><span class="no">1</span>基本資料</h2>${txt("name")}${txt("title")}${txt("vendor")}</section>
+  <section class="card"><h2><span class="no">2</span>委託內容</h2>${seg("type")}
+    <div class="f"><span class="lb" id="l-ph">委託階段（可複選）</span><div class="seg" role="group" aria-labelledby="l-ph">${tog("plan")}${tog("design")}${tog("super")}</div></div>
+    <div class="f"><span class="lb" id="l-ex">附加服務</span><div class="seg" role="group" aria-labelledby="l-ex">${tog("permit")}${tog("tender")}</div><span class="hint">對應第2條附件的「代辦申請建照與圖說送審」「協辦招標及決標」</span></div></section>
+  <section class="card"><h2><span class="no">3</span>計價</h2>
+    <div class="f"><label for="f-method">計價方式</label><select id="f-method" data-k="method"><option value="">請選擇</option>${F.method.opts.map(o => `<option ${o === m ? "selected" : ""}>${esc(o)}</option>`).join("")}</select><span class="hint">套用到上面選取的每個委託階段</span></div>
+    <div class="est"><h3 style="font-size:17px;margin:0 0 10px">服務費參考試算</h3>
+      ${txt("cost", num)}${p.type !== "非建築公共工程" ? seg("bclass") + '<span class="hint" style="display:block;margin:-8px 0 12px">第一類：五層以下辦公室、教室、宿舍等；第二類：四層以下實驗室、禮堂、餐廳、運動場、游泳池等；第三類：圖書館、體育館等</span>' : ""}
+      <div id="estOut"></div></div>
+    ${m === "建造費用百分比法" ? `<div class="row2">${txt("rate", num)}${txt("range", num)}</div><div class="calc"><span>服務費小計＝預估建造費用 × 費率</span><b id="calcOut">—</b></div>${txt("fee", num)}` : ""}
+    ${m && m !== "建造費用百分比法" ? txt("fee", num) : ""}
+    ${m === "總包價法" ? seg("feeFixed") : ""}
+  </section>
+  <section class="card"><h2><span class="no">4</span>期限</h2>${txt("days", 'inputmode="numeric"')}</section>
+  </div>
+  <aside class="seal" aria-label="輸出">
+    <div class="stamp" id="stamp">待填</div>
+    <h3 id="sealTitle"></h3>
+    <div class="f"><span class="lb" id="l-stage">版本</span><div class="seg" role="group" aria-labelledby="l-stage"><button type="button" data-stage="tender" aria-pressed="${st.stage === "tender"}">招標版</button><button type="button" data-stage="sign" aria-pressed="${st.stage === "sign"}">簽約版</button></div><span class="hint" id="stageHint"></span></div>
+    <div class="f"><label for="naMode">不適用的附件</label><select id="naMode"><option value="mark">保留標題，註明本案不適用</option><option value="delete">整段刪除</option><option value="keep">保留原樣（空白）</option></select></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:15px;min-height:44px"><input type="checkbox" id="dropGuide" ${st.dropGuide ? "checked" : ""}> 刪除開頭「契約範本使用說明」框</label>
+    <ul class="chk" id="chk"></ul>
+    <ul class="chk info" id="rem"></ul>
+    <div class="stat" id="stat"></div>
+    <button class="dl" id="dl" type="button">下載 Word</button>
+    <div class="msg" id="dlmsg" role="status"></div>
+    <div class="acts"><button class="link" id="dup" type="button">複製此案</button><button class="link danger" id="del" type="button">刪除此案</button><span id="delc"></span></div>
+  </aside></div>`;
+  $("#naMode").value = st.naMode;
+  refreshDerived();
+}
+function refreshDerived() {
+  const p = st.projects[st.cur]; if (!p || !$("#sealTitle")) return;
+  const c = $("#calcOut"); if (c) { const v = E.calcFee(p); c.textContent = v ? nf(v) + " 元" : "—"; }
+  ["fee", "range", "cost"].forEach(k => { const h = $("#h-" + k); if (h) h.textContent = nf(p[k]) ? "＝ " + nf(p[k]) + " 元" : ""; });
+  const fl = $("#f-fee") && $("#f-fee").parentNode.querySelector("label");
+  if (fl) fl.textContent = { "總包價法": "議定服務費（元）", "建造費用百分比法": "服務費小計（元，空白則用上面試算）", "服務成本加公費法": "服務費用上限（元）" }[p.method] || "服務費用上限（元）";
+  $("#sealTitle").textContent = (p.name || p.title || "未命名工程") + (st.stage === "tender" ? "・招標版" : "・簽約版");
+  $("#stageHint").textContent = st.stage === "tender" ? "不填乙方與決標後才確定的金額" : "填入全部資料";
+  const est = E.feeEstimate(p), eo = $("#estOut");
+  if (eo) eo.innerHTML = !est ? '<p class="hint" style="margin:0">輸入預估建造費用，依《機關委託技術服務廠商評選及計費辦法》附表分段累進試算。</p>'
+    : `<div class="estbig"><span>本案委託階段參考服務費 <b>${nf(est.fee)} 元</b></span><span class="hint">約為建造費用 ${est.feeRate.toFixed(2)}%</span></div>
+      <div class="hint">${esc(est.basis)}｜全部階段合計 ${nf(est.total)} 元（平均 ${est.totalRate.toFixed(2)}%）</div>
+      <table><thead><tr><th>建造費用級距</th><th class="r">費率</th><th class="r">金額</th></tr></thead><tbody>${est.rows.map(r => `<tr><td>${nf(Math.round(r.from)) || 0}～${nf(Math.round(r.to))} 元</td><td class="r">${r.rate}%</td><td class="r">${nf(Math.round(r.fee))}</td></tr>`).join("")}</tbody></table>
+      <div class="seg"><button type="button" data-est="fee">服務費帶入 ${nf(est.fee)}</button>${p.method === "建造費用百分比法" ? `<button type="button" data-est="rate">費率帶入 ${est.totalRate.toFixed(2)}%</button>` : ""}</div>
+      <p class="hint" style="margin:8px 0 0">附表為編列預算之參考，實際費率仍須簽報機關首長核定並載明於招標文件。</p>`;
+  $("#rem").innerHTML = E.reminders(p, st.school).map(x => `<li>ⓘ ${esc(x)}</li>`).join("");
+  const ck = E.checks(p, st.stage);
+  $("#chk").innerHTML = ck.length ? ck.map(x => `<li>${esc(x)}</li>`).join("") : `<li class="ok">✓ 必要欄位都填好了</li>`;
+  $("#stamp").textContent = ck.length ? "待填" : "備妥"; $("#stamp").classList.toggle("dim", ck.length > 0);
+  const pts = st.tpl.points;
+  if (!pts.length) { $("#stat").textContent = "欄位資料載入中…"; return; }
+  const { values } = E.computeValues(p, st.school, st.stage);
+  let fills = 0, ticks = 0;
+  pts.forEach(pt => { const v = values[pt.id]; if (!v) return; if (pt.kind === "勾選") { if (!/^[Xx]$/.test(v)) ticks++; } else fills++; });
+  const plan = E.regionPlan(p), names = { A21: "第2條附件1", A22: "第2條附件2", A31: "第3條附件1", A32: "第3條附件2", A33: "第3條附件3", A34: "第3條附件4", A51: "第5條附件1", A52: "第5條附件2" };
+  const keep = Object.keys(names).filter(k => plan[k]).map(k => names[k]);
+  const dd = p.docs || {};
+  $("#stat").innerHTML = `將填入 <b>${fills}</b> 處、勾選 <b>${ticks}</b> 處<ul class="att"><li>已下載：招標版 ${dd.tender ? esc(C.roc(dd.tender)) : "—"}、簽約版 ${dd.sign ? esc(C.roc(dd.sign)) : "—"}</li><li>適用附件：${esc(keep.join("、"))}</li><li>範本：${esc(st.tpl.version)}${st.tpl.id === "builtin" ? "（內建）" : ""}</li></ul>`;
+}
+$("#projBody").addEventListener("input", e => {
+  const k = e.target.dataset.k; if (!k || !st.projects[st.cur]) return;
+  st.projects[st.cur][k] = e.target.value; markDirty(st.cur);
+  if (k === "method") { renderProject(); return; }
+  refreshDerived();
+});
+$("#projBody").addEventListener("change", e => {
+  if (e.target.id === "naMode") { st.naMode = e.target.value; ls.set("naMode", st.naMode); }
+  if (e.target.id === "dropGuide") { st.dropGuide = e.target.checked; ls.set("dropGuide", st.dropGuide); }
+});
+$("#projBody").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; const p = st.projects[st.cur];
+  if (b.dataset.k && b.dataset.v) { p[b.dataset.k] = b.dataset.v; markDirty(st.cur); if (b.dataset.k === "type") { renderProject(); return; } b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); refreshDerived(); return; }
+  if (b.dataset.tog) { const k = b.dataset.tog; p[k] = p[k] === "是" ? "否" : "是"; b.setAttribute("aria-pressed", p[k] === "是"); markDirty(st.cur); refreshDerived(); return; }
+  if (b.dataset.est) {
+    const est = E.feeEstimate(p); if (!est) return;
+    if (b.dataset.est === "fee") p.fee = String(est.fee); else p.rate = est.totalRate.toFixed(2);
+    markDirty(st.cur); renderProject(); return;
+  }
+  if (b.dataset.stage) { st.stage = b.dataset.stage; ls.set("stage", st.stage); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); refreshDerived(); return; }
+  if (b.id === "dl") return download(b);
+  if (b.id === "dup") { const id = newId(); const cp = JSON.parse(JSON.stringify(p)); delete cp.updatedAt; delete cp.updatedBy; delete cp.chk; cp.tech = {}; cp.build = { ext: [] }; cp.vendorLine = ""; cp.name = (p.name || p.title || "工程") + "（複製）"; cp.vendor = ""; st.projects[id] = cp; st.cur = id; ls.set("cur", id); markDirty(id); showTab("proj"); return; }
+  if (b.id === "del") { $("#delc").innerHTML = `確定刪除？ <button class="link danger" id="delyes" type="button">刪除</button> <button class="link" id="delno" type="button">取消</button>`; return; }
+  if (b.id === "delno") { $("#delc").textContent = ""; return; }
+  if (b.id === "delyes") { const id = st.cur; delete st.projects[id]; st.dirty.delete(id); dropDraft(id); st.cur = sortedIds()[0] || null; ls.set("cur", st.cur);
+    if (API && st.base[id]) apiPost({ action: "deleteProject", id }).then(() => { updSync("已刪除"); queueSync([id]); }).catch(err => updSync("刪除失敗：" + err.message));
+    else if (!API) ls.set("local", { projects: st.projects, school: st.school });
+    renderAll(); updSync(); }
+});
+
+/* ---------- 下載 ---------- */
+async function tplParts() {
+  if (st.tpl.parts) return st.tpl.parts;
+  const r = st.tpl.id === "builtin" ? await fetch("tpl.json").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
+  if (!Array.isArray(r)) throw new Error("範本檔讀取失敗");
+  st.tpl.parts = r; return r;
+}
+async function download(btn) {
+  const p = st.projects[st.cur], msg = $("#dlmsg");
+  btn.disabled = true;
+  try {
+    if (st.dirty.has(st.cur)) { msg.textContent = "先暫存…"; await saveAll(); }
+    msg.textContent = "產生中…";
+    const parts = await tplParts();
+    const buf = await E.buildDocx({ JSZip, DOMParser, XMLSerializer }, parts, st.tpl.points, st.tpl.regions || {}, p, st.school, st.stage, { naMode: st.naMode, dropGuide: st.dropGuide });
+    const fname = `技術服務契約_${(p.name || p.title || "未命名").replace(/[\\/:*?"<>|]/g, "_")}_${st.stage === "tender" ? "招標版" : "簽約版"}.docx`;
+    await saveBlob(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }), fname);
+    msg.textContent = "已下載：" + fname;
+    p.docs = p.docs || {}; p.docs[st.stage] = C.today(); markDirty(st.cur); saveAll(); refreshDerived();
+  } catch (e) { msg.textContent = "下載失敗：" + (e.message || e); }
+  btn.disabled = false;
+}
+
+/* ---------- 學校固定設定 ---------- */
+function renderSchool() {
+  let cat = "";
+  const byId = {}; st.tpl.points.forEach(p => { byId[p.id] = p; });
+  const tplDef = mp => Array.isArray(mp) && byId[mp[0]] && byId[mp[0]].def ? byId[mp[0]].def : "";
+  $("#schoolTbl tbody").innerHTML = E.FIXED.map(([c, key, label, dft, note, mp]) => {
+    const v = st.school[key] ?? "", head = c !== cat ? (cat = c, `<tr><th colspan="3">${esc(c)}</th></tr>`) : "";
+    const opts = E.OPTIONS[key];
+    const ctl = (key === "holidays" || key === "makeups") ? `<textarea data-s="${key}" rows="${key === "holidays" ? 8 : 2}" aria-label="${esc(label)}" class="ta">${esc(v)}</textarea>` : opts ? `<select data-s="${key}" aria-label="${esc(label)}"><option value="">（不勾選）</option>${opts.map(o => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`
+      : `<input type="text" data-s="${key}" value="${esc(v)}" aria-label="${esc(label)}">`;
+    return head + `<tr class="${dft === "" && !v ? "todo" : ""}"><td data-l="項目"><b>${esc(label)}</b></td><td data-l="設定值">${ctl}</td><td data-l="規定" class="note">${esc(note)}${tplDef(mp) ? `<br>目前範本：未載明者為 <b>${esc(tplDef(mp))}</b>` : ""}</td></tr>`;
+  }).join("");
+}
+$("#schoolTbl").addEventListener("input", e => { const k = e.target.dataset.s; if (!k) return; st.school[k] = e.target.value; markSchool(); e.target.closest("tr").classList.toggle("todo", !e.target.value && E.defaultSchool()[k] === ""); refreshDerived(); });
+$("#resetSchool").addEventListener("click", () => { st.school = E.defaultSchool(st.tpl.points); markSchool(); renderSchool(); $("#schoolMsg").textContent = "已恢復預設值，記得按暫存"; });
+
+/* ---------- 進階 ---------- */
+function renderAdv() {
+  const body = $("#advBody"), p = st.projects[st.cur], pts = st.tpl.points;
+  if (!pts.length) { body.innerHTML = ""; return; }
+  if (!p) { body.innerHTML = `<tr><td colspan="5" class="note">請先選擇工程</td></tr>`; $("#advInfo").textContent = ""; return; }
+  const q = $("#advQ").value.trim(), sec = $("#advSec").value, only = $("#advOnly").checked;
+  const { values, source } = E.computeValues(p, st.school, st.stage), adv = p.adv || {};
+  const srcName = { school: "學校設定", project: "每案", adv: "覆寫" };
+  const rows = pts.filter(pt => (!sec || pt.sec === sec) && (!q || (pt.ctx + pt.label + pt.id).includes(q)) && (!only || adv[pt.id]));
+  $("#advInfo").textContent = `顯示 ${rows.length} 個；本案已覆寫 ${Object.values(adv).filter(Boolean).length} 個`;
+  body.innerHTML = rows.slice(0, 300).map(pt => {
+    const v = values[pt.id], cur = pt.kind === "勾選" ? ((v ? !/^[Xx]$/.test(v) : pt.dflt) ? "■ 勾選" : "□") : (v || "（空白）");
+    const a = adv[pt.id] || "";
+    const ctl = pt.kind === "勾選" ? `<select data-a="${esc(pt.id)}" aria-label="${esc(pt.id)} 覆寫"><option value="">依設定</option><option value="V" ${a === "V" ? "selected" : ""}>■ 勾選</option><option value="X" ${a === "X" ? "selected" : ""}>□ 不勾</option></select>`
+      : `<input type="text" data-a="${esc(pt.id)}" value="${esc(a)}" aria-label="${esc(pt.id)} 覆寫">`;
+    return `<tr><td data-l="編號">${esc(pt.id)}</td><td data-l="條次" class="note">${esc(pt.sec)}</td><td data-l="內容"><span class="note">${esc(pt.label)}</span><br>${esc(pt.ctx)}</td><td data-l="目前">${esc(cur)}<div class="src">${esc(srcName[source[pt.id]] || "範本")}</div></td><td data-l="覆寫">${ctl}</td></tr>`;
+  }).join("") + (rows.length > 300 ? `<tr><td colspan="5" class="note">只顯示前 300 個，請用條次或搜尋縮小範圍</td></tr>` : "");
+}
+["#advQ", "#advSec", "#advOnly"].forEach(s => $(s).addEventListener("input", renderAdv));
+$("#advBody").addEventListener("change", e => { const id = e.target.dataset.a; const p = st.projects[st.cur]; if (!id || !p) return; p.adv = p.adv || {}; if (e.target.value) p.adv[id] = e.target.value; else delete p.adv[id]; markDirty(st.cur); });
+
+/* ---------- 工程期程：技術服務 → 施工 → 竣工驗收至保固 ---------- */
+const C = window.Checklist, LC = window.Lifecycle;
+const evalP = id => LC.evaluate(st.projects[id], st.school);
+function badge(r) {
+  if (!r.open || r.left === null || r.left === undefined) return "";
+  if (r.left < 0) return `<span class="badge b-late">逾期 ${-r.left} 天</span>`;
+  if (r.left <= 7) return `<span class="badge b-soon">剩 ${r.left} 天</span>`;
+  return `<span class="badge b-ok">剩 ${r.left} 天</span>`;
+}
+function lineBtns(id, r) {
+  const txt = LC.message(st.projects[id], r, st.school.party), k = esc(String(r.key));
+  return `<div class="lineb"><a class="lbtn" href="${esc(LC.lineUrl(txt))}" target="_blank" rel="noopener" data-ln="${esc(id)}" data-ph="${r.phase}" data-li="${k}">LINE 傳送</a><button type="button" class="lbtn ghostb" data-cp="${esc(id)}" data-ph="${r.phase}" data-li="${k}">複製訊息</button>${r.nt ? `<span class="hint">已通知 ${esc(C.roc(r.nt))}</span>` : ""}</div>`;
+}
+function findRow(id, ph, key) { const ev = evalP(id); return (ph === "tech" ? ev.tech : ev.accept.rows).find(r => String(r.key) === String(key)); }
+function refreshWork() { const y = window.scrollY; renderWorkHead(); const sv = document.querySelector(".sview.on"); if (sv) renderSub(sv.id.slice(2)); if ($("#v-dash").classList.contains("on")) renderDash(); renderList(); window.scrollTo(0, y); }
+async function lineClick(e) {
+  const a = e.target.closest("[data-ln],[data-cp]"); if (!a) return;
+  const id = a.dataset.ln || a.dataset.cp, r = findRow(id, a.dataset.ph, a.dataset.li); if (!r) return;
+  if (a.dataset.cp !== undefined) {
+    try { await navigator.clipboard.writeText(LC.message(st.projects[id], r, st.school.party)); a.textContent = "已複製，貼到 LINE"; } catch (err) { a.textContent = "無法複製"; }
+  }
+  LC.store(st.projects[id], r).nt = C.today(); markDirty(id);
+  setTimeout(refreshWork, a.dataset.cp !== undefined ? 1200 : 300);
+}
+document.addEventListener("click", e => { if (e.target.closest("[data-ln],[data-cp]")) { e.stopPropagation(); lineClick(e); } }, true);
+
+// 期程表（技術服務履約、竣工驗收共用）
+function rowTable(rows, ph) {
+  return `<table class="stack"><thead><tr><th style="width:2.5em">#</th><th>事項</th><th style="width:8.5em">應完成日</th><th style="width:7em">主辦</th><th style="width:11em">狀態</th><th style="width:9.5em">完成日期</th><th style="width:9em">備註／文號</th></tr></thead><tbody>
+  ${rows.map(r => { const k = esc(String(r.key)), n = ph === "tech" ? r.key : r.key + 1;
+    return `<tr class="${r.s === "已完成" ? "s-done" : r.open && r.left !== null && r.left < 0 ? "s-late" : ""}"><td data-l="#">${esc(String(n))}</td>
+    <td data-l="事項">${esc(r.item)}<div class="hint">${esc([r.when, r.basis].filter(Boolean).join("｜"))}</div>${r.autoNote ? `<div class="hint autonote">⚙ ${esc(r.autoNote)}</div>` : ""}${r.files && r.files.length ? `<div class="files">${r.files.map(f => `<a href="${esc(f.url)}" target="_blank" rel="noopener">📄 ${esc(f.name)}</a>`).join("")}</div>` : ""}${LC.notifiable(r) ? lineBtns(st.cur, r) : ""}${upCell(ph, r)}</td>
+    <td data-l="應完成日">${r.due ? esc(C.roc(r.due)) : '<span class="hint">—</span>'}<br>${badge(r)}</td>
+    <td data-l="主辦">${esc(r.who.replace("技服廠商", "技術服務廠商"))}</td>
+    <td data-l="狀態"><select data-ph="${ph}" data-key="${k}" data-f="s" aria-label="${esc(String(n))} 狀態" class="${r.auto ? "isauto" : ""}"><option value="" ${r.auto ? "selected" : ""}>自動：${esc(r.autoS)}</option>${C.STATUS.map(o => `<option value="${o}" ${!r.auto && o === r.s ? "selected" : ""}>${o}</option>`).join("")}</select></td>
+    <td data-l="完成日期"><input type="date" data-ph="${ph}" data-key="${k}" data-f="d" value="${esc(r.dStored !== undefined ? r.dStored : r.d)}" aria-label="${esc(String(n))} 完成日期">${r.auto && r.autoD && !r.dStored ? `<div class="hint">推定 ${esc(C.roc(r.autoD))}</div>` : ""}</td>
+    <td data-l="備註"><input type="text" data-ph="${ph}" data-key="${k}" data-f="n" value="${esc(r.note)}" aria-label="${esc(String(n))} 備註"></td></tr>`; }).join("")}</tbody></table>`;
+}
+function rowChange(t) {
+  const p = st.projects[st.cur]; if (!p || !t.dataset.ph) return false;
+  const it = LC.store(p, { phase: t.dataset.ph, key: t.dataset.ph === "tech" ? t.dataset.key : +t.dataset.key });
+  if (t.value === "") delete it[t.dataset.f]; else it[t.dataset.f] = t.value;
+  if (t.dataset.f === "s" && t.value === "已完成" && !it.d) it.d = C.today();
+  if (t.dataset.f === "d" && t.value && (!it.s || it.s === "未辦" || it.s === "辦理中")) it.s = "已完成";
+  markDirty(st.cur);
+  if (t.dataset.f !== "n") refreshWork();
+  return true;
+}
+
+// 工程頁頂部：三階段進度
+function renderWorkHead() {
+  const p = st.projects[st.cur], host = $("#workHead");
+  $("#subNav").hidden = !p;
+  if (!p) { host.innerHTML = `<div class="empty"><h2 style="font-size:24px;margin-bottom:10px">還沒有選擇工程</h2><p>按左上「＋ 新增工程」開始，或從清單選一個。</p></div>`; return; }
+  const ev = evalP(st.cur), go = { tech: "tech", build: "build", accept: "chk" };
+  host.innerHTML = `<div class="whead"><h2>${esc(p.name || p.title || "未命名工程")}</h2><span class="note">${esc(p.title && p.name ? p.title : "")}</span><span class="phase">${esc(ev.label)}</span>${ev.overdue ? `<b class="danger">逾期 ${ev.overdue} 項</b>` : ""}</div>
+  <div class="wtools">${p.updatedAt ? `<span class="hint">最後暫存：${esc(p.updatedBy || "（未填名字）")} ${esc(tm(p.updatedAt))}</span>` : ""}${API ? `<button type="button" class="link" data-folder="1">📁 雲端資料夾</button><button type="button" class="link" data-hist="1">🕘 修改紀錄</button>` : ""}<span class="hint" id="wmsg" role="status"></span></div>
+  <ol class="steps">${ev.steps.map((s, i) => `<li class="${ev.phase === s.key || (ev.phase === "prep" && i === 0) ? "cur" : ""}"><button type="button" data-goto="${go[s.key]}"><span class="sn">${i + 1}</span><b>${esc(s.name)}</b><span>${esc(s.status)}</span>${s.sub ? `<span class="hint">${esc(s.sub)}</span>` : ""}</button></li>`).join("")}</ol>
+  ${nextCard(ev.step)}
+  ${ev.next && (!ev.step.due || ev.next.due !== ev.step.due) ? `<p class="note" style="margin:6px 0 0">最近期限：${esc(ev.next.item)}（${esc(C.roc(ev.next.due))}）${badge(ev.next)}</p>` : ""}`;
+}
+$("#workHead").addEventListener("click", e => {
+  if (e.target.closest("button[data-folder]")) { openFolder(); return; }
+  if (e.target.closest("button[data-hist]")) { openHistory(); return; }
+  const g = e.target.closest("button[data-gosub]"); if (g) { goTo({ sub: g.dataset.gosub, sel: g.dataset.gosel, stage: g.dataset.gostage }); return; }
+  const b = e.target.closest("button[data-goto]"); if (b) showTab(b.dataset.goto);
+});
+function nextCard(stp) {
+  if (!stp) return "";
+  const done = stp.title === "本案已結案";
+  return `<div class="nextcard ${done ? "done" : ""}"><span class="nlabel">${done ? "✓" : "下一步"}</span><div class="nbody"><b>${esc(stp.title)}</b>${stp.detail ? `<span class="hint">${esc(stp.detail)}</span>` : ""}${stp.due ? badge({ open: true, left: stp.left }) : ""}</div>${stp.go && stp.go.sel ? `<button type="button" class="primary" data-gosub="${esc(stp.go.sub)}" data-gosel="${esc(stp.go.sel)}" data-gostage="${esc(stp.stage || "")}">前往 →</button>` : ""}</div>`;
+}
+function goTo(go) {
+  if (!go) return;
+  if (go.stage) { st.stage = go.stage; ls.set("stage", st.stage); }
+  showTab(go.sub);
+  if (!go.sel) return;
+  setTimeout(() => {
+    const el = document.querySelector(go.sel); if (!el) return;
+    const sum = el.closest("details"); if (sum) sum.open = true;
+    el.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    try { el.focus({ preventScroll: true }); } catch (err) {}
+    el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 2200);
+  }, 60);
+}
+
+// 二、技術服務履約
+function renderTech() {
+  const host = $("#techBody"), p = st.projects[st.cur]; if (!p) { host.innerHTML = ""; return; }
+  const t = p.tech || {}, ev = evalP(st.cur), unit = st.school.daytype === "日曆天" ? "日曆天" : "工作天";
+  host.innerHTML = `<p class="note">依技術服務契約（第7、8條）與「學校設定」的日數，自動計算建築師／技術顧問應交付的期限，以及學校應完成審查的期限。日數以<b>${esc(unit)}</b>計（不計週六、日及設定中的放假日）；「自通知指定之日起」當日算入，「收到後」次日起算。</p>
+  <div class="kd">
+    <div class="f"><span class="lb">技術服務廠商（乙方）</span><div style="min-height:44px;display:flex;align-items:center">${esc(p.vendor || "（尚未填，請到「技術服務契約」頁）")}</div></div>
+    <div class="f"><label for="tf-vendorLine">LINE 稱呼</label><input id="tf-vendorLine" data-tf="vendorLine" type="text" value="${esc(p.vendorLine || "")}" placeholder="例：○○建築師事務所 陳建築師"></div>
+    <div class="f"><label for="tt-sign">簽約日</label><input id="tt-sign" data-tt="sign" type="date" value="${esc(t.sign || "")}"></div>
+    <div class="f"><label for="tt-start">甲方書面通知指定之開始日</label><input id="tt-start" data-tt="start" type="date" value="${esc(t.start || "")}"><span class="hint">期限多由此日起算</span></div>
+  </div>
+  ${p.super === "是" ? `<p class="note">本案委託監造：監造期間自通知指定之日起至工程全部驗收合格止；「施工」與「竣工驗收」頁中的「監造」即為本廠商。</p>` : ""}
+  <h3 class="stg">履約期程<small>${ev.techDone}／${ev.techTotal}</small></h3>
+  ${ev.tech.length ? rowTable(ev.tech, "tech") : '<p class="note">目前沒有適用的期程項目。</p>'}`;
+}
+$("#techBody").addEventListener("change", e => {
+  const t = e.target, p = st.projects[st.cur]; if (!p) return;
+  if (t.dataset.tf) { p[t.dataset.tf] = t.value.trim(); markDirty(st.cur); return; }
+  if (t.dataset.tt) { p.tech = p.tech || {}; p.tech[t.dataset.tt] = t.value; markDirty(st.cur); refreshWork(); return; }
+  rowChange(t);
+});
+
+// 三、施工
+function renderBuild() {
+  const host = $("#buildBody"), p = st.projects[st.cur]; if (!p) { host.innerHTML = ""; return; }
+  const b = p.build || {}, ev = evalP(st.cur), ext = b.ext || [];
+  const inp = (k, label, type = "text", extra = "", hint = "") => `<div class="f"><label for="bf-${k}">${esc(label)}</label><input id="bf-${k}" data-bf="${k}" type="${type}" value="${esc(b[k] || "")}" ${extra}>${hint ? `<span class="hint">${esc(hint)}</span>` : ""}</div>`;
+  host.innerHTML = `<p class="note">施工是另一份工程採購契約（營造廠）。這裡記錄施工廠商與工期，自動算出預定竣工日，並帶入「竣工驗收至保固」的第 1 項。</p>
+  <h3 class="stg">施工廠商與契約</h3>
+  <div class="kd">${inp("title", "工程名稱（施工契約）", "text", `placeholder="${esc(GovDocs.projName(Object.assign({}, p, { build: {} })))}"`, "公文簽稿使用；留空＝由案名推得")}${inp("name", "施工廠商全銜", "text", 'placeholder="例：△△營造有限公司"')}${inp("line", "LINE 稱呼", "text", 'placeholder="例：△△營造 王經理"')}${inp("budget", "工程預算金額（元）", "text", 'inputmode="numeric"', nf(b.budget) ? "＝ " + nf(b.budget) + " 元" : "用來判斷初驗、查核金額")}${inp("amount", "工程契約金額（元）", "text", 'inputmode="numeric"', nf(b.amount) ? "＝ " + nf(b.amount) + " 元" : "")}${inp("award", "決標／簽約日", "date")}</div>
+  ${(() => { const m = C.money({ budget: b.budget, amount: b.amount, preTh: st.school.preTh, auditTh: st.school.auditTh }); if (!m.base) return ""; const t1 = m.pre === null ? "初驗：請填預算金額判斷" : m.pre ? "須先辦初驗" : "免初驗"; const t2 = m.audit === null ? "查核金額：請填預算金額判斷" : m.audit ? "達查核金額：驗收須報上級機關監辦" : "未達查核金額"; return `<p class="note">依${esc(m.by)}判斷：<b>${esc(t1)}</b>；<b>${esc(t2)}</b>。竣工驗收清單會自動排除不適用的項目。</p>`; })()}
+  ${p.method === "建造費用百分比法" ? `<p class="note">技術服務採建造費用百分比法：服務費以實際建造費用計算，可對照此處工程契約金額與結算金額。</p>` : ""}
+  <div class="kd"><div class="f"><span class="lb">監造單位</span>${p.super === "是" ? `<div style="min-height:44px;display:flex;align-items:center">${esc(p.vendorLine || p.vendor || "技術服務廠商（乙方）")}</div><span class="hint">本案委託監造，由技術服務廠商擔任</span>` : `<input data-bf="supervisor" type="text" value="${esc(b.supervisor || "")}" placeholder="自辦監造或其他監造單位" aria-label="監造單位"><span class="hint">技術服務未委託監造時填寫</span>`}</div></div>
+  <h3 class="stg">工期</h3>
+  <div class="kd">${inp("start", "開工日", "date")}${inp("days", "工期（天）", "text", 'inputmode="numeric"')}
+    <div class="f"><label for="bf-unit">工期計算</label><select id="bf-unit" data-bf="unit" class="inp"><option ${b.unit !== "工作天" ? "selected" : ""}>日曆天</option><option ${b.unit === "工作天" ? "selected" : ""}>工作天</option></select></div>
+    ${inp("due", "預定竣工日（手動覆寫）", "date", "", "留空＝由開工日、工期、展延自動計算")}</div>
+  <h3 class="stg">展延<small>合計 ${LC.extTotal(b)} 天</small></h3>
+  <table class="stack"><thead><tr><th>核定日期</th><th style="width:8em">展延天數</th><th>核定文號／事由</th><th style="width:5em"></th></tr></thead><tbody>
+  ${ext.map((x, i) => `<tr><td data-l="核定日期"><input type="date" data-ex="${i}" data-exf="d" value="${esc(x.d || "")}" aria-label="核定日期"></td><td data-l="天數"><input type="text" inputmode="numeric" data-ex="${i}" data-exf="days" value="${esc(x.days || "")}" aria-label="展延天數"></td><td data-l="文號"><input type="text" data-ex="${i}" data-exf="doc" value="${esc(x.doc || "")}" aria-label="文號"></td><td><button type="button" class="link danger" data-exdel="${i}">刪除</button></td></tr>`).join("") || `<tr><td colspan="4" class="note">尚無展延</td></tr>`}
+  </tbody></table><button type="button" class="ghost" data-exadd="1" style="margin-top:8px">＋ 新增展延</button>
+  <div class="calc" style="margin-top:18px"><span>預定竣工日</span><b>${ev.plan.date ? esc(C.roc(ev.plan.date)) : "—"}</b><span>${esc(ev.plan.how || "填入開工日與工期後自動計算")}</span></div>`;
+}
+$("#buildBody").addEventListener("change", e => {
+  const t = e.target, p = st.projects[st.cur]; if (!p) return; p.build = p.build || {};
+  if (t.dataset.bf) { p.build[t.dataset.bf] = t.value.trim(); }
+  else if (t.dataset.ex !== undefined) { p.build.ext = p.build.ext || []; p.build.ext[+t.dataset.ex][t.dataset.exf] = t.value.trim(); }
+  else return;
+  markDirty(st.cur); refreshWork();
+});
+$("#buildBody").addEventListener("click", e => {
+  const p = st.projects[st.cur]; if (!p) return; p.build = p.build || {}; p.build.ext = p.build.ext || [];
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.exadd) { p.build.ext.push({ d: "", days: "", doc: "" }); markDirty(st.cur); refreshWork(); }
+  if (b.dataset.exdel !== undefined) { p.build.ext.splice(+b.dataset.exdel, 1); markDirty(st.cur); refreshWork(); }
+});
+
+// 四、竣工驗收至保固
+function renderChk() {
+  const host = $("#chkBody"), p = st.projects[st.cur]; if (!p) { host.innerHTML = ""; return; }
+  const dates = (p.chk || {}).dates || {}, all = evalP(st.cur), ev = all.accept;
+  host.innerHTML = `<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><div class="bar" style="width:220px"><i style="width:${ev.pct}%"></i></div><b>${ev.pct}%</b><span class="note">已完成 ${ev.done}／${ev.total} 項</span></div>
+  <p class="note">依「B.3完工驗收階段」資料夾（臺北市政府所屬各機關工程施工及驗收基準第17～29點、臺北市工程採購契約）整理；期限以日曆天計，末日遇放假日順延。保固階段依工程契約範本補列，請以本案契約為準。「主辦」中的廠商指施工廠商，監造指監造單位。</p>
+  <div class="calc"><span>預定竣工日（由「施工」頁帶入）</span><b>${all.plan.date ? esc(C.roc(all.plan.date)) : "—"}</b><button type="button" class="link" data-goto2="build">到施工頁設定</button></div>
+  <h3 class="stg">關鍵日期<small>照時間順序填日期即可</small></h3>
+  <p class="note">每填一個日期，它之前的例行項目會自動標為完成（狀態顯示「自動」）；依「施工」頁的預算金額，免初驗、未達查核金額的項目自動排除。只有例外狀況（驗收不合格、保固瑕疵）或付款後的決算，需要在下方清單手動改狀態；任何一項都可以手動改，改回「自動」即恢復判斷。</p>
+  <div class="kd">${C.DATES.map(([k, label, hint], di) => `<div class="f"><label for="cd-${k}"><span class="kn">${di + 1}</span>${esc(label)}</label><input id="cd-${k}" data-cd="${k}" ${k === "years" ? 'type="number" min="0" step="0.5" inputmode="decimal"' : 'type="date"'} value="${esc(dates[k] || "")}">${hint ? `<span class="hint">${esc(hint)}</span>` : ""}</div>`).join("")}</div>
+  <div class="exc"><span class="lb">發生例外時：</span><button type="button" class="ghost" data-exc="16,17">驗收不合格，需改正複驗</button><button type="button" class="ghost" data-exc="30">保固期間發現瑕疵</button>${API ? `<span class="lb" style="margin-inline-start:12px">文件：</span><button type="button" class="ghost" data-missing="1" aria-expanded="${!!st.showMissing}">缺件檢查</button>` : ""}</div>
+  ${API && st.showMissing ? missingPanel(p) : ""}
+  <h3 class="stg">檢核清單</h3>
+  ${C.STAGES.map((sg, si) => { const rows = ev.rows.filter(r => r.stage === si), tot = rows.filter(r => r.s !== "不適用").length, dn = rows.filter(r => r.s === "已完成").length, closed = rows.every(r => !r.open);
+    const open = (st.stageOpen || {})[st.cur + ":" + si];
+    return `<details class="stgd" data-si="${si}" ${(open === undefined ? !closed : open) ? "open" : ""}><summary><span class="stgt">${si + 1}. ${esc(sg)}</span><small>${dn}／${tot}${closed ? "　✓ 完成" : ""}</small></summary>${rowTable(rows, "accept")}</details>`; }).join("")}`;
+}
+$("#chkBody").addEventListener("change", e => {
+  const t = e.target, p = st.projects[st.cur]; if (!p) return;
+  if (t.dataset.cd) { p.chk = p.chk || {}; p.chk.dates = p.chk.dates || {}; p.chk.dates[t.dataset.cd] = t.value; markDirty(st.cur); refreshWork(); return; }
+  rowChange(t);
+});
+$("#chkBody").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-goto2]"); if (b) { showTab(b.dataset.goto2); return; }
+  const sm = e.target.closest("details.stgd > summary");
+  if (sm) { st.stageOpen = st.stageOpen || {}; st.stageOpen[st.cur + ":" + sm.parentElement.dataset.si] = !sm.parentElement.open; return; }  // 記住使用者展開／收合的階段
+  if (e.target.closest("button[data-missing]")) { st.showMissing = !st.showMissing; renderChk(); return; }
+  const mc = e.target.closest("button[data-mcopy]");
+  if (mc) { try { await navigator.clipboard.writeText(missingText(st.projects[st.cur])); mc.textContent = "已複製"; } catch (err) { mc.textContent = "無法複製"; } return; }
+  const x = e.target.closest("button[data-exc]"); if (!x) return;
+  const p = st.projects[st.cur]; if (!p) return;
+  const keys = x.dataset.exc.split(",").map(Number);
+  keys.forEach(k => { const it = LC.store(p, { phase: "accept", key: k }); if (!it.s || it.s === "不適用" || it.s === "未辦") it.s = "辦理中"; });
+  markDirty(st.cur); refreshWork();
+  goTo({ sub: "chk", sel: `select[data-ph=accept][data-key="${keys[0]}"][data-f=s]` });
+});
+
+// 工程總表
+function renderDash() {
+  const ids = Object.keys(st.projects);
+  if (!ids.length) { $("#dashBody").innerHTML = `<p class="note">尚無工程。按左上「＋ 新增工程」開始。</p>`; return; }
+  const list = ids.map(id => ({ id, p: st.projects[id], ev: evalP(id) }))
+    .sort((a, b) => (b.ev.overdue > 0) - (a.ev.overdue > 0) || (a.ev.next ? a.ev.next.due : "9").localeCompare(b.ev.next ? b.ev.next.due : "9"));
+  const up = LC.upcoming(st.projects, st.school);
+  const upHtml = `<h3 class="stg" style="margin-top:0">近期該通知<small>7 日內到期或已逾期、3 日內未通知過</small></h3>` + (up.length ? `<table class="stack" style="margin-bottom:22px"><thead><tr><th>工程</th><th>事項</th><th style="width:8em">應完成日</th><th style="width:8em">對象</th><th style="width:15em">通知</th></tr></thead><tbody>${up.map(u => `<tr><td data-l="工程"><b>${esc(u.p.name || u.p.title || "未命名")}</b><div class="hint">${u.r.phase === "tech" ? "技術服務" : "竣工驗收"}</div></td><td data-l="事項">${esc(u.r.item)}</td><td data-l="應完成日">${esc(C.roc(u.r.due))}<br>${badge(u.r)}</td><td data-l="對象">${esc(u.r.who.replace("技服廠商", "技術服務廠商"))}</td><td data-l="通知">${lineBtns(u.id, u.r)}</td></tr>`).join("")}</tbody></table>` : `<p class="note" style="margin-bottom:22px">目前沒有需要通知廠商的事項。</p>`);
+  $("#dashBody").innerHTML = upHtml + `<h3 class="stg">各工程進度</h3><table class="stack"><thead><tr><th>工程</th><th>目前階段</th><th>下一步</th><th style="width:8em">最近期限</th><th style="width:6em">逾期項</th></tr></thead><tbody>${list.map(({ id, p, ev }) => `<tr data-open="${esc(id)}">
+    <td data-l="工程"><b>${esc(p.name || p.title || "未命名工程")}</b></td>
+    <td data-l="階段">${esc(ev.label)}<div class="ministeps">${ev.steps.map(s => `<span title="${esc(s.name + "：" + s.status)}">${esc(s.name)}・${esc(s.status)}</span>`).join("")}</div></td>
+    <td data-l="下一步"><b>${esc(ev.step.title)}</b>${ev.step.detail ? `<div class="hint">${esc(ev.step.detail)}</div>` : ""}</td>
+    <td data-l="最近期限">${ev.next ? esc(C.roc(ev.next.due)) + "<br>" + badge(ev.next) + `<div class="hint">${esc(ev.next.item.slice(0, 18))}${ev.next.item.length > 18 ? "…" : ""}</div>` : ""}</td>
+    <td data-l="逾期">${ev.overdue ? `<b class="danger">${ev.overdue}</b>` : "0"}</td></tr>`).join("")}</tbody></table>`;
+}
+$("#dashBody").addEventListener("click", e => { const tr = e.target.closest("tr[data-open]"); if (!tr) return; st.cur = tr.dataset.open; ls.set("cur", st.cur); renderList(); goTo(evalP(st.cur).step.go); });
+
+/* ---------- 範本管理 ---------- */
+function renderTplList() {
+  const rows = [{ id: "builtin", version: "115.4.23", src: "內建" }].concat(st.templates.map(t => ({ id: t.id, version: t.version || "（未標版本）", src: "上傳 " + tm(t.uploadedAt) + (t.uploadedBy ? "・" + t.uploadedBy : "") })));
+  $("#tplList").innerHTML = rows.map(r => { const on = r.id === st.tpl.id;
+    return `<tr><td data-l="版本"><b>${esc(r.version)}</b></td><td data-l="來源">${esc(r.src)}</td><td data-l="狀態">${on ? '<b class="danger">使用中</b>' : ""}</td><td>${on || !API ? "" : `<button class="ghost" data-act="${esc(r.id)}" type="button">改用這版</button>`}</td></tr>`; }).join("");
+}
+$("#tplList").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return; b.disabled = true;
+  try { await apiPost({ action: "activateTemplate", id: b.dataset.act }); st.templates.forEach(t => { t.active = t.id === b.dataset.act; }); await useTemplate(b.dataset.act); $("#tplMsg").textContent = "已切換範本版本"; }
+  catch (err) { $("#tplMsg").textContent = "切換失敗：" + err.message; b.disabled = false; }
+});
+async function handleTplFile(file) {
+  const msg = $("#tplMsg"), host = $("#tplReport");
+  if (!file || !/\.docx$/i.test(file.name)) { msg.textContent = "請選擇 Word（.docx）檔；舊版 .doc 請先用 Word 另存為 .docx"; return; }
+  msg.textContent = "分析中，約需數秒…"; host.innerHTML = "";
+  try {
+    await new Promise(r => setTimeout(r, 30));
+    const res = await T.processTemplate({ JSZip, DOMParser, XMLSerializer }, await file.arrayBuffer(), st.tpl.points, E.USED_IDS);
+    st.newTpl = res; msg.textContent = "分析完成：" + file.name;
+    renderTplReport();
+  } catch (err) { msg.textContent = "無法處理：" + (err.message || err); }
+}
+function defRows(alerts) {
+  return `<table class="stack" style="margin:8px 0"><thead><tr><th>學校設定項目</th><th>舊版預設</th><th>新版預設</th><th>學校目前設定</th><th></th></tr></thead><tbody>${alerts.map(a => `<tr><td data-l="項目"><b>${esc(a.label)}</b></td><td data-l="舊版">${esc(a.oldDef || "（無）")}</td><td data-l="新版"><b>${esc(a.newDef || "（無）")}</b></td><td data-l="目前">${esc(st.school[a.key] ?? "")}${a.stale ? ' <span class="used">仍是舊預設</span>' : ""}</td><td>${a.newVal && String(st.school[a.key] ?? "").replace(/,/g, "") !== a.newVal ? `<button class="ghost" data-def="${esc(a.key)}" data-val="${esc(a.newVal)}" type="button">改成 ${esc(a.newVal)}</button>` : '<span class="note">已一致</span>'}</td></tr>`).join("")}</tbody></table>`;
+}
+function defBlock(r) {
+  const alerts = E.defaultAlerts(r.defChanges, st.school);
+  const other = (r.defChanges || []).filter(c => !alerts.some(a => a.id === c.id));
+  const stale = alerts.filter(a => a.stale);
+  let h = "";
+  if (alerts.length) h += `<div class="banner">新範本有 ${alerts.length} 項「未載明者為○○」的預設值改變，會影響學校固定設定${stale.length ? `；其中 ${stale.length} 項學校設定仍是舊預設值，若不更新，契約會明寫舊數字` : ""}。${stale.length ? `<button class="ghost" data-defall="1" type="button">全部改成新預設值</button>` : ""}</div>` + defRows(alerts);
+  if (other.length) h += `<details><summary>其他預設值改變（${other.length}，不影響學校設定）</summary><table class="stack"><tbody>${other.map(c => `<tr><td data-l="編號">${esc(c.id)}</td><td data-l="舊版">${esc(c.oldDef || "（無）")}</td><td data-l="新版">${esc(c.newDef || "（無）")}</td><td data-l="內容">${esc(c.ctx)}</td></tr>`).join("")}</tbody></table></details>`;
+  return h;
+}
+function applyDefault(key, val) { st.school[key] = val; markSchool(); renderSchool(); }
+function renderTplReport() {
+  const r = st.newTpl.report, host = $("#tplReport");
+  const usedLost = r.removed.filter(x => x.used), missingReg = T.REGIONS.filter(k => !r.regions.includes(k));
+  const li = (arr, f) => arr.length ? `<table class="stack"><tbody>${arr.map(f).join("")}</tbody></table>` : `<p class="note">無</p>`;
+  host.innerHTML = `<h3 style="font-size:19px;margin-top:18px">比對結果</h3>
+  <div class="kpis"><div class="kpi"><b>${r.total}</b><span>新範本填寫點</span></div><div class="kpi"><b>${r.exact}</b><span>與目前版本完全相同</span></div>
+  <div class="kpi ${r.fuzzy.length ? "w" : ""}"><b>${r.fuzzy.length}</b><span>文字有改、已自動對應</span></div><div class="kpi ${r.added.length ? "w" : ""}"><b>${r.added.length}</b><span>新增（到進階頁填）</span></div>
+  <div class="kpi ${r.removed.length ? "w" : ""}"><b>${r.removed.length}</b><span>舊版有、新版沒有</span></div></div>
+  ${defBlock(r)}
+  ${usedLost.length ? `<div class="banner">有 ${usedLost.length} 個「每案填寫／學校設定會自動填」的位置在新範本找不到，這些設定將不會出現在契約中：${esc(usedLost.map(x => x.id).join("、"))}。請把下方清單傳給 Claude 調整表單。</div>` : `<div class="banner ok">表單會自動填寫的位置都已對應到新範本。</div>`}
+  ${missingReg.length ? `<div class="banner">找不到這些附件的標題，「不適用附件」處理將略過它們：${esc(missingReg.join("、"))}</div>` : ""}
+  <details ${r.fuzzy.length ? "open" : ""}><summary>文字有改、已自動對應（${r.fuzzy.length}）——請確認對應正確</summary>${li(r.fuzzy, x => `<tr><td data-l="編號">${esc(x.id)}${x.used ? ' <span class="used">自動填</span>' : ""}</td><td data-l="舊"><span class="old">${esc(x.oldCtx)}</span></td><td data-l="新">${x.oldCtx === x.newCtx ? '<span class="note">內容相同（所屬段落標題有改）</span>' : esc(x.newCtx)}</td><td data-l="相似">${x.sim}%</td></tr>`)}</details>
+  <details><summary>新增的填寫點（${r.added.length}）</summary>${li(r.added, x => `<tr><td data-l="編號">${esc(x.id)}</td><td data-l="條次">${esc(x.sec)}</td><td data-l="內容">${esc(x.ctx)}</td></tr>`)}</details>
+  <details ${usedLost.length ? "open" : ""}><summary>舊版有、新版沒有（${r.removed.length}）</summary>${li(r.removed, x => `<tr><td data-l="編號">${esc(x.id)}${x.used ? ' <span class="used">自動填</span>' : ""}</td><td data-l="條次">${esc(x.sec)}</td><td data-l="內容">${esc(x.ctx)}</td></tr>`)}</details>
+  <div class="f" style="max-width:320px;margin-top:14px"><label for="tplVer">版本名稱</label><input class="inp" type="text" id="tplVer" value="${esc(r.version || "")}" placeholder="例如 116.3.1"></div>
+  <div class="tools"><button class="primary" id="tplSave" type="button" ${API ? "" : "disabled"}>儲存並啟用新範本</button><button class="ghost" id="tplCancel" type="button">取消</button><button class="link" id="tplCopy" type="button">複製比對清單</button></div>
+  ${API ? "" : `<p class="note">尚未連接 Google 試算表，無法保存新範本；可先看比對結果。</p>`}<div class="msg" id="tplSaveMsg" role="status"></div>`;
+}
+$("#tplReport").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.def) { applyDefault(b.dataset.def, b.dataset.val); renderTplReport(); return; }
+  if (b.dataset.defall) { E.defaultAlerts(st.newTpl.report.defChanges, st.school).filter(a => a.stale).forEach(a => applyDefault(a.key, a.newVal)); renderTplReport(); return; }
+  if (b.id === "tplCancel") { st.newTpl = null; $("#tplReport").innerHTML = ""; $("#tplMsg").textContent = ""; return; }
+  if (b.id === "tplCopy") { const r = st.newTpl.report; const t = ["文字有改：", ...r.fuzzy.map(x => `${x.id}｜${x.oldCtx} → ${x.newCtx}`), "", "新增：", ...r.added.map(x => `${x.id}｜${x.sec}｜${x.ctx}`), "", "刪除：", ...r.removed.map(x => `${x.id}${x.used ? "（自動填）" : ""}｜${x.sec}｜${x.ctx}`)].join("\n");
+    try { await navigator.clipboard.writeText(t); $("#tplSaveMsg").textContent = "已複製"; } catch (err) { $("#tplSaveMsg").textContent = "無法複製"; } return; }
+  if (b.id === "tplSave") {
+    b.disabled = true; $("#tplSaveMsg").textContent = "上傳中（約 3MB），請稍候…";
+    const n = st.newTpl, ver = $("#tplVer").value.trim();
+    try {
+      const res = await apiPost({ action: "addTemplate", activate: true, version: ver, tpl: JSON.stringify(n.parts), points: JSON.stringify(n.points), regions: JSON.stringify(n.regions), report: JSON.stringify(n.report) });
+      st.templates.forEach(t => { t.active = false; });
+      st.templates.push({ id: res.id, version: ver, uploadedAt: new Date().toISOString(), uploadedBy: ls.get("who", ""), active: true });
+      st.tpl = { id: res.id, version: ver || "新版", points: n.points, regions: n.regions, parts: n.parts };
+      st.defAlerts = E.defaultAlerts(n.report.defChanges, st.school).filter(a => a.stale);
+      st.newTpl = null; $("#tplReport").innerHTML = ""; $("#tplMsg").textContent = "新範本已啟用" + (st.schoolDirty ? "；學校設定已更新，記得按「暫存」" : ""); afterTpl(); renderBanners();
+    } catch (err) { $("#tplSaveMsg").textContent = "儲存失敗：" + err.message; b.disabled = false; }
+  }
+});
+$("#tplFile").addEventListener("change", e => { handleTplFile(e.target.files[0]); e.target.value = ""; });
+const drop = $("#drop");
+["dragover", "dragenter"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => handleTplFile(e.dataTransfer.files[0]));
+
+async function useTemplate(id) {
+  if (id === "builtin" || !API) {
+    const [points, regions] = await Promise.all([fetch("points.json").then(r => r.json()), fetch("regions.json").then(r => r.json())]);
+    st.tpl = { id: "builtin", version: "115.4.23", points, regions, parts: null };
+  } else {
+    const g = part => fetch(API + "?" + new URLSearchParams({ action: "tplfile", id, part, code: st.code })).then(r => r.text()).then(t => JSON.parse(t));
+    const [points, regions] = await Promise.all([g("points"), g("regions")]);
+    if (!Array.isArray(points)) throw new Error("範本欄位讀取失敗");
+    const t = st.templates.find(x => x.id === id) || {};
+    st.tpl = { id, version: t.version || "上傳版", points, regions, parts: null };
+  }
+  afterTpl();
+}
+function afterTpl() {
+  $("#tplName").textContent = "契約範本 " + st.tpl.version + " 版" + (st.tpl.id === "builtin" ? "" : "（上傳）");
+  const secs = [...new Set(st.tpl.points.map(p => p.sec))];
+  $("#advSec").innerHTML = `<option value="">全部條次</option>` + secs.map(s => `<option>${esc(s)}</option>`).join("");
+  renderTplList(); renderSchool(); refreshDerived(); renderAdv();
+}
+
+/* ---------- 分頁、備份 ---------- */
+const SUBS = ["proj", "tech", "build", "chk", "gov", "adv"];
+st.sub = ls.get("sub", "proj"); if (!SUBS.includes(st.sub)) st.sub = "proj";
+function renderSub(v) { if (v === "proj") renderProject(); if (v === "tech") renderTech(); if (v === "build") renderBuild(); if (v === "chk") renderChk(); if (v === "gov") renderGov(); if (v === "adv") renderAdv(); }
+function showTab(v) {
+  let main = v;
+  if (v === "work") v = st.sub;
+  if (SUBS.includes(v)) { main = "work"; st.sub = v; ls.set("sub", v); }
+  document.querySelectorAll("#mainNav button").forEach(b => b.setAttribute("aria-selected", b.dataset.v === main));
+  document.querySelectorAll(".view").forEach(x => x.classList.toggle("on", x.id === "v-" + main));
+  if (main === "work") {
+    document.querySelectorAll("#subNav button").forEach(b => b.setAttribute("aria-selected", b.dataset.v === st.sub));
+    document.querySelectorAll(".sview").forEach(x => x.classList.toggle("on", x.id === "s-" + st.sub));
+    renderWorkHead(); renderSub(st.sub);
+  }
+  if (main === "dash") renderDash();
+  ls.set("main", main);
+}
+document.addEventListener("click", e => { const b = e.target.closest("nav.tabs button[data-v]"); if (b) showTab(b.dataset.v); });
+function renderAll() { renderList(); renderSchool(); renderShare(); renderBanners(); renderWorkHead(); renderSub(st.sub); renderDash(); }
+$("#exp").addEventListener("click", () => {
+  saveBlob(new Blob([JSON.stringify({ projects: st.projects, school: st.school }, null, 1)], { type: "application/json" }), "技術服務契約_備份.json");
+  $("#bkmsg").textContent = "已匯出";
+});
+$("#imp").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const d = JSON.parse(await f.text()); let n = 0;
+    for (const [id, p] of Object.entries(d.projects || {})) { if (!p || typeof p !== "object" || !/^[A-Za-z0-9_-]{1,40}$/.test(id)) continue; st.projects[id] = Lifecycle.normalize(Object.assign(NEWP(), p)); markDirty(id); n++; }
+    if (d.school && typeof d.school === "object") { Object.assign(st.school, d.school); markSchool(); }
+    $("#bkmsg").textContent = `已匯入 ${n} 個工程，按「暫存」存到雲端`; if (!st.cur) st.cur = sortedIds()[0] || null; renderAll();
+  } catch (err) { $("#bkmsg").textContent = "檔案格式不對"; }
+  e.target.value = "";
+});
+$("#reload").addEventListener("click", () => { if ((st.dirty.size || st.schoolDirty) && !$("#reload").dataset.sure) { $("#reload").dataset.sure = "1"; $("#reload").textContent = "有未暫存的修改，再按一次仍要重新載入"; return; } location.reload(); });
+
+/* ---------- 存取碼 ---------- */
+function askCode(msg) {
+  showTab("dash");
+  $("#dashBody").innerHTML = `<form class="gate" id="gate"><h2 style="font-size:22px;margin-bottom:10px">請輸入存取碼</h2><p class="note">${esc(msg || "向承辦人索取。輸入一次後這台電腦會記住。")}</p><input class="inp" id="codeIn" type="password" autocomplete="off" aria-label="存取碼" style="margin:10px 0"><button class="primary" type="submit" style="width:100%">進入</button></form>`;
+  $("#gate").addEventListener("submit", ev => { ev.preventDefault(); st.code = $("#codeIn").value.trim(); ls.set("code", st.code); boot(); });
+  setTimeout(() => { const el = $("#codeIn"); if (el) el.focus(); }, 0);
+  updSync("需要存取碼");
+}
+
+/* ---------- 期限同步（週報、共用日曆） ---------- */
+const SYNC_VER = "2";
+const siteUrl = () => location.origin + location.pathname;
+const calLink = id => siteUrl() + "#p=" + encodeURIComponent(id);
+const calName = () => (String(st.school.party || "").trim() || "學校") + " 工程期限";
+const docsName = () => (String(st.school.party || "").trim() || "學校") + " 工程文件";
+const syncQ = new Set(); let syncTimer = null, syncFullQ = false, calHide = null;
+function calStatus(txt, bad) {
+  const el = $("#calSync"); clearTimeout(calHide);
+  el.hidden = !txt; el.textContent = txt || ""; el.classList.toggle("bad", !!bad);
+  if (txt && !bad && !/中…$/.test(txt)) calHide = setTimeout(() => { el.hidden = true; }, 5000);
+}
+$("#calSync").addEventListener("click", () => showTab("school"));
+function queueSync(ids, full) {
+  if (!API) return;
+  (ids || []).forEach(i => syncQ.add(i)); if (full) syncFullQ = true;
+  clearTimeout(syncTimer); syncTimer = setTimeout(runSync, 600);
+}
+async function runSync() {
+  if (st.syncBusy) { syncTimer = setTimeout(runSync, 1500); return; }
+  const full = syncFullQ, ids = full ? Object.keys(st.projects) : [...syncQ];
+  syncQ.clear(); syncFullQ = false;
+  if (!ids.length && !full) return;
+  const items = {};
+  ids.forEach(id => { const p = st.projects[id]; items[id] = p ? { name: p.name || p.title || "", list: LC.calendarEvents(p, st.school, calLink(id)) } : { name: "", list: [] }; });
+  const cal = st.share && st.share.cal && st.share.cal.created;
+  st.syncBusy = true; if (cal) calStatus("日曆同步中…");
+  try {
+    const r = await apiPost({ action: "sync", items, full, site: siteUrl(), ver: SYNC_VER });
+    if (st.share) { st.share.syncVer = SYNC_VER; st.share.lastError = (r.errors && r.errors[0]) || ""; if (st.share.cal && r.cal) st.share.cal.synced = r.synced; }
+    if (r.errors && r.errors.length) calStatus("日曆部分同步失敗", true); else if (cal) calStatus("日曆已同步");
+  } catch (e) {
+    if (st.share) st.share.lastError = e.message || String(e);
+    calStatus("期限同步失敗", true);
+  }
+  st.syncBusy = false;
+  if ($("#v-school").classList.contains("on")) renderShare();
+}
+
+/* ---------- 同仁共用與通知（共用日曆、工程文件資料夾、每週摘要信） ---------- */
+async function loadShare() {
+  if (!API) return;
+  try { st.share = await apiPost({ action: "shareInfo" }); }
+  catch (e) { if (e.code === "code") return; st.share = { error: e.message || String(e) }; }
+  renderShare();
+  if (st.share && !st.share.error && st.share.syncVer !== SYNC_VER && Object.keys(st.projects).length) queueSync([], true);  // 第一次或改版後：全部同步一次
+}
+function renderShare() {
+  const box = $("#shareBody"); if (!box) return;
+  const intro = "名單上的同仁可以：在自己的 Google 日曆看到各工程期限（日曆）、開啟工程文件資料夾裡上傳的檔案（資料夾）、每週一早上收到期限週報（週報）。";
+  if (!API) { box.innerHTML = `<p class="note">${intro}正式部署（連接 Google 試算表）後才能使用。</p>`; return; }
+  const s = st.share;
+  if (!s) { box.innerHTML = `<p class="note">讀取中…</p>`; return; }
+  if (s.error) { box.innerHTML = `<p class="note">${intro}</p><div class="banner">${esc(s.error)}</div><div class="tools"><button class="ghost" type="button" data-sh="check">重新檢查</button></div>`; return; }
+  const c = s.cal || {}, d = s.docs || {}, g = s.digest || {}, ppl = s.people || [];
+  const calRow = c.error ? `<div><b>共用日曆</b><span class="danger">${esc(c.error)}</span><button class="ghost" type="button" data-sh="check">重新檢查</button></div>`
+    : !c.created ? `<div><b>共用日曆</b><span class="note">尚未建立</span><button class="primary" type="button" data-sh="calCreate">建立「${esc(calName())}」</button></div>`
+    : `<div><b>共用日曆</b><span>「${esc(c.name)}」${c.owner ? "（" + esc(c.owner) + "）" : ""}${c.synced ? "，最近同步 " + esc(tm(c.synced)) : ""}</span><button class="ghost" type="button" data-sh="full">全部重新同步</button></div>`;
+  const docRow = !d.created ? `<div><b>工程文件資料夾</b><span class="note">${d.error ? esc(d.error) : "尚未建立；第一次上傳檔案時也會自動建立"}</span><button class="ghost" type="button" data-sh="docsCreate">建立「${esc(docsName())}」</button></div>`
+    : `<div><b>工程文件資料夾</b><span>「${esc(d.name)}」</span><a class="ghost" href="${esc(d.url)}" target="_blank" rel="noopener">開啟資料夾</a></div>`;
+  const mailRow = `<div><b>每週摘要信</b><span>${g.on ? "已開啟：每週一早上 7～8 點寄給勾選「週報」的同仁（沒有到期事項的週不寄）" : "未開啟"}${g.last ? "；上次寄出 " + esc(tm(g.last)) : ""}</span><button class="${g.on ? "ghost" : "primary"}" type="button" data-sh="digest" data-on="${g.on ? "" : "1"}">${g.on ? "關閉" : "開啟"}</button><button class="ghost" type="button" data-sh="test">現在寄一封測試信</button></div>`;
+  box.innerHTML = `<p class="note">${intro}</p>
+  ${s.lastError ? `<div class="banner">同步問題：${esc(s.lastError)}</div>` : ""}
+  <div class="svc">${calRow}${docRow}${mailRow}</div>
+  <h3 class="stg">名單<small>勾選或取消會立即生效</small></h3>
+  <table class="ptab"><thead><tr><th>Email</th><th class="c">日曆</th><th class="c">資料夾</th><th class="c">週報</th><th class="c"></th></tr></thead><tbody>${ppl.length ? ppl.map(x => `<tr><td>${esc(x.email)}</td>${["cal", "drive", "mail"].map(k => `<td class="c"><input type="checkbox" data-pf="${k}" data-email="${esc(x.email)}" ${x[k] ? "checked" : ""} aria-label="${esc(x.email)} ${{ cal: "日曆", drive: "資料夾", mail: "週報" }[k]}"></td>`).join("")}<td class="c"><button class="link danger" type="button" data-sh="remove" data-email="${esc(x.email)}">移除</button></td></tr>`).join("") : `<tr><td colspan="5" class="note">還沒有人。加入後，日曆與資料夾會寄 Google 的共用通知信給對方。</td></tr>`}</tbody></table>
+  <form class="tools" id="shareAdd" style="margin-top:10px"><input class="inp" type="email" id="shareEmail" placeholder="同仁的 Email（日曆與資料夾需為 Google 帳號）" aria-label="要加入名單的 Email" style="flex:1 1 260px;width:auto" required><button class="primary" type="submit">加入</button></form>
+  <div class="msg" id="shareMsg" role="status"></div>
+  ${c.created ? `<details class="calhelp"><summary>沒有 Google 帳號，或用 iPhone、Outlook 行事曆的人</summary><p class="note">請用${c.owner ? " " + esc(c.owner) + " " : "部署網站的"}帳號登入 Google 日曆 → 左側「${esc(c.name)}」旁的「⋮」→「設定和共用」→「整合日曆」，複製「iCal 格式的私人網址」給對方，用行事曆 App 的「訂閱行事曆」貼上。只能查看，更新較慢（可能要幾小時）；這個網址等同密碼，外流時在同一處按「重設」。</p></details>` : ""}`;
+}
+function shareResult(r, okMsg) {
+  const keep = st.share || {};
+  st.share = Object.assign(r, { lastError: keep.lastError });
+  renderShare();
+  $("#shareMsg").textContent = (r.warn && r.warn.length) ? r.warn.join("；") : okMsg || "";
+}
+$("#shareBody").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-sh]"); if (!b) return;
+  const act = b.dataset.sh, say = t => { const m = $("#shareMsg"); if (m) m.textContent = t; };
+  if (act === "check") { st.share = null; renderShare(); loadShare(); return; }
+  if (act === "full") { queueSync([], true); say("已開始重新同步全部工程…"); return; }
+  b.disabled = true;
+  try {
+    if (act === "calCreate") { say("建立中…"); shareResult(await apiPost({ action: "calCreate", name: calName() }), "日曆已建立，正在同步全部工程。"); queueSync([], true); }
+    if (act === "docsCreate") { say("建立中…"); shareResult(await apiPost({ action: "docsCreate", name: docsName() }), "資料夾已建立。"); }
+    if (act === "digest") { shareResult(await apiPost({ action: "digestSet", on: !!b.dataset.on }), b.dataset.on ? "已開啟：每週一早上寄出。" : "已關閉每週摘要信。"); }
+    if (act === "test") { say("寄送中…"); const r = await apiPost({ action: "digestTest" }); b.disabled = false; say(`已寄出測試信給 ${r.to.join("、")}（${r.total} 項期限）。`); }
+    if (act === "remove") { shareResult(await apiPost({ action: "person", email: b.dataset.email, remove: true }), "已移除 " + b.dataset.email); }
+  } catch (err) { b.disabled = false; say(err.message || String(err)); }
+});
+$("#shareBody").addEventListener("change", async e => {
+  const t = e.target; if (!t.dataset.pf) return;
+  t.disabled = true;
+  try { shareResult(await apiPost({ action: "person", email: t.dataset.email, [t.dataset.pf]: t.checked }), "已更新 " + t.dataset.email); }
+  catch (err) { t.checked = !t.checked; t.disabled = false; $("#shareMsg").textContent = err.message || String(err); }
+});
+$("#shareBody").addEventListener("submit", async e => {
+  if (e.target.id !== "shareAdd") return;
+  e.preventDefault();
+  const email = $("#shareEmail").value.trim(), btn = e.target.querySelector("button[type=submit]");
+  if (!email) return;
+  btn.disabled = true; $("#shareMsg").textContent = "加入中…";
+  try { shareResult(await apiPost({ action: "person", email }), `已加入 ${email}：日曆、資料夾、週報都已開啟，可在表格取消。`); }
+  catch (err) { btn.disabled = false; $("#shareMsg").textContent = err.message || String(err); }
+});
+
+/* ---------- 工程文件：上傳、雲端資料夾、缺件檢查 ---------- */
+const TECH_DOC = { T1: "服務實施計畫書", T2: "服務實施計畫書審查", T3: "勞工名冊", T4: "技師簽證執行計畫", T5: "規劃設計成果", T6: "設計成果審查" };
+const GOV_ITEM = {}; GovDocs.DOCS.forEach(d => { GOV_ITEM[d.item] = d.id; });
+const docName = (ph, r) => ph === "tech" ? (TECH_DOC[r.key] || r.item.slice(0, 16)) : (C.DOCS[r.key] || "項" + (r.key + 1));
+function upCell(ph, r) {
+  const p = st.projects[st.cur], key = (ph === "tech" ? "tech-" : "acc-") + r.key, list = ((p && p.files) || {})[key] || [];
+  const gov = ph !== "tech" && GOV_ITEM[r.key];
+  if (!list.length && !API && !gov) return "";
+  return `<div class="upl">${list.map(f => `<a class="chip" href="${esc(f.url)}" target="_blank" rel="noopener" title="${esc([f.by, tm(f.at)].filter(Boolean).join(" "))}">📎 ${esc(f.name)}</a>`).join("")}${API ? `<button type="button" class="link" data-up="${esc(key)}" data-dir="${ph === "tech" ? 0 : 2 + r.stage}" data-pre="${esc(docName(ph, r))}">上傳檔案</button>` : ""}${gov ? `<button type="button" class="link" data-gov="${gov}">產生簽稿</button>` : ""}</div>`;
+}
+const upInput = document.createElement("input"); upInput.type = "file"; upInput.hidden = true; document.body.appendChild(upInput);
+let upCtx = null;
+document.addEventListener("click", e => {
+  const u = e.target.closest("button[data-up]");
+  if (u) { upCtx = { key: u.dataset.up, dir: +u.dataset.dir, pre: u.dataset.pre, btn: u, pid: st.cur }; upInput.value = ""; upInput.click(); return; }
+  const g = e.target.closest("button[data-gov]");
+  if (g) { st.govDoc = g.dataset.gov; ls.set("govDoc", st.govDoc); showTab("gov"); window.scrollTo(0, 0); }
+});
+const toB64 = f => new Promise((res, rej) => { const rd = new FileReader(); rd.onload = () => res(String(rd.result).split(",")[1] || ""); rd.onerror = () => rej(rd.error); rd.readAsDataURL(f); });
+upInput.addEventListener("change", async () => {
+  const f = upInput.files[0], c = upCtx, p = c && st.projects[c.pid]; if (!f || !p) return;
+  const say = t => { if (c.btn.isConnected) c.btn.textContent = t; };
+  if (f.size > 20 * 1024 * 1024) { say("超過 20MB：請按「📁 雲端資料夾」直接放入"); return; }
+  c.btn.disabled = true; say("上傳中…");
+  try {
+    const r = await apiPost({ action: "upload", pid: c.pid, pname: p.name || p.title || "", dir: c.dir, prefix: c.pre, filename: f.name, mime: f.type, data: await toB64(f) });
+    p.files = p.files || {}; (p.files[c.key] = p.files[c.key] || []).push(r.file);
+    markDirty(c.pid); await saveAll(); refreshWork();
+  } catch (err) { c.btn.disabled = false; say("上傳失敗：" + (err.message || err)); }
+});
+async function openFolder() {
+  const p = st.projects[st.cur], m = $("#wmsg"); if (!p) return;
+  const w = window.open("about:blank", "_blank");
+  if (m) m.textContent = "開啟中…";
+  try {
+    const r = await apiPost({ action: "folder", pid: st.cur, pname: p.name || p.title || "" });
+    if (w) { w.location.href = r.url; if (m) m.textContent = ""; }
+    else if (m) m.innerHTML = `<a href="${esc(r.url)}" target="_blank" rel="noopener">開啟雲端資料夾</a>`;
+  } catch (err) { if (w) w.close(); if (m) m.textContent = "無法開啟資料夾：" + (err.message || err); }
+}
+function missingList(p) {
+  const rows = LC.evaluate(p, st.school).accept.rows, files = p.files || {};
+  return rows.filter(r => C.DOCS[r.key] && (r.s === "已完成" || r.s === "辦理中") && !(files["acc-" + r.key] || []).length);
+}
+function missingText(p) {
+  const list = missingList(p);
+  return `〔${st.school.party || "學校"}〕${p.name || p.title || ""} 待補文件：\n` + list.map((r, i) => `${i + 1}. ${C.DOCS[r.key]}（竣工驗收項目 ${r.key + 1}，${r.who}）`).join("\n");
+}
+function missingPanel(p) {
+  const list = missingList(p);
+  if (!list.length) return `<div class="missing"><b>沒有缺件</b><p class="note" style="margin:4px 0 0">已完成或辦理中的項目，應留存的文件都已上傳。</p></div>`;
+  return `<div class="missing"><b>已完成或辦理中、但還沒上傳文件的項目（${list.length} 項）</b>
+    <ol>${list.map(r => `<li>${esc(C.DOCS[r.key])}<span class="hint">（項目 ${r.key + 1}・${esc(C.STAGES[r.stage])}・${esc(r.who)}）</span> <button type="button" class="link" data-up="acc-${r.key}" data-dir="${2 + r.stage}" data-pre="${esc(C.DOCS[r.key])}">上傳</button></li>`).join("")}</ol>
+    <div class="tools" style="margin:0"><button type="button" class="ghost" data-mcopy="1">複製缺件清單</button><a class="lbtn" href="${esc(LC.lineUrl(missingText(p)))}" target="_blank" rel="noopener">LINE 傳送</a><span class="hint">可傳給監造或廠商補件</span></div></div>`;
+}
+
+/* ---------- 修改紀錄 ---------- */
+async function openHistory() {
+  const dlg = $("#histDlg"), body = $("#histBody"), p = st.projects[st.cur]; if (!p) return;
+  $("#histH").textContent = "修改紀錄：" + (p.name || p.title || "");
+  body.innerHTML = `<p class="note">讀取中…</p>`;
+  if (!dlg.open) dlg.showModal();
+  try {
+    const r = await apiGet({ action: "history", id: st.cur });
+    body.innerHTML = r.rows.length ? `<table class="ptab"><thead><tr><th style="width:8.5em">時間</th><th style="width:7em">修改者</th><th>項目</th><th>原值 → 新值</th></tr></thead><tbody>${r.rows.map(x => `<tr><td>${esc(tm(x.at))}</td><td>${esc(x.who || "（未填名字）")}</td><td>${esc(x.what)}</td><td>${x.from || x.to ? `${esc(x.from || "（空白）")} → <b>${esc(x.to || "（空白）")}</b>` : ""}</td></tr>`).join("")}</tbody></table><p class="note">最多顯示最近 300 筆；完整紀錄在試算表「修改紀錄」工作表。左下「你的名字」填了，紀錄才看得出是誰改的。</p>`
+      : `<p class="note">還沒有修改紀錄（這個功能啟用後的暫存才會記錄）。</p>`;
+  } catch (err) { body.innerHTML = `<p class="danger">讀取失敗：${esc(err.message || err)}</p>`; }
+}
+$("#histDlg").addEventListener("click", e => { if (e.target.closest("[data-close]") || e.target === $("#histDlg")) $("#histDlg").close(); });
+
+/* ---------- 公文簽稿 ---------- */
+st.govDoc = ls.get("govDoc", "acceptReq");
+const govNow = () => GovDocs.make(st.govDoc, st.projects[st.cur], st.school, evalP(st.cur));
+function renderGov() {
+  const host = $("#govBody"), p = st.projects[st.cur]; if (!p) { host.innerHTML = ""; return; }
+  if (!GovDocs.DOCS.some(d => d.id === st.govDoc)) st.govDoc = "acceptReq";
+  const g = govNow();
+  host.innerHTML = `<p class="note">依這個工程的資料自動帶入的草稿，可以複製到公文系統，或下載 Word。「○○」是還缺的資料，可在左側補填（會存在這個工程，記得暫存）。內容請依學校公文規定修改後再陳核。</p>
+  <div class="seg" role="group" aria-label="簽稿種類">${GovDocs.DOCS.map(d => `<button type="button" data-gd="${d.id}" aria-pressed="${d.id === st.govDoc}">${esc(d.label)}（${d.kind}）</button>`).join("")}</div>
+  <div class="govgrid">
+    <div class="kd govform">${g.fields.map(([k, label, type, , hint]) => `<div class="f"><label for="gv-${k}">${esc(label)}</label>${type === "textarea" ? `<textarea id="gv-${k}" data-gv="${k}" rows="4">${esc(g.values[k])}</textarea>` : `<input id="gv-${k}" data-gv="${k}" type="${type}" value="${esc(g.values[k])}"${/元/.test(label) ? ' inputmode="numeric"' : ""}>`}${hint ? `<span class="hint">${esc(hint)}</span>` : ""}</div>`).join("")}</div>
+    <div class="govprev"><pre id="govText">${esc(g.text)}</pre>
+      <div class="tools"><button type="button" class="ghost" data-gcopy="subject">複製主旨</button><button type="button" class="ghost" data-gcopy="explain">複製說明</button><button type="button" class="ghost" data-gcopy="text">複製全文</button><button type="button" class="primary" data-gword="1">下載 Word</button></div>
+      <div class="msg" id="govMsg" role="status"></div></div>
+  </div>`;
+}
+$("#govBody").addEventListener("input", e => {
+  const t = e.target, p = st.projects[st.cur]; if (!t.dataset.gv || !p) return;
+  p.gov = p.gov || {}; p.gov[st.govDoc] = p.gov[st.govDoc] || {}; p.gov[st.govDoc][t.dataset.gv] = t.value;
+  markDirty(st.cur); $("#govText").textContent = govNow().text;
+});
+$("#govBody").addEventListener("click", async e => {
+  const d = e.target.closest("button[data-gd]"); if (d) { st.govDoc = d.dataset.gd; ls.set("govDoc", st.govDoc); renderGov(); return; }
+  const c = e.target.closest("button[data-gcopy]"), m = $("#govMsg");
+  if (c) { try { await navigator.clipboard.writeText(govNow()[c.dataset.gcopy]); m.textContent = "已複製" + c.textContent.replace("複製", "") + "，可貼到公文系統"; } catch (err) { m.textContent = "無法複製，請直接選取文字"; } return; }
+  if (e.target.closest("button[data-gword]")) {
+    const g = govNow(), p = st.projects[st.cur];
+    try { await saveBlob(await GovDocs.docx(JSZip, g), `${g.doc.label}_${(p.name || p.title || "工程").replace(/[\\/:*?"<>|]/g, "_")}.docx`); m.textContent = "已下載 Word"; }
+    catch (err) { m.textContent = "產生失敗：" + (err.message || err); }
+  }
+});
+
+/* ---------- 匯出 Excel ---------- */
+$("#xlsBtn").addEventListener("click", async () => {
+  const m = $("#xlsMsg");
+  if (!Object.keys(st.projects).length) { m.textContent = "還沒有工程"; return; }
+  try { m.textContent = "產生中…"; await saveBlob(await Exporter.xlsx(JSZip, LC.reportSheets(st.projects, st.school)), `工程報表_${C.roc(C.today())}.xlsx`); m.textContent = "已下載"; }
+  catch (err) { m.textContent = "匯出失敗：" + (err.message || err); }
+});
+
+// 日曆活動的連結：#p=工程id → 直接打開該工程的下一步
+function openHash() {
+  const m = /^#p=([A-Za-z0-9_-]{1,40})$/.exec(location.hash || "");
+  if (!m) return false;
+  history.replaceState(null, "", location.pathname + location.search);
+  if (!st.projects[m[1]]) return false;
+  st.cur = m[1]; ls.set("cur", st.cur); renderList(); goTo(evalP(st.cur).step.go);
+  return true;
+}
+window.addEventListener("hashchange", openHash);
+
+/* ---------- 啟動 ---------- */
+function restoreDrafts() {
+  const d = drafts(), pending = [];
+  for (const [id, v] of Object.entries(d)) {
+    const server = st.projects[id];
+    if (!v || !v.data) continue;
+    if (!server || !server.updatedAt || v.at > server.updatedAt) pending.push({ id, data: v.data });
+    else dropDraft(id);
+  }
+  st.pending = pending.length ? pending : null;
+  const sd = ls.get("schoolDraft", null);
+  if (sd) { st.school = Object.assign(E.defaultSchool(), sd); st.schoolDirty = true; }
+}
+async function boot() {
+  updSync("載入中…");
+  if (!API) {
+    const d = ls.get("local", null);
+    if (d) { st.projects = d.projects || {}; Object.values(st.projects).forEach(p => Lifecycle.normalize(p)); Object.assign(st.school, d.school || {}); }
+    restoreDrafts();
+    if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null;
+    await useTemplate("builtin").catch(() => updSync("範本資料載入失敗"));
+    renderAll(); updSync(); if (!openHash()) showTab(ls.get("main", "dash") === "work" && st.cur ? "work" : ls.get("main", "dash")); return;
+  }
+  try {
+    const d = await apiGet({ action: "load" });
+    st.projects = {}; st.base = {};
+    d.projects.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p)); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
+    st.school = Object.assign(E.defaultSchool(), d.school || {});
+    st.templates = d.templates || [];
+    restoreDrafts();
+    if (!st.projects[st.cur]) st.cur = sortedIds()[0] || null;
+    const act = st.templates.find(t => t.active);
+    try { await useTemplate(act ? act.id : "builtin"); } catch (e) { await useTemplate("builtin"); updSync("上傳的範本讀取失敗，暫用內建版"); }
+    renderAll(); updSync(); if (!openHash()) showTab(ls.get("main", "dash") === "work" && st.cur ? "work" : ls.get("main", "dash"));
+    loadShare();
+    setTimeout(() => tplParts().catch(() => {}), 2000);
+  } catch (e) {
+    if (e.code === "code") { askCode(st.code ? "存取碼錯誤，請重新輸入" : ""); return; }
+    updSync("連不上 Google 試算表：" + (e.message || e));
+    renderBanners();
+  }
+}
+renderBanners(); boot();
+}
+</script>
+</body>
+</html>
