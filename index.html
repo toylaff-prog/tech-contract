@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>工程契約與驗收管理</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#b8121f">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="工程契約">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
 <style>
@@ -157,7 +165,8 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
 .gate{max-width:420px;margin:60px auto;text-align:center}
 .help li,.help p{max-width:72ch}
 @media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr)}.seal{position:relative;top:0}}
-@media(max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
+.side-more>summary{display:none}
+@media(max-width:760px){.side-more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--mute);font-size:15px}.side-more>summary::before{content:"▸";margin-inline-end:6px}.side-more[open]>summary::before{content:"▾"}.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
 @media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -173,6 +182,7 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
     <button class="newbtn" id="newp" type="button">＋ 新增工程</button>
     <input type="search" id="psearch" placeholder="搜尋工程" aria-label="搜尋工程">
     <ul id="plist" aria-label="工程清單"></ul>
+    <details class="side-more" id="sideMore" open><summary>你的名字・備份</summary>
     <div class="side-foot">
       <label for="who" class="hint">你的名字（記錄是誰暫存的）</label>
       <input type="text" id="who" autocomplete="name">
@@ -182,6 +192,7 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
       <input type="file" id="imp" accept=".json,application/json" hidden>
       <span class="msg" id="bkmsg"></span>
     </div>
+    </details>
   </aside>
   <main>
     <div id="banners"></div>
@@ -276,13 +287,13 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
 </div>
 <dialog id="histDlg" class="dlg" aria-labelledby="histH"><div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div><div id="histBody"></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="config.js?v=20261126b"></script>
-<script src="engine.js?v=20261126b"></script>
-<script src="templater.js?v=20261126b"></script>
-<script src="checklist.js?v=20261126b"></script>
-<script src="lifecycle.js?v=20261126b"></script>
-<script src="govdocs.js?v=20261126b"></script>
-<script src="exporter.js?v=20261126b"></script>
+<script src="config.js?v=20261126c"></script>
+<script src="engine.js?v=20261126c"></script>
+<script src="templater.js?v=20261126c"></script>
+<script src="checklist.js?v=20261126c"></script>
+<script src="lifecycle.js?v=20261126c"></script>
+<script src="govdocs.js?v=20261126c"></script>
+<script src="exporter.js?v=20261126c"></script>
 <script>
 {
 const E = window.ContractEngine, T = window.Templater, CFG = window.TSC_CONFIG || {};
@@ -500,7 +511,7 @@ $("#projBody").addEventListener("click", e => {
 /* ---------- 下載 ---------- */
 async function tplParts() {
   if (st.tpl.parts) return st.tpl.parts;
-  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261126b").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
+  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261126c").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
   if (!Array.isArray(r)) throw new Error("範本檔讀取失敗");
   st.tpl.parts = r; return r;
 }
@@ -835,7 +846,7 @@ drop.addEventListener("drop", e => handleTplFile(e.dataTransfer.files[0]));
 
 async function useTemplate(id) {
   if (id === "builtin" || !API) {
-    const [points, regions] = await Promise.all([fetch("points.json?v=20261126b").then(r => r.json()), fetch("regions.json?v=20261126b").then(r => r.json())]);
+    const [points, regions] = await Promise.all([fetch("points.json?v=20261126c").then(r => r.json()), fetch("regions.json?v=20261126c").then(r => r.json())]);
     st.tpl = { id: "builtin", version: "115.4.23", points, regions, parts: null };
   } else {
     const g = part => fetch(API + "?" + new URLSearchParams({ action: "tplfile", id, part, code: st.code })).then(r => r.text()).then(t => JSON.parse(t));
@@ -1167,6 +1178,35 @@ async function boot() {
   }
 }
 renderBanners(); boot();
+
+/* ---------- 與其他裝置同步：回到畫面時、每 2 分鐘自動取得最新資料（有未暫存修改時不動） ---------- */
+let lastPull = Date.now();
+function busyEditing() {
+  if (st.saving || st.dirty.size || st.schoolDirty || st.conflicts.length || st.pending) return true;
+  const a = document.activeElement;
+  return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.id !== "psearch");
+}
+async function pullLatest() {
+  if (!API || !st.code || document.hidden || busyEditing()) return;
+  lastPull = Date.now();
+  let d; try { d = await apiGet({ action: "load" }); } catch (e) { return; }
+  if (busyEditing()) return;
+  const sig = list => JSON.stringify(list.map(p => [p.id, p.updatedAt]).sort());
+  const school = Object.assign(E.defaultSchool(), d.school || {});
+  const same = sig(d.projects) === sig(Object.keys(st.projects).map(id => ({ id, updatedAt: st.base[id] || "" }))) && JSON.stringify(school) === JSON.stringify(st.school);
+  if (same) return;
+  st.projects = {}; st.base = {};
+  d.projects.forEach(p => { st.projects[p.id] = Lifecycle.normalize(Object.assign(NEWP(), p)); st.base[p.id] = p.updatedAt; st.snap[p.id] = JSON.stringify(st.projects[p.id]); });
+  st.school = school; st.templates = d.templates || st.templates;
+  if (!st.projects[st.cur]) { st.cur = sortedIds()[0] || null; ls.set("cur", st.cur); }
+  renderAll(); updSync("已同步其他裝置的最新資料");
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastPull > 30000) pullLatest(); });
+setInterval(() => { if (Date.now() - lastPull > 110000) pullLatest(); }, 120000);
+
+/* ---------- 手機 App（可加到主畫面、離線也能開） ---------- */
+if (matchMedia("(max-width:760px)").matches && ls.get("who", "")) $("#sideMore").open = false;
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 </script>
 </body>
