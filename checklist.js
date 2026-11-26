@@ -39,7 +39,8 @@
     ["accept", "驗收合格日", "驗收紀錄簽認合格之日"],
     ["cert", "結算驗收證明書核定日", ""],
     ["paid", "尾款付款日", "簽准付款之日"],
-    ["years", "保固期（年）", "依契約約定"],
+    ["years", "保固期（年）", "依契約約定；保固期滿日＝驗收合格日加上保固年限"],
+    ["wplan", "預計保固會勘日（選填）", "想在期滿前提早會勘就填；未填時以保固期滿日為會勘期限"],
     ["wcheck", "保固期滿會勘日", ""],
     ["refund", "保固保證金發還日", ""],
   ];
@@ -89,7 +90,7 @@
     [5, "確認保固期起算日（一般為驗收合格日）並登錄保固期間", "驗收合格日", ["accept", 0], "學校", ["14A"], "工契16"],
     [5, "確認保固保證金已繳納或自尾款扣抵，並登記保管", "付款前", null, "學校／會計", ["14A", "14C"], "14A、14C"],
     [5, "保固期間發現瑕疵：通知廠商限期修補，並留存通知及修復紀錄", "保固期間", null, "學校／廠商", [], "工契16"],
-    [5, "保固期滿前會勘，確認無待修瑕疵", "保固期滿前", ["accept", "years"], "學校／廠商", [], "工契16"],
+    [5, "保固期滿前會勘，確認無待修瑕疵", "保固期滿前（預計會勘日或保固期滿日）", ["accept", "years", "wplan"], "學校／廠商", [], "工契16"],
     [5, "保固期滿且無待解決事項，無息發還保固保證金", "保固期滿後", null, "學校／會計", [], "工契14、16"],
   ];
   const STATUS = ["未辦", "辦理中", "已完成", "不適用"];
@@ -97,11 +98,18 @@
   const pd = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ""); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
   const iso = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   const roc = s => { const d = pd(s); return d ? (d.getFullYear() - 1911) + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0") : ""; };
-  function dueOf(rule, dates, ctx) {
+  // ov：本案契約另有約定時的調整 { n 日數, unit 日曆天／工作天, incl 當日是否算入 }
+  function dueOf(rule, dates, ctx, ov) {
     if (!rule) return "";
+    if (ov && typeof rule[1] === "number" && rule[1] > 0) {
+      const b = rule[0] === "actual" ? (dates.actual || dates.verify) : dates[rule[0]];
+      const n = ov.n !== undefined && ov.n !== "" ? +ov.n : rule[1];
+      if (pd(b) && ctx && ctx.countDays && ctx.cal) return ctx.countDays(b, n, ov.unit || "日曆天", !!ov.incl, ctx.cal);
+    }
     const baseS = rule[0] === "plan" ? (ctx && ctx.plan) || "" : rule[0] === "actual" ? (dates.actual || dates.verify) : dates[rule[0]];
     const base = pd(baseS); if (!base) return "";
     if (rule[1] !== "years" && ctx && ctx.countDays && ctx.cal) return ctx.countDays(baseS, rule[1], "日曆天", false, ctx.cal);
+    if (rule[1] === "years" && rule[2] && dates[rule[2]]) return dates[rule[2]];
     if (rule[1] === "years") {
       const y = parseFloat(dates.years); if (!isFinite(y) || y <= 0) return "";
       // 加月數時，目標月份沒有同一天（如 2/29、1/31）就取該月最後一天（民法第121條）
@@ -148,7 +156,7 @@
     const m = money(ctx);
     const rows = ITEMS.map((it, i) => {
       const stored = (st[i] && st[i].s) || "", [aS, aNote, aD] = autoStatus(i, dates, ctx);
-      const s = stored || aS, due = dueOf(it[3], dates, ctx);
+      const ov = (chk.rules || {})[i], s = stored || aS, due = dueOf(it[3], dates, ctx, ov);
       if (s !== "不適用") total++;
       if (s === "已完成") done++;
       if (stored && stored !== "未辦") started = true;
@@ -158,7 +166,8 @@
       if (open && stage < 0) stage = it[0];
       let item = it[1];
       if (i === 11 && m.audit === false) item += "（本案未達查核金額，免報上級機關監辦）";
-      return { i, stage: it[0], item, when: it[2], due, who: it[4], files: it[5].map(k => ({ name: FILES[k][0], url: U(FILES[k][1]) })), basis: it[6], s, auto: !stored, autoS: aS, autoNote: stored ? "" : aNote, autoD: aD, d: (st[i] && st[i].d) || (stored ? "" : aD), dStored: (st[i] && st[i].d) || "", note: (st[i] && st[i].n) || "", left, open, kind: AUTO[i][2] };
+      const when = ov && typeof (it[3] || [])[1] === "number" && it[3][1] > 0 ? `${it[2]} → 本案契約：${ov.n !== undefined && ov.n !== "" ? ov.n : it[3][1]} ${ov.unit || "日曆天"}，${ov.incl ? "當日算入" : "次日起算"}` : it[2];
+      return { i, stage: it[0], item, when, due, who: it[4], files: it[5].map(k => ({ name: FILES[k][0], url: U(FILES[k][1]) })), basis: it[6], s, auto: !stored, autoS: aS, autoNote: stored ? "" : aNote, autoD: aD, d: (st[i] && st[i].d) || (stored ? "" : aD), dStored: (st[i] && st[i].d) || "", note: (st[i] && st[i].n) || "", left, open, kind: AUTO[i][2] };
     });
     if (ORDER.some(k => dates[k])) started = true;
     return { rows, done, total, pct: total ? Math.round(done / total * 100) : 0, started, next, overdue, stage: stage < 0 ? STAGES.length : stage };
@@ -170,5 +179,6 @@
     16: "限期改正通知", 17: "複驗紀錄", 19: "結算驗收證明書", 20: "上級機關備查公文", 21: "結算驗收證明書發函", 22: "末期空污費申報",
     23: "竣工計價前檢核清單", 24: "竣工計價單", 25: "付款簽呈", 26: "監造報告書核定", 27: "工程決算書", 29: "保固保證金收據",
     30: "瑕疵通知及修復紀錄", 31: "保固期滿會勘紀錄", 32: "保固保證金發還簽呈" };
-  G.Checklist = { DOCS, DATES, ORDER, STAGES, ITEMS, STATUS, FILES, evaluate, dueOf, roc, today, daysBetween, money };
+  const warrantyEnd = dates => dueOf(["accept", "years"], dates || {});
+  G.Checklist = { warrantyEnd, DOCS, DATES, ORDER, STAGES, ITEMS, STATUS, FILES, evaluate, dueOf, roc, today, daysBetween, money };
 })(typeof globalThis !== "undefined" ? globalThis : this);

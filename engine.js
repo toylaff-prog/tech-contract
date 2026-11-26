@@ -255,6 +255,16 @@
     return plan;
   }
 
+  const PRESET_REVIEW = [
+    ["F093", "第10條 保險「天災責任附加條款」"], ["F095", "第10條 保險「定作人通知附加條款」"],
+    ["F099", "第11條「甲方不收取保證金」"], ["F121", "第14條「以乙方為著作人」"],
+    ["F131", "第14條「乙方取得著作財產權，授權甲方利用」"], ["F159", "第14條「可再授權」"],
+  ];
+  /** 範本原檔已勾、本案沒有另外指定的項目（依目前範本判斷） */
+  function presetChecked(values, points) {
+    const byId = {}; (points || []).forEach(p => { byId[p.id] = p; });
+    return PRESET_REVIEW.filter(([id]) => !values[id] && byId[id] && byId[id].orig === "■").map(x => x[1]);
+  }
   function checks(project, stage) {
     const p = project || {}, out = [];
     if (!p.title) out.push("尚未填案名");
@@ -409,5 +419,5 @@
   }
 
   const USED_IDS = ["F001","F002","F003","F004","F009","F010","F011","F012","F013","F014","F015","F016","F017","F018","F019","F020","F021","F022","F023","F024","F033","F036","F039","F040","F044","F045","F046","F047","F048","F049","F052","F062","F064","F070","F071","F072","F075","F078","F079","F084","F085","F086","F087","F088","F089","F090","F091","F092","F102","F103","F104","F105","F106","F107","F108","F109","F182","F193","F194","F196","F197","F198","F199","F200","F201","F202","F203","F204","F210","F211","F212","F213","F214","F215","F216","F217","F218","F222","F230","F231","F242","F245","F246","F247","F249","F256","F257","F266","F268","F269","F270","F285","F287","F288","F338","F339","F340","F341","F342","F343","F372","F373","F421","F425","F426","F477","F478","F479","F482","F483","F484","F485","F486","F487","F537","F538","F539","F540"];
-  G.ContractEngine = { USED_IDS, feeEstimate, reminders, defVal, defaultAlerts, fixedIdMap, PROJECT_FIELDS, FIXED, OPTIONS, defaultSchool, computeValues, regionPlan, checks, buildDocx, calcFee, fmt };
+  G.ContractEngine = { USED_IDS, feeEstimate, reminders, defVal, defaultAlerts, fixedIdMap, PROJECT_FIELDS, FIXED, OPTIONS, defaultSchool, computeValues, regionPlan, checks, buildDocx, calcFee, fmt, presetChecked, PRESET_REVIEW };
 })(typeof globalThis !== "undefined" ? globalThis : this);

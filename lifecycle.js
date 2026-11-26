@@ -49,15 +49,26 @@
     if (id === "T5" && ms.T6 && ms.T6.d) return ["已完成", "已審查，推定已交付"];
     return ["未辦", ""];
   }
+  // 期限日數取自本案契約最後的數值（學校設定＋本案進階覆寫），沒填就用範本「未載明者」的規定
+  const SRC_ID = { planSubmit: "F046", planReview: "F047", stageReview: "F048", roster: "F049", certPlan: "F052", days: "F040" };
+  function contractDays(p, school) {
+    const E = G.ContractEngine; if (!E) return { unit: school.daytype === "日曆天" ? "日曆天" : "工作天", n: k => k === "days" ? num(p.days) : num(school[k]) };
+    const v = E.computeValues(p, school, "sign").values, dft = {};
+    E.FIXED.forEach(f => { dft[f[1]] = f[3]; });
+    return { unit: v.F045 === "V" ? "日曆天" : "工作天", n: k => num(v[SRC_ID[k]]) || (k === "days" ? 0 : num(dft[k])) };
+  }
   function techRows(p, school, cal, now) {
-    const t = p.tech || {}, ms = t.ms || {}, unit = school.daytype === "日曆天" ? "日曆天" : "工作天";
+    const t = p.tech || {}, ms = t.ms || {}, cd = contractDays(p, school), unit = cd.unit;
     return TECH.filter(r => !r[8] || r[8](school, p)).map(([id, item, base, src, incl, who, basis, note]) => {
-      const n = src === "days" ? num(p.days) : num(school[src]);
-      const baseDate = base === "start" ? t.start : base === "sign" ? t.sign : ((ms[base] || {}).d || "");
-      const due = baseDate && n ? countDays(baseDate, n, src === "days" ? (t.daysUnit || unit) : unit, incl, cal) : "";
+      const n = cd.n(src);
+      // 審查期限從「學校收件日」起算；只填了廠商提出日時暫以提出日計算
+      const b = ms[base] || {}, baseDate = base === "start" ? t.start : base === "sign" ? t.sign : (b.r || b.d || "");
+      const proxy = (base === "T1" || base === "T5") && !b.r && b.d;
+      const du = src === "days" ? (t.daysUnit || unit) : unit;
+      const due = baseDate && n ? countDays(baseDate, n, du, incl, cal) : "";
       const st = ms[id] || {}, [aS, aNote] = techAuto(id, p), s = st.s || aS, open = s !== "已完成" && s !== "不適用";
-      const when = (n ? `${BASE_LABEL[base]}${incl ? "起" : "後"} ${n} ${src === "days" ? (t.daysUnit || unit) : unit}內` : "（契約未載明日數）") + (note ? "；" + note : "");
-      return { key: id, phase: "tech", item, when, basis, who, due, s, auto: !st.s, autoS: aS, autoNote: st.s ? "" : aNote, autoD: "", d: st.d || "", note: st.n || "", nt: st.nt || "", open, left: open && due ? C.daysBetween(now, due) : null, files: [] };
+      const when = (n ? `${BASE_LABEL[base]}${incl ? "起" : "後"} ${n} ${du}內` : "（契約未載明日數）") + (proxy ? "（未填學校收件日，暫以廠商提出日計算）" : "") + (note ? "；" + note : "");
+      return { key: id, phase: "tech", item, when, basis, who, due, s, auto: !st.s, autoS: aS, autoNote: st.s ? "" : aNote, autoD: "", d: st.d || "", r: st.r || "", recv: id === "T1" || id === "T5", note: st.n || "", nt: st.nt || "", open, left: open && due ? C.daysBetween(now, due) : null, files: [] };
     });
   }
 
