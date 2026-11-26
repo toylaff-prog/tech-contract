@@ -311,7 +311,7 @@
   // ---------- 工程報表（匯出 Excel） ----------
   function reportSheets(projects, school, now) {
     now = now || C.today();
-    const n = v => { const x = Number(String(v == null ? "" : v).replace(/,/g, "")); return x || ""; };
+    const n = v => { const t = String(v == null ? "" : v).replace(/,/g, "").trim(); if (t === "") return ""; const x = Number(t); return isFinite(x) ? x : ""; };   // 空白＝未填，0 照實呈現
     const stamp = iso => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getFullYear() - 1911}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
     const list = Object.keys(projects).map(id => ({ id, p: projects[id], ev: evaluate(projects[id], school, now) }))
       .sort((a, b) => (b.ev.overdue > 0) - (a.ev.overdue > 0) || (a.ev.next ? a.ev.next.due : "9").localeCompare(b.ev.next ? b.ev.next.due : "9"));
@@ -324,8 +324,8 @@
       rows: list.map(({ p, ev }) => {
         const b = p.build || {}, d = ((p.chk || {}).dates) || {}, tot = ev.techTotal + ev.accept.total, done = ev.techDone + ev.accept.done;
         return [p.name || "", p.title || "", ev.label, tot ? done / tot : 0, ev.step.title, ev.next ? C.roc(ev.next.due) : "", ev.next ? ev.next.left : "", ev.overdue,
-          p.vendor || "", n(p.fee), b.name || "", n(b.budget), n(b.amount), b.start ? C.roc(b.start) : "", ev.plan.date ? C.roc(ev.plan.date) : "",
-          d.accept ? C.roc(d.accept) : "", (ev.accept.rows[31] || {}).due ? C.roc(ev.accept.rows[31].due) : "", (p.updatedBy ? p.updatedBy + " " : "") + stamp(p.updatedAt)];
+          p.vendor || "", n(p.fee || (p.method === "建造費用百分比法" && G.ContractEngine ? G.ContractEngine.calcFee(p) : "")), b.name || "", n(b.budget), n(b.amount), b.start ? C.roc(b.start) : "", ev.plan.date ? C.roc(ev.plan.date) : "",
+          d.accept ? C.roc(d.accept) : "", C.warrantyEnd(d) ? C.roc(C.warrantyEnd(d)) : "", (p.updatedBy ? p.updatedBy + " " : "") + stamp(p.updatedAt)];
       }), red: r => r[7] > 0 };
     const items = [];
     list.forEach(({ p, ev }) => {

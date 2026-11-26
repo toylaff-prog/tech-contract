@@ -1,10 +1,10 @@
 /* 工程契約與驗收管理：離線外殼快取。改版時把 VERSION 改成和 index.html 的 ?v= 相同。 */
-const VERSION = "20261127b";
+const VERSION = "20261127h";
 const CACHE = "tc-" + VERSION;
 const SHELL = [
   "./", "index.html", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png",
-  ...["config", "engine", "templater", "checklist", "lifecycle", "govdocs", "exporter"].map(n => n + ".js?v=" + VERSION),
+  ...["config", "engine", "templater", "checklist", "lifecycle", "govdocs", "exporter", "contract-import"].map(n => n + ".js?v=" + VERSION),
   "points.json?v=" + VERSION, "regions.json?v=" + VERSION
 ];
 

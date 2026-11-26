@@ -166,15 +166,21 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
 .help li,.help p{max-width:72ch}
 @media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr)}.seal{position:relative;top:0}}
 .side-more>summary{display:none}
-.dlgf{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
-.sum{width:100%;border-collapse:collapse;font-size:15px}.sum th{text-align:left;width:9em;color:var(--mute);font-weight:500;padding:7px 10px 7px 0;vertical-align:top}.sum td{padding:7px 0;border-bottom:1px solid var(--line,#ddd)}
+.dlgf{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
+.impbtn{width:100%;margin:8px 0 4px;min-height:44px}dialog.dlg.wide{width:min(980px,96vw)}.impt input.inp,.impt select.inp{width:100%}.cand{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}.impsum{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--field);line-height:1.7}
+.deskh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}.deskh select{max-width:14em;margin-inline-start:auto}
+.tagc{display:inline-block;font-size:13px;padding:1px 8px;border-radius:10px;margin-inline-start:4px;white-space:nowrap}.tagc.chase{background:#b8121f;color:#fff}.tagc.inside{background:var(--ink);color:var(--bg)}
+.desk .dname{font-weight:700;text-align:left}.flog{margin:6px 0 0;padding-inline-start:1.4em;font-size:14px}.flowtag{font-size:13px;margin-top:4px}
+.sum{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}.sum td{overflow-wrap:anywhere}.sum th{white-space:nowrap;text-align:left;width:7em;color:var(--mute);font-weight:500;padding:7px 10px 7px 0;vertical-align:top}.sum td{padding:7px 0;border-bottom:1px solid var(--line,#ddd)}
 .sum .warn{color:#b8121f}
-@media(max-width:760px){.side-more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--mute);font-size:15px}.side-more>summary::before{content:"▸";margin-inline-end:6px}.side-more[open]>summary::before{content:"▾"}.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
+@media(max-width:760px){.savebox{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);justify-content:space-between;flex-wrap:nowrap}.savebox #sync{font-size:14px;line-height:1.35}.savebox #saveBtn{flex:none}body{padding-bottom:84px}
+body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{order:-1}body.ondash .dashtop .note{display:none}body.ondash .side{border-top:1px solid var(--line)}
+.side-more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--mute);font-size:15px}.side-more>summary::before{content:"▸";margin-inline-end:6px}.side-more[open]>summary::before{content:"▾"}.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
 @media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
-<body>
+<body class="ondash">
 <header>
   <h1>工程契約與驗收管理</h1>
   <span class="sub" id="tplName">範本載入中…</span>
@@ -183,6 +189,7 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
 <div class="wrap">
   <aside class="side">
     <button class="newbtn" id="newp" type="button">＋ 新增工程</button>
+    <button class="ghost impbtn" id="impOld" type="button">📄 匯入歷年契約</button>
     <input type="search" id="psearch" placeholder="搜尋工程" aria-label="搜尋工程">
     <ul id="plist" aria-label="工程清單"></ul>
     <details class="side-more" id="sideMore" open><summary>你的名字・備份</summary>
@@ -288,16 +295,29 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
     </div>
   </main>
 </div>
+<dialog id="impDlg" class="dlg wide" aria-labelledby="impH"><div class="dlgh"><h2 id="impH">匯入歷年契約，建立今年工程</h2><button type="button" class="ghost" id="impCancel">取消</button></div>
+<div id="impBody"></div>
+<div class="dlgf" id="impFoot" hidden><button type="button" class="ghost" data-close="1">取消</button><button type="button" class="primary" id="impGo">建立今年工程</button></div></dialog>
+<dialog id="flowDlg" class="dlg" aria-labelledby="flowTitle"><div class="dlgh"><h2 id="flowTitle">表件流向</h2><button type="button" class="ghost" id="flowCancel">關閉</button></div>
+<div id="flowInfo"></div>
+<h3 class="stg" style="margin-top:14px">更新進度</h3>
+<div class="kd"><div class="f"><label for="flowStatus">目前狀態</label><select id="flowStatus" class="inp"></select><span class="hint">上傳附件不等於已收件；退回補正後再收到，改回「已收件」</span></div>
+<div class="f"><label for="flowOwner">目前等誰／誰經手</label><select id="flowOwner" class="inp"></select></div>
+<div class="f"><label for="flowFollow">下次追蹤日（校內催辦，選填）</label><input id="flowFollow" type="date"><div class="seg" style="margin-top:6px"><button type="button" data-fq="tomorrow">明天</button><button type="button" data-fq="d3">3 天後</button><button type="button" data-fq="week">1 週後</button><button type="button" data-fq="clear">不設</button></div></div></div>
+<div class="f"><label for="flowNote">辦理情形／文號（與原清單「備註／文號」同一欄）</label><textarea id="flowNote" class="ta" rows="2"></textarea></div>
+<div class="msg" id="flowMsg" role="status"></div>
+<div class="dlgf"><button type="button" class="ghost" id="flowSource">前往原清單</button><button type="button" class="primary" id="flowSave">儲存</button></div></dialog>
 <dialog id="dlDlg" class="dlg" aria-labelledby="dlH"><div class="dlgh"><h2 id="dlH">下載前核對</h2><button type="button" class="ghost" data-close="1">取消</button></div><div id="dlBody"></div><div class="dlgf"><button type="button" class="ghost" data-close="1">取消</button><button type="button" class="primary" id="dlGo">確認並下載</button></div></dialog>
 <dialog id="histDlg" class="dlg" aria-labelledby="histH"><div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div><div id="histBody"></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="config.js?v=20261127b"></script>
-<script src="engine.js?v=20261127b"></script>
-<script src="templater.js?v=20261127b"></script>
-<script src="checklist.js?v=20261127b"></script>
-<script src="lifecycle.js?v=20261127b"></script>
-<script src="govdocs.js?v=20261127b"></script>
-<script src="exporter.js?v=20261127b"></script>
+<script src="config.js?v=20261127h"></script>
+<script src="engine.js?v=20261127h"></script>
+<script src="templater.js?v=20261127h"></script>
+<script src="checklist.js?v=20261127h"></script>
+<script src="lifecycle.js?v=20261127h"></script>
+<script src="govdocs.js?v=20261127h"></script>
+<script src="exporter.js?v=20261127h"></script>
+<script src="contract-import.js?v=20261127h"></script>
 <script>
 {
 const E = window.ContractEngine, T = window.Templater, CFG = window.TSC_CONFIG || {};
@@ -360,7 +380,7 @@ function updSync(msg) {
   $("#saveBtn").disabled = st.saving || n === 0;
   if (msg) { el.textContent = msg; el.className = ""; return; }
   if (st.saving) { el.textContent = "暫存中…"; el.className = ""; return; }
-  el.textContent = n ? `有 ${n} 項未暫存` + (st.noLocal ? "（這台裝置空間不足，草稿也沒存到，請先不要關閉網頁）" : st.offline ? "（離線中，已存成本機草稿）" : "") : (st.lastSaved ? "已暫存 " + tm(st.lastSaved) : (st.offline ? "離線中：顯示 " + tm(st.offline) + " 的資料" : API ? "已載入" : "資料只存在這台電腦"));
+  el.textContent = n ? `有 ${n} 項未暫存` + (st.noLocal ? "（這台裝置空間不足，草稿也沒存到，請先不要關閉網頁）" : st.offline ? "（離線中，本機草稿已保留）" : API ? "（本機草稿已保留，尚未存到共用試算表）" : "") : (st.lastSaved ? (API ? "共用試算表已儲存 " : "已存在這台電腦 ") + tm(st.lastSaved) : (st.offline ? "離線中：顯示 " + tm(st.offline) + " 的資料" : API ? "已載入共用試算表" : "資料只存在這台電腦"));
   el.className = n ? "dirty" : "";
 }
 async function saveAll() {
@@ -478,7 +498,7 @@ function renderProject() {
   if (!p) { host.innerHTML = `<div class="empty"><h2 style="font-size:24px;margin-bottom:10px">還沒有選擇工程</h2><p>按左上「＋ 新增工程」開始，或從清單選一個。</p></div>`; return; }
   const m = p.method, num = 'inputmode="decimal" autocomplete="off"';
   host.innerHTML = `<div class="grid"><div>
-  <section class="card"><h2><span class="no">1</span>基本資料</h2>${txt("name")}${txt("title")}${txt("vendor")}</section>
+  <section class="card"><h2><span class="no">1</span>基本資料</h2>${p.importedFrom ? `<p class="note">由去年契約「${esc(p.importedFrom.file)}」匯入（${esc(tm(p.importedFrom.at))}${p.importedFrom.by ? "・" + esc(p.importedFrom.by) : ""}）。去年的廠商、金額與履約紀錄沒有帶入。</p>` : ""}${txt("name")}${txt("title")}${txt("vendor")}</section>
   <section class="card"><h2><span class="no">2</span>委託內容</h2>${seg("type")}
     <div class="f"><span class="lb" id="l-ph">委託階段（可複選）</span><div class="seg" role="group" aria-labelledby="l-ph">${tog("plan")}${tog("design")}${tog("super")}</div></div>
     <div class="f"><span class="lb" id="l-ex">附加服務</span><div class="seg" role="group" aria-labelledby="l-ex">${tog("permit")}${tog("tender")}</div><span class="hint">對應第2條附件的「代辦申請建照與圖說送審」「協辦招標及決標」</span></div></section>
@@ -519,8 +539,8 @@ function refreshDerived() {
   $("#stageHint").textContent = st.stage === "tender" ? "不填乙方與決標後才確定的金額" : "填入全部資料";
   const est = E.feeEstimate(p), eo = $("#estOut");
   if (eo) eo.innerHTML = !est ? '<p class="hint" style="margin:0">輸入預估建造費用，依《機關委託技術服務廠商評選及計費辦法》附表分段累進試算。</p>'
-    : `<div class="estbig"><span>本案委託階段參考服務費 <b>${nf(est.fee)} 元</b></span><span class="hint">約為建造費用 ${est.feeRate.toFixed(2)}%</span></div>
-      <div class="hint">${esc(est.basis)}｜全部階段合計 ${nf(est.total)} 元（平均 ${est.totalRate.toFixed(2)}%）</div>
+    : `<div class="estbig"><span>本案委託金額（參考）<b>${nf(est.fee)} 元</b></span><span class="hint">約為建造費用 ${est.feeRate.toFixed(2)}%</span></div>
+      <div class="hint">${esc(est.basis)}｜全階段參考服務費 ${nf(est.total)} 元（規劃＋設計＋監造，平均 ${est.totalRate.toFixed(2)}%）｜工程金額（預估建造費用）${nf(p.cost)} 元</div>
       <table><thead><tr><th>建造費用級距</th><th class="r">費率</th><th class="r">金額</th></tr></thead><tbody>${est.rows.map(r => `<tr><td>${nf(Math.round(r.from)) || 0}～${nf(Math.round(r.to))} 元</td><td class="r">${r.rate}%</td><td class="r">${nf(Math.round(r.fee))}</td></tr>`).join("")}</tbody></table>
       <div class="seg"><button type="button" data-est="fee">服務費帶入 ${nf(est.fee)}</button>${p.method === "建造費用百分比法" ? `<button type="button" data-est="rate">費率帶入 ${est.feeRate.toFixed(2)}%</button>` : ""}</div>
       <p class="hint" style="margin:8px 0 0">附表為編列預算之參考，實際費率仍須簽報機關首長核定並載明於招標文件。</p>`;
@@ -580,7 +600,7 @@ $("#projBody").addEventListener("click", e => {
 /* ---------- 下載 ---------- */
 async function tplParts() {
   if (st.tpl.parts) return st.tpl.parts;
-  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261127b").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
+  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261127h").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
   if (!Array.isArray(r)) throw new Error("範本檔讀取失敗");
   st.tpl.parts = r; return r;
 }
@@ -599,7 +619,9 @@ async function download(btn) {
     if (st.conflicts.some(c => c.id === id)) { msg.textContent = "沒有產生 Word：這個工程有版本衝突，請先選擇要用哪一版。"; return; }
     const act = st.templates.find(t => t.active), actId = act ? act.id : "builtin";
     if (API && actId !== st.tpl.id) { msg.textContent = "沒有產生 Word：全校使用的範本已切換為其他版本，請按左下「重新載入最新資料」後再下載。"; return; }
-    const parts = await tplParts();
+    let parts;
+    try { parts = await tplParts(); }
+    catch (e) { msg.textContent = `Word 尚無法產生：讀不到契約範本檔（${e.message || e}）。工程資料${st.dirty.has(id) ? "在這台裝置的草稿" : API ? "已存在共用試算表" : "已存在這台電腦"}，不受影響。`; return; }
     dlSnap = { id, stage: st.stage, naMode: st.naMode, dropGuide: st.dropGuide, at: st.base[id] || "",
       project: JSON.parse(JSON.stringify(st.projects[id])), school: JSON.parse(JSON.stringify(st.school)),
       tpl: { id: st.tpl.id, version: st.tpl.version, points: st.tpl.points, regions: st.tpl.regions || {}, parts } };
@@ -625,7 +647,7 @@ function dlSummary(s) {
     ${row("乙方", tender ? "招標版不填" : esc(v.F002 || "（未填）"), !tender && !v.F002)}
     ${row("委託階段", esc(phases))}
     ${row("計價方式", esc(p.method || "（未選）"), !p.method)}
-    ${row("金額", money)}
+    ${row("本案委託服務費", money)}
     ${row("契約型態", shape)}
     ${row("範本預先勾選", pre.length ? esc(pre.join("、")) + "<br><span class='hint'>沿用範本原檔的勾選；不適用請到「契約進階欄位」改</span>" : "已逐項指定")}
     ${row("尚未填寫", miss.length ? esc(miss.join("、")) : "✓ 必要欄位都填好了", miss.length)}
@@ -709,11 +731,12 @@ async function lineClick(e) {
 document.addEventListener("click", e => { if (e.target.closest("[data-ln],[data-cp]")) { e.stopPropagation(); lineClick(e); } }, true);
 
 // 期程表（技術服務履約、竣工驗收共用）
+function flowOf(ph, r) { const p = st.projects[st.cur] || {}; return (((ph === "tech" ? (p.tech || {}).ms : (p.chk || {}).items) || {})[r.key] || {}).flow || {}; }
 function rowTable(rows, ph) {
   return `<table class="stack"><thead><tr><th style="width:2.5em">#</th><th>事項</th><th style="width:8.5em">應完成日</th><th style="width:7em">主辦</th><th style="width:11em">狀態</th><th style="width:9.5em">完成日期</th><th style="width:9em">備註／文號</th></tr></thead><tbody>
   ${rows.map(r => { const k = esc(String(r.key)), n = ph === "tech" ? r.key : r.key + 1;
     return `<tr class="${r.s === "已完成" ? "s-done" : r.open && r.left !== null && r.left < 0 ? "s-late" : ""}"><td data-l="#">${esc(String(n))}</td>
-    <td data-l="事項">${esc(r.item)}<div class="hint">${esc([r.when, r.basis].filter(Boolean).join("｜"))}</div>${r.autoNote ? `<div class="hint autonote">⚙ ${esc(r.autoNote)}</div>` : ""}${r.files && r.files.length ? `<div class="files">${r.files.map(f => `<a href="${esc(f.url)}" target="_blank" rel="noopener">📄 ${esc(f.name)}</a>`).join("")}</div>` : ""}${LC.notifiable(r) ? lineBtns(st.cur, r) : ""}${upCell(ph, r)}</td>
+    <td data-l="事項">${esc(r.item)}<div class="hint">${esc([r.when, r.basis].filter(Boolean).join("｜"))}</div>${r.autoNote ? `<div class="hint autonote">⚙ ${esc(r.autoNote)}</div>` : ""}${r.files && r.files.length ? `<div class="files">${r.files.map(f => `<a href="${esc(f.url)}" target="_blank" rel="noopener">📄 ${esc(f.name)}</a>`).join("")}</div>` : ""}${(fl => fl.status ? `<div class="flowtag">📋 ${esc(fl.status)}・${esc(fl.owner || "經手待確認")}${fl.follow ? "・追蹤 " + esc(C.roc(fl.follow)) : ""} <button type="button" class="link" data-form-id="${esc(st.cur)}" data-form-key="${ph === "tech" ? "tech-" : "acc-"}${k}">更新進度</button></div>` : "")(flowOf(ph, r))}${LC.notifiable(r) ? lineBtns(st.cur, r) : ""}${upCell(ph, r)}</td>
     <td data-l="應完成日">${r.due ? esc(C.roc(r.due)) : '<span class="hint">—</span>'}<br>${badge(r)}</td>
     <td data-l="主辦">${esc(r.who.replace("技服廠商", "技術服務廠商"))}</td>
     <td data-l="狀態"><select data-ph="${ph}" data-key="${k}" data-f="s" aria-label="${esc(String(n))} 狀態" class="${r.auto ? "isauto" : ""}"><option value="" ${r.auto ? "selected" : ""}>自動：${esc(r.autoS)}</option>${C.STATUS.map(o => `<option value="${o}" ${!r.auto && o === r.s ? "selected" : ""}>${o}</option>`).join("")}</select></td>
@@ -880,13 +903,14 @@ $("#chkBody").addEventListener("click", async e => {
 
 // 工程總表
 function renderDash() {
+  if (deskProject && !st.projects[deskProject]) deskProject = "";
   const ids = Object.keys(st.projects);
   if (!ids.length) { $("#dashBody").innerHTML = `<p class="note">尚無工程。按左上「＋ 新增工程」開始。</p>`; return; }
   const list = ids.map(id => ({ id, p: st.projects[id], ev: evalP(id) }))
     .sort((a, b) => (b.ev.overdue > 0) - (a.ev.overdue > 0) || (a.ev.next ? a.ev.next.due : "9").localeCompare(b.ev.next ? b.ev.next.due : "9"));
   const up = LC.upcoming(st.projects, st.school);
   const upHtml = `<h3 class="stg" style="margin-top:0">近期該通知<small>7 日內到期或已逾期、3 日內未通知過</small></h3>` + (up.length ? `<table class="stack" style="margin-bottom:22px"><thead><tr><th>工程</th><th>事項</th><th style="width:8em">應完成日</th><th style="width:8em">對象</th><th style="width:15em">通知</th></tr></thead><tbody>${up.map(u => `<tr><td data-l="工程"><b>${esc(u.p.name || u.p.title || "未命名")}</b><div class="hint">${u.r.phase === "tech" ? "技術服務" : "竣工驗收"}</div></td><td data-l="事項">${esc(u.r.item)}</td><td data-l="應完成日">${esc(C.roc(u.r.due))}<br>${badge(u.r)}</td><td data-l="對象">${esc(u.r.who.replace("技服廠商", "技術服務廠商"))}</td><td data-l="通知">${lineBtns(u.id, u.r)}</td></tr>`).join("")}</tbody></table>` : `<p class="note" style="margin-bottom:22px">目前沒有需要通知廠商的事項。</p>`);
-  $("#dashBody").innerHTML = upHtml + `<h3 class="stg">各工程進度</h3><table class="stack"><thead><tr><th>工程</th><th>目前階段</th><th>下一步</th><th style="width:8em">最近期限</th><th style="width:6em">逾期項</th></tr></thead><tbody>${list.map(({ id, p, ev }) => `<tr data-open="${esc(id)}">
+  $("#dashBody").innerHTML = renderDesk(list) + upHtml + `<h3 class="stg">各工程進度</h3><table class="stack"><thead><tr><th>工程</th><th>目前階段</th><th>下一步</th><th style="width:8em">最近期限</th><th style="width:6em">逾期項</th></tr></thead><tbody>${list.map(({ id, p, ev }) => `<tr data-open="${esc(id)}">
     <td data-l="工程"><b>${esc(p.name || p.title || "未命名工程")}</b></td>
     <td data-l="階段">${esc(ev.label)}<div class="ministeps">${ev.steps.map(s => `<span title="${esc(s.name + "：" + s.status)}">${esc(s.name)}・${esc(s.status)}</span>`).join("")}</div></td>
     <td data-l="下一步"><b>${esc(ev.step.title)}</b>${ev.step.detail ? `<div class="hint">${esc(ev.step.detail)}</div>` : ""}</td>
@@ -894,6 +918,290 @@ function renderDash() {
     <td data-l="逾期">${ev.overdue ? `<b class="danger">${ev.overdue}</b>` : "0"}</td></tr>`).join("")}</tbody></table>`;
 }
 $("#dashBody").addEventListener("click", e => { const tr = e.target.closest("tr[data-open]"); if (!tr) return; st.cur = tr.dataset.open; ls.set("cur", st.cur); renderList(); goTo(evalP(st.cur).step.go); });
+
+/* ---------- 工程表件追蹤（首頁「今天要辦」） ----------
+   表件流向（誰手上、什麼狀態、何時追）與契約期限分開保存：
+   it.flow = { status, owner, follow, at, by }，it.flowLog = 最近 20 筆異動，備註／文號沿用原清單的 it.n */
+const FLOW_STATES = ["待送件", "已收件", "審查中", "退回補正", "待核章", "已辦結"];
+const FLOW_OWNERS = ["學校承辦", "校內核章", "監造", "施工廠商", "技服廠商", "其他"];
+const INSIDE = new Set(["學校承辦", "校內核章"]);
+let deskFilter = "今天要辦", deskProject = "", deskMsg = "", flowCtx = null;
+const todayTW = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date());
+const twDate = iso => iso ? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date(iso)) : "";
+const addDays = (s, n) => { const d = new Date(s + "T00:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+function ownerGuess(r) {
+  const w = r.who || "";
+  if (/監造/.test(w)) return "監造";
+  if (/技服/.test(w)) return "技服廠商";
+  if (/廠商/.test(w)) return r.phase === "tech" ? "技服廠商" : "施工廠商";
+  return "學校承辦";
+}
+function flowNext(f) {
+  const o = f.owner || "（經手人待確認）";
+  switch (f.status) {
+    case "待送件": return INSIDE.has(f.owner) ? "學校整理後送出" : `等${o}送件`;
+    case "已收件": return INSIDE.has(f.owner) ? "學校審查或轉送審查" : `確認${o}是否開始審查`;
+    case "審查中": return INSIDE.has(f.owner) ? "完成審查" : `等${o}審查完成`;
+    case "退回補正": return `追${o}補正，補回後改成「已收件」`;
+    case "待核章": return f.owner === "校內核章" ? "送校內核章" : INSIDE.has(f.owner) ? "簽核用印" : `等${o}核章`;
+    case "已辦結": return "已辦結";
+    default: return "待確認：請登錄目前流向";
+  }
+}
+function formEntries(id, p, ev, today) {
+  const curAcc = ev.accept.stage;
+  return [...ev.tech, ...ev.accept.rows].filter(r => r.s !== "不適用" && (r.phase === "tech" ? TECH_DOC[r.key] : C.DOCS[r.key])).map(r => {
+    const key = (r.phase === "tech" ? "tech-" : "acc-") + r.key;
+    const item = (r.phase === "tech" ? ((p.tech || {}).ms || {}) : ((p.chk || {}).items || {}))[r.key] || {};
+    const flow = item.flow || {}, files = ((p.files || {})[key]) || [], log = item.flowLog || [];
+    const tracked = !!flow.status && flow.status !== "已辦結";
+    const current = r.phase === "tech" ? ev.phase === "tech" : r.stage === curAcc;
+    // 進行中：已登錄流向未辦結，或目前階段、辦理中、契約期限 14 天內（含已過）的項目；未來階段收在「全部適用表件」
+    const active = tracked || (!flow.status && r.open && (current || r.s === "辦理中" || (!!r.due && r.due <= addDays(today, 14))));
+    const inside = tracked && INSIDE.has(flow.owner);
+    const followDue = tracked && !!flow.follow && flow.follow <= today;
+    const late = r.open && r.due && r.due < today;
+    const chase = tracked && !inside && (followDue || (!flow.follow && late));
+    return { id, key, r, flow, files, log, item, active, inside, chase, followDue, late, tracked,
+      name: docName(r.phase, r), project: p.name || p.title || "未命名工程", note: item.n || "" };
+  });
+}
+function lastDone(x) {
+  const l = x.log[x.log.length - 1];
+  if (l) return `${C.roc(twDate(l.at))} ${l.by || ""}：${l.status}${l.note ? "，" + l.note : ""}`;
+  return x.note ? x.note : "待確認";
+}
+function renderDesk(list) {
+  const today = todayTW();
+  const all = list.flatMap(({ id, p, ev }) => formEntries(id, p, ev, today)).filter(x => !deskProject || x.id === deskProject);
+  const F = {
+    "今天要辦": x => x.inside || x.chase,
+    "進行中": x => x.active,
+    "全部適用表件": () => true,
+  };
+  const rows = all.filter(F[deskFilter]);
+  const key = x => (x.chase ? "0" : x.inside ? "1" : "2") + (x.flow.follow || x.r.due || "9999");
+  rows.sort((a, b) => key(a).localeCompare(key(b)) || a.project.localeCompare(b.project, "zh-Hant"));
+  const tag = x => x.chase ? `<span class="tagc chase">要追${x.flow.owner ? "・" + esc(x.flow.owner) : ""}</span>` : x.inside ? `<span class="tagc inside">輪到校內</span>` : "";
+  const row = x => `<tr class="${x.chase ? "s-late" : ""}">
+    <td data-l="工程">${esc(x.project)}</td>
+    <td data-l="表件"><button type="button" class="link dname" data-form-id="${esc(x.id)}" data-form-key="${esc(x.key)}">${esc(x.name)}</button> ${tag(x)}<div class="hint">附件 ${x.files.length} 件</div></td>
+    <td data-l="狀態"><b>${esc(x.flow.status || "未登錄")}</b><div class="hint">經手：${esc(x.flow.owner || "待確認")}</div></td>
+    <td data-l="下一步">${esc(x.flow.status ? flowNext(x.flow) : (x.r.open ? "待確認：請登錄目前流向" : "—"))}</td>
+    <td data-l="上次辦理"><span class="hint">${esc(lastDone(x))}</span></td>
+    <td data-l="追蹤／期限">${x.flow.follow ? `追蹤 <b class="${x.followDue ? "danger" : ""}">${esc(C.roc(x.flow.follow))}</b>` : `<span class="hint">追蹤日未設</span>`}<br><span class="hint">契約期限 ${x.r.due ? esc(C.roc(x.r.due)) : "—"}${x.late ? "（已過）" : ""}</span></td></tr>`;
+  const head = `<thead><tr><th style="width:9em">工程</th><th>表件</th><th style="width:7.5em">狀態</th><th style="width:12em">下一步</th><th style="width:12em">上次辦理</th><th style="width:9.5em">追蹤／期限</th></tr></thead>`;
+  const tbl = list => list.length ? `<table class="stack desk">${head}<tbody>${list.map(row).join("")}</tbody></table>` : "";
+  let body;
+  if (deskFilter === "今天要辦") {
+    const a = rows.filter(x => x.chase), b = rows.filter(x => !x.chase && x.inside);
+    body = (a.length ? `<h3 class="stg">到期要追（${a.length}）<small>追蹤日到了，或契約期限已過但還在外部</small></h3>` + tbl(a) : "")
+      + (b.length ? `<h3 class="stg">輪到校內處理（${b.length}）</h3>` + tbl(b) : "")
+      + (!a.length && !b.length ? `<p class="note">今天沒有要追或輪到校內的表件。${all.some(x => x.active && !x.tracked) ? "有進行中的表件還沒登錄流向，可到「進行中」查看。" : ""}</p>` : "");
+  } else body = tbl(rows) || `<p class="note">沒有符合的表件。</p>`;
+  const opts = list.map(x => `<option value="${esc(x.id)}" ${x.id === deskProject ? "selected" : ""}>${esc(x.p.name || x.p.title || "未命名工程")}</option>`).join("");
+  return `<section class="card deskcard"><div class="deskh"><h2 style="margin:0">工程表件追蹤</h2><span class="hint">今天 ${esc(C.roc(today))}</span><select id="deskProject" class="inp" aria-label="篩選工程"><option value="">全部工程</option>${opts}</select></div>
+    <div class="seg" role="group" aria-label="表件篩選">${Object.keys(F).map(k => `<button type="button" data-dfilter="${k}" aria-pressed="${k === deskFilter}">${k}（${all.filter(F[k]).length}）</button>`).join("")}</div>
+    <div class="msg" id="deskMsg" role="status">${esc(deskMsg)}</div>${body}</section>`;
+}
+function openFlow(id, key) {
+  const p = st.projects[id]; if (!p) return;
+  const x = formEntries(id, p, evalP(id), todayTW()).find(e => e.key === key); if (!x) return;
+  flowCtx = { id, key, phase: x.r.phase, rkey: x.r.key };
+  $("#flowTitle").textContent = x.project + "・" + x.name;
+  const files = x.files.length ? x.files.map(f => `<a class="chip" href="${esc(f.url)}" target="_blank" rel="noopener">📎 ${esc(f.name)}</a>`).join("") : `<span class="hint">尚無附件</span>`;
+  $("#flowInfo").innerHTML = `<table class="sum">
+    <tr><th>目前狀態</th><td>${esc(x.flow.status || "待確認")}</td></tr>
+    <tr><th>目前等誰</th><td>${esc(x.flow.owner || "待確認")}</td></tr>
+    <tr><th>上次辦理</th><td>${esc(lastDone(x))}</td></tr>
+    <tr><th>下次追蹤日</th><td>${x.flow.follow ? esc(C.roc(x.flow.follow)) : "未設定"}<span class="hint">（校內催辦用，不影響契約期限）</span></td></tr>
+    <tr><th>契約應完成日</th><td>${x.r.due ? esc(C.roc(x.r.due)) : "—"}<div class="hint">${esc([x.r.when, x.r.basis].filter(Boolean).join("｜") || "")}</div></td></tr>
+    <tr><th>流程主辦</th><td>${esc(x.r.who || "")}</td></tr>
+    <tr><th>附件</th><td>${files}${API ? ` <button type="button" class="link" data-up="${esc(key)}" data-upid="${esc(id)}" data-dir="${x.r.phase === "tech" ? 0 : 2 + x.r.stage}" data-pre="${esc(x.name)}">＋上傳附件</button>` : ""}</td></tr></table>
+    ${x.log.length ? `<details><summary>流向紀錄（${x.log.length}）</summary><ol class="flog">${x.log.slice().reverse().map(l => `<li>${esc(C.roc(twDate(l.at)))} ${esc(l.by || "")}：${esc(l.status)}・${esc(l.owner || "待確認")}${l.follow ? "・追蹤 " + esc(C.roc(l.follow)) : ""}${l.note ? "<br><span class='hint'>" + esc(l.note) + "</span>" : ""}</li>`).join("")}</ol></details>` : ""}`;
+  $("#flowStatus").value = x.flow.status || "";
+  $("#flowOwner").value = x.flow.owner || "";
+  $("#flowFollow").value = x.flow.follow || "";
+  $("#flowNote").value = x.note;
+  $("#flowMsg").textContent = "";
+  if (!$("#flowDlg").open) $("#flowDlg").showModal();
+}
+$("#flowStatus").innerHTML = `<option value="">待確認</option>` + FLOW_STATES.map(s => `<option>${s}</option>`).join("");
+$("#flowOwner").innerHTML = `<option value="">待確認</option>` + FLOW_OWNERS.map(s => `<option>${s}</option>`).join("");
+// 選狀態時自動帶出常見的經手人，減少輸入
+$("#flowStatus").addEventListener("change", () => {
+  const s = $("#flowStatus").value, c = flowCtx; if (!c) return;
+  const r = (c.phase === "tech" ? evalP(c.id).tech : evalP(c.id).accept.rows).find(x => String(x.key) === String(c.rkey)) || {};
+  if (s === "待核章" && !INSIDE.has($("#flowOwner").value)) $("#flowOwner").value = "校內核章";
+  else if (s === "退回補正" || s === "待送件") { if (!$("#flowOwner").value || INSIDE.has($("#flowOwner").value)) $("#flowOwner").value = ownerGuess(r); }
+  else if (s === "已收件" && !INSIDE.has($("#flowOwner").value)) $("#flowOwner").value = "學校承辦";   // 收件後輪到學校處理（轉送審查或自行審查）
+});
+$("#flowDlg").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.fq) { const t = todayTW(), d = new Date(t + "T00:00:00"); const add = { tomorrow: 1, d3: 3, week: 7 }[b.dataset.fq]; $("#flowFollow").value = b.dataset.fq === "clear" ? "" : addDays(t, add); return; }
+  if (b.id === "flowCancel") { $("#flowDlg").close(); return; }
+  if (b.id === "flowSource") {
+    const c = flowCtx; if (!c) return; $("#flowDlg").close();
+    st.cur = c.id; ls.set("cur", c.id); renderList(); showTab(c.phase === "tech" ? "tech" : "chk");
+    const f = document.querySelector(`select[data-ph="${c.phase}"][data-key="${c.rkey}"]`);
+    if (f) { const g = f.closest("details"); if (g) g.open = true; f.focus(); f.scrollIntoView({ block: "center" }); }
+    return;
+  }
+  if (b.id === "flowSave") {
+    const c = flowCtx, p = c && st.projects[c.id]; if (!p) return;
+    const status = $("#flowStatus").value, owner = $("#flowOwner").value, follow = $("#flowFollow").value, note = $("#flowNote").value.trim();
+    if (!status && (owner || follow)) { $("#flowMsg").textContent = "請先選擇目前狀態。"; return; }
+    const it = LC.store(p, { phase: c.phase, key: c.rkey });
+    const before = JSON.stringify([it.flow || {}, it.n || ""]);
+    if (status) it.flow = { status, owner, follow, at: new Date().toISOString(), by: ls.get("who", "") }; else delete it.flow;
+    if (note) it.n = note; else delete it.n;
+    if (before !== JSON.stringify([it.flow || {}, it.n || ""]) && status) {
+      it.flowLog = (it.flowLog || []).concat([{ at: new Date().toISOString(), by: ls.get("who", ""), status, owner, follow, note }]).slice(-20);
+    }
+    // 已辦結：原清單的這一項一併標為已完成（沒填完成日就記今天）
+    if (status === "已辦結" && it.s !== "已完成") { it.s = "已完成"; if (!it.d) it.d = todayTW(); }
+    markDirty(c.id);
+    b.disabled = true; $("#flowMsg").textContent = "儲存中…";
+    const ok = await saveAll();
+    b.disabled = false;
+    const name = $("#flowTitle").textContent;
+    if (ok && !st.dirty.has(c.id)) { deskMsg = `「${name}」已存到共用試算表（${tm(new Date().toISOString())}）。`; $("#flowDlg").close(); }
+    else if (!API) { deskMsg = `「${name}」已存在這台電腦（尚未設定共用試算表）。`; $("#flowDlg").close(); }
+    else { const why = $("#sync").textContent; $("#flowMsg").textContent = (/^沒有存到/.test(why) ? why : "沒有存到共用試算表，修改仍保留在這台裝置的草稿。") + " 可再按一次「儲存」，或先關閉，連線後按右上「暫存」。"; deskMsg = `「${name}」尚未存到共用試算表，修改保留在本機草稿。`; }
+    renderDash(); if (st.cur === c.id) refreshWork();
+  }
+});
+$("#flowDlg").addEventListener("close", () => { flowCtx = null; });
+$("#dashBody").addEventListener("change", e => { if (e.target.id === "deskProject") { deskProject = e.target.value; renderDash(); } });
+$("#dashBody").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.dfilter) { deskFilter = b.dataset.dfilter; renderDash(); }
+});
+document.addEventListener("click", e => { const b = e.target.closest("button[data-form-key]"); if (b) openFlow(b.dataset.formId, b.dataset.formKey); });
+
+/* ---------- 匯入歷年契約，建立今年工程 ----------
+   選去年的 Word → 核對「去年寫什麼、今年用什麼」→ 建立今年工程（按一次就存）→ 開啟工程頁 */
+const IMP = { res: null, file: "", id: null };
+const impInput = document.createElement("input");
+impInput.type = "file"; impInput.hidden = true; impInput.id = "impFile";
+impInput.accept = ".docx,.doc,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+document.body.appendChild(impInput);
+const IMP_ROWS = [
+  // [欄位, 標籤, 種類, 預設：keep＝沿用去年辨識值｜blank＝今年留白]
+  ["name", "工程簡稱", "text", "keep"], ["title", "契約案名", "text", "keep"],
+  ["type", "工程類型", "select", "keep"], ["plan", "委託：規劃", "yn", "keep"], ["design", "委託：設計", "yn", "keep"], ["super", "委託：監造", "yn", "keep"],
+  ["permit", "代辦建照／圖說送審", "yn", "keep"], ["tender", "協辦招標及決標", "yn", "keep"],
+  ["method", "計價方式", "select", "keep"], ["shape", "契約型態（附件2）", "select", "keep"],
+  ["vendor", "乙方（得標廠商）", "text", "blank"], ["fee", "服務費（元）", "money", "blank"], ["cost", "預估建造費用（元）", "money", "blank"],
+  ["rate", "費率（%）", "text", "blank"], ["range", "適用建造費用範圍（元）", "money", "blank"], ["days", "規劃設計交付期限（日）", "text", "blank"],
+];
+function impOptions(k) { return k === "type" ? ["建築工程", "非建築公共工程"] : k === "method" ? F.method.opts : k === "shape" ? ["單一工程", "分期", "分區", "開口契約"] : ["是", "否"]; }
+function impOpen() {
+  IMP.res = null; IMP.file = ""; IMP.id = null;
+  $("#impBody").innerHTML = `<p>選去年的 Word 契約，系統會讀出去年填的內容，讓你逐項決定今年要沿用還是改寫，再建立今年的工程。<b>去年的檔案不會被修改。</b></p>
+    <div class="tools"><button type="button" class="primary" id="impPick">選擇去年的 Word（.docx）</button></div>
+    <p class="hint">只能讀 .docx。舊的 .doc 請用 Word 開啟後「另存新檔」成 .docx；PDF 或掃描檔請打開後全選複製，貼到下方。</p>
+    <details id="impPasteBox"><summary>改用貼上契約文字</summary><textarea id="impPaste" class="ta" rows="6" placeholder="把去年契約的文字整份貼在這裡"></textarea><div class="tools"><button type="button" class="ghost" id="impPasteGo">辨識貼上的文字</button></div></details>
+    <div class="msg" id="impMsg" role="status"></div>`;
+  $("#impFoot").hidden = true;
+  if (!$("#impDlg").open) $("#impDlg").showModal();
+}
+async function impRead(textOrFile) {
+  const msg = $("#impMsg");
+  try {
+    let text = textOrFile, name = "貼上的文字";
+    if (typeof textOrFile !== "string") {
+      const f = textOrFile; name = f.name;
+      if (/\.(doc|pdf)$/i.test(f.name)) { msg.textContent = `「${f.name}」不是 .docx：請用 Word 另存成 .docx 再選，或打開檔案全選複製，用「改用貼上契約文字」。`; $("#impPasteBox").open = true; return; }
+      msg.textContent = "讀取中…";
+      text = await ContractImport.docxText(JSZip, DOMParser, await f.arrayBuffer());
+    }
+    if (!String(text).trim()) { msg.textContent = "沒有讀到文字，請確認檔案內容。"; return; }
+    const defaults = E.computeValues(NEWP(), st.school, "sign").values;
+    IMP.res = ContractImport.analyze(text, st.tpl.points, { defaults }); IMP.file = name;
+    impReview();
+  } catch (e) { msg.textContent = "讀不到這個檔案：" + (e.message || e) + "。可改用「貼上契約文字」。"; }
+}
+function impReview() {
+  const r = IMP.res, Fv = r.fields, yr = (/(\d{3})年/.exec(Fv.title.last || IMP.file) || [])[1] || "";
+  const stem = IMP.file.replace(/\.docx$/i, "");
+  Fv.name = { last: stem === "貼上的文字" ? "" : stem, ctx: "（來源檔名）", sure: stem !== "貼上的文字" };
+  const low = r.total && r.found / r.total < 0.35;
+  const cell = ([k, label, kind, pol]) => {
+    const f = Fv[k] || { last: "" }, last = f.last;
+    // 契約型態：去年是分期／分區／開口契約時不預填，請承辦確認今年是否相同
+    const now = pol === "keep" && f.sure && !(k === "shape" && last !== "單一工程") ? last : "";
+    const show = v => kind === "money" && v ? nf(v) : v;
+    let ctl;
+    if (kind === "text" || kind === "money") ctl = `<input type="text" class="inp" data-imp="${k}" value="${esc(now)}" ${kind === "money" ? 'inputmode="numeric"' : ""} placeholder="${pol === "blank" ? "今年留白" : "請填寫"}">`;
+    else ctl = `<select class="inp" data-imp="${k}"><option value="">${kind === "yn" ? "（未辨識，請選）" : "請選擇"}</option>${impOptions(k).map(o => `<option ${o === now ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+    const use = (pol === "blank" && last) ? `<button type="button" class="link" data-impuse="${k}" data-v="${esc(last)}">沿用去年</button>` : "";
+    const cands = (f.candidates || []).length > 1 ? `<div class="hint">去年契約出現 ${f.candidates.length} 個金額，請點選要用的：</div>${f.candidates.map(c => `<div class="cand"><button type="button" class="ghost" data-impuse="${k}" data-v="${esc(c.value)}">${esc(nf(c.value))} 元</button><span class="hint">${esc(c.label)}｜…${esc(c.ctx)}…</span></div>`).join("")}` : "";
+    const opts = f.options ? `<div class="hint">去年同時勾了：${esc(f.options.join("、"))}，請選今年採用哪一個。</div>` : "";
+    const lastTxt = last ? esc(show(last)) : `<span class="hint">${(f.candidates || []).length > 1 ? "多個候選" : "辨識不到"}</span>`;
+    return `<tr><td data-l="欄位"><b>${esc(label)}</b>${pol === "blank" ? '<div class="hint">今年預設留白</div>' : ""}</td><td data-l="去年辨識值">${lastTxt}${f.ctx ? `<details><summary>原文</summary><span class="hint">…${esc(f.ctx)}…</span></details>` : ""}</td><td data-l="今年採用值">${ctl}${use}${cands}${opts}</td></tr>`;
+  };
+  $("#impBody").innerHTML = `<div class="banner ok" style="margin:0 0 10px">來源：<b>${esc(IMP.file)}</b>　建立後套用目前啟用的契約範本：<b>工程會 ${esc(st.tpl.version || "")}${st.tpl.id === "builtin" ? "（內建）" : "（上傳版）"}</b></div>
+    ${low ? `<div class="banner">只辨識到 ${r.found} 處填寫點，去年可能用了不同版本的範本或改過條文，請逐欄核對。</div>` : ""}
+    ${yr ? `<div class="tools"><span class="hint">案名、簡稱裡的年度不會自動改。</span><button type="button" class="ghost" id="impYear" data-y="${yr}">把「${yr}」改成「${+yr + 1}」（只改簡稱與案名）</button></div>` : ""}
+    <table class="stack impt"><thead><tr><th style="width:9em">欄位</th><th>去年辨識值</th><th style="width:45%">今年採用值</th></tr></thead><tbody>${IMP_ROWS.map(cell).join("")}</tbody></table>
+    <h3 class="stg">需人工確認（${r.review.length}）<small>去年和目前範本預設不同的勾選或填寫；勾選才會帶入成本案設定</small></h3>
+    ${r.review.length ? `<table class="stack"><tbody>${r.review.map((x, i) => `<tr><td data-l="帶入">${x.shape ? "—" : `<input type="checkbox" data-imprev="${i}" aria-label="帶入 ${esc(x.id)}">`}</td><td data-l="條次">${esc(x.sec)}<div class="hint">${esc(x.id)}</div></td><td data-l="去年">${esc(x.old)}</td><td data-l="今年預設">${esc(x.now)}</td><td data-l="原文"><span class="hint">…${esc(x.ctx || "")}…</span></td></tr>`).join("")}</tbody></table>` : `<p class="note">沒有發現和目前範本不同的個案勾選。</p>`}
+    <p class="note">特約條款、手寫修改的條文不會自動帶入，建立後請在「契約進階欄位」或下載的 Word 核對。去年的履約進度、收件與核定日期、附件、下載紀錄都不會帶入。</p>
+    <div class="impsum" id="impSum"></div><div class="msg" id="impMsg" role="status"></div>`;
+  $("#impFoot").hidden = false; $("#impGo").textContent = "建立今年工程"; $("#impGo").disabled = false;
+  impSummary();
+}
+function impValues() {
+  const o = {}; document.querySelectorAll("#impBody [data-imp]").forEach(el => { o[el.dataset.imp] = el.value.trim(); }); return o;
+}
+function impSummary() {
+  const v = impValues(), lab = Object.fromEntries(IMP_ROWS.map(r => [r[0], r[1]]));
+  const kept = IMP_ROWS.filter(r => v[r[0]]).map(r => lab[r[0]]), blank = IMP_ROWS.filter(r => !v[r[0]]).map(r => lab[r[0]]);
+  const rev = document.querySelectorAll("#impBody [data-imprev]:checked").length, revAll = IMP.res.review.filter(x => !x.shape).length;
+  $("#impSum").innerHTML = `<b>建立前確認</b><br>將帶入：${esc(kept.join("、") || "（無）")}<br>今年留白：${esc(blank.join("、") || "（無）")}<br>需人工確認：${revAll} 項，勾選帶入 ${rev} 項${v.shape === "開口契約" ? "<br><span class='danger'>契約型態選了「開口契約」，請確認今年確實是開口契約。</span>" : ""}`;
+}
+function impBuild(p) {
+  const v = impValues();
+  ["name", "title", "type", "plan", "design", "super", "permit", "tender", "method", "shape", "vendor", "rate", "days"].forEach(k => { if (v[k]) p[k] = v[k]; });
+  ["fee", "cost", "range"].forEach(k => { if (v[k]) p[k] = v[k].replace(/[,，\s元]/g, ""); });
+  p.adv = {};
+  document.querySelectorAll("#impBody [data-imprev]:checked").forEach(c => { const x = IMP.res.review[+c.dataset.imprev]; p.adv[x.id] = x.value; });
+  p.importedFrom = { file: IMP.file, at: new Date().toISOString(), by: ls.get("who", ""), tpl: st.tpl.version || "" };
+  return p;
+}
+async function impCreate() {
+  const v = impValues(), msg = $("#impMsg"), go = $("#impGo");
+  if (!v.name && !v.title) { msg.textContent = "請至少填「工程簡稱」或「契約案名」。"; return; }
+  if (!v.shape) { msg.textContent = "請選擇今年的「契約型態」（去年是開口契約時，請確認今年是否仍是）。"; return; }
+  go.disabled = true;
+  // 同一份匯入只建立一個工程：重按或重試都回到同一個 ID
+  if (!IMP.id || !st.projects[IMP.id]) { IMP.id = newId(); st.projects[IMP.id] = impBuild(NEWP()); }
+  else impBuild(st.projects[IMP.id]);
+  st.cur = IMP.id; ls.set("cur", IMP.id); markDirty(IMP.id); renderList();
+  msg.textContent = "儲存中…";
+  const ok = await saveAll();
+  if (!API) { msg.textContent = ""; $("#impDlg").close(); updSync("已建立今年工程（資料只存在這台電腦）"); showTab("proj"); return; }
+  if (ok && !st.dirty.has(IMP.id)) { $("#impDlg").close(); st.notices.push(`已建立「${st.projects[IMP.id].name || st.projects[IMP.id].title}」並存入共用試算表（來源：${IMP.file}）。去年的廠商與金額沒有帶入，請到此頁核對後再下載招標版。`); renderBanners(); showTab("proj"); return; }
+  go.disabled = false; go.textContent = "重試儲存";
+  msg.textContent = "今年工程已建立在這台裝置的草稿，但還沒存到共用試算表（" + $("#sync").textContent + "）。可按「重試儲存」，或關閉後連上網路再按右上「暫存」；不會重複建立。";
+}
+$("#impOld").addEventListener("click", impOpen);
+impInput.addEventListener("change", () => { const f = impInput.files[0]; impInput.value = ""; if (f) impRead(f); });
+$("#impDlg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "impPick") { impInput.click(); return; }
+  if (b.id === "impPasteGo") { impRead($("#impPaste").value); return; }
+  if (b.id === "impCancel" || b.dataset.close) { $("#impDlg").close(); return; }
+  if (b.id === "impGo") { impCreate(); return; }
+  if (b.id === "impYear") { const y = b.dataset.y; ["name", "title"].forEach(k => { const el = $(`#impBody [data-imp="${k}"]`); if (el) el.value = el.value.split(y).join(String(+y + 1)); }); impSummary(); return; }
+  if (b.dataset.impuse) { const el = $(`#impBody [data-imp="${b.dataset.impuse}"]`); if (el) { el.value = b.dataset.v; impSummary(); } }
+});
+$("#impDlg").addEventListener("input", () => { if (IMP.res) impSummary(); });
+$("#impDlg").addEventListener("change", () => { if (IMP.res) impSummary(); });
+$("#impDlg").addEventListener("close", () => {
+  if (IMP.id && st.projects[IMP.id] && st.dirty.has(IMP.id)) st.notices.push("匯入的今年工程已建立在這台裝置的草稿，尚未存到共用試算表；連上網路後請按右上「暫存」。"), renderBanners();
+});
 
 /* ---------- 範本管理 ---------- */
 function renderTplList() {
@@ -999,7 +1307,7 @@ drop.addEventListener("drop", e => handleTplFile(e.dataTransfer.files[0]));
 
 async function useTemplate(id) {
   if (id === "builtin" || !API) {
-    const [points, regions] = await Promise.all([fetch("points.json?v=20261127b").then(r => r.json()), fetch("regions.json?v=20261127b").then(r => r.json())]);
+    const [points, regions] = await Promise.all([fetch("points.json?v=20261127h").then(r => r.json()), fetch("regions.json?v=20261127h").then(r => r.json())]);
     st.tpl = { id: "builtin", version: "115.4.23", points, regions, parts: null };
   } else {
     const g = part => fetch(API + "?" + new URLSearchParams({ action: "tplfile", id, part, code: st.code })).then(r => r.text()).then(t => JSON.parse(t));
@@ -1027,6 +1335,7 @@ function showTab(v) {
   if (SUBS.includes(v)) { main = "work"; st.sub = v; ls.set("sub", v); }
   document.querySelectorAll("#mainNav button").forEach(b => b.setAttribute("aria-selected", b.dataset.v === main));
   document.querySelectorAll(".view").forEach(x => x.classList.toggle("on", x.id === "v-" + main));
+  document.body.classList.toggle("ondash", main === "dash");   // 手機：首頁先顯示今天要辦，工程清單移到下面
   if (main === "work") {
     document.querySelectorAll("#subNav button").forEach(b => b.setAttribute("aria-selected", b.dataset.v === st.sub));
     document.querySelectorAll(".sview").forEach(x => x.classList.toggle("on", x.id === "s-" + st.sub));
@@ -1186,7 +1495,7 @@ const upInput = document.createElement("input"); upInput.type = "file"; upInput.
 let upCtx = null;
 document.addEventListener("click", e => {
   const u = e.target.closest("button[data-up]");
-  if (u) { upCtx = { key: u.dataset.up, dir: +u.dataset.dir, pre: u.dataset.pre, btn: u, pid: st.cur }; upInput.value = ""; upInput.click(); return; }
+  if (u) { upCtx = { key: u.dataset.up, dir: +u.dataset.dir, pre: u.dataset.pre, btn: u, pid: u.dataset.upid || st.cur }; upInput.value = ""; upInput.click(); return; }
   const g = e.target.closest("button[data-gov]");
   if (g) { st.govDoc = g.dataset.gov; ls.set("govDoc", st.govDoc); showTab("gov"); window.scrollTo(0, 0); }
 });
@@ -1200,6 +1509,7 @@ upInput.addEventListener("change", async () => {
     const r = await apiPost({ action: "upload", pid: c.pid, pname: p.name || p.title || "", dir: c.dir, prefix: c.pre, filename: f.name, mime: f.type, data: await toB64(f) });
     p.files = p.files || {}; (p.files[c.key] = p.files[c.key] || []).push(r.file);
     markDirty(c.pid); await saveAll(); refreshWork();
+    if ($("#flowDlg").open && flowCtx && flowCtx.id === c.pid) openFlow(flowCtx.id, flowCtx.key);
   } catch (err) { c.btn.disabled = false; say("上傳失敗：" + (err.message || err)); }
 });
 async function openFolder() {
@@ -1363,7 +1673,7 @@ renderBanners(); boot();
 /* ---------- 與其他裝置同步：回到畫面時、每 2 分鐘自動取得最新資料（有未暫存修改時不動） ---------- */
 let lastPull = Date.now(), pullSeq = 0;
 function busyEditing() {
-  if (st.saving || st.dirty.size || st.schoolDirty || st.conflicts.length || st.pending) return true;
+  if ($("#flowDlg").open || $("#dlDlg").open || st.saving || st.dirty.size || st.schoolDirty || st.conflicts.length || st.pending) return true;
   const a = document.activeElement;
   return !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.id !== "psearch");
 }

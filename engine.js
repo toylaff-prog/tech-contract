@@ -323,6 +323,9 @@
     const amt = num(p.fee) || (p.method === "建造費用百分比法" ? num(calcFee(p)) : 0) || (est ? est.fee : 0);
     if (amt >= th) out.push("服務費達公告金額（" + th.toLocaleString("en-US") + "元）以上：招標文件應納入《臺北市政府委託技術服務履約績效管理要點》，評選須列「廠商過去履約績效」項目且權重不低於15%");
     if (est && est.notes.length) est.notes.forEach(n => out.push(n));
+    // 百分比法：手填的服務費小計和「建造費用×費率」不同時，Word 會同時出現兩個對不上的數字
+    if (p.method === "建造費用百分比法" && num(p.fee) && num(calcFee(p)) && Math.abs(num(p.fee) - num(calcFee(p))) >= 1)
+      out.push(`服務費小計 ${num(p.fee).toLocaleString("en-US")} 元與「預估建造費用 × 費率」${num(calcFee(p)).toLocaleString("en-US")} 元不同（差 ${Math.abs(num(p.fee) - num(calcFee(p))).toLocaleString("en-US")} 元）。契約寫的是「小計＝建造費用×費率」，請把服務費清空讓系統計算，或修正費率。`);
     return out;
   }
 
