@@ -1,6 +1,7 @@
 /* 技術服務契約產生核心：欄位定義、值的計算、產生 docx。瀏覽器與 Node 共用。 */
 (function (G) {
   "use strict";
+  const NF_ = new Intl.NumberFormat("en-US");   // 共用一個數字格式器（每次建立很慢）
   const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
   const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
 
@@ -137,7 +138,7 @@
     if (v === null || v === undefined) return "";
     let s = String(v).trim();
     const n = s.replace(/,/g, "");
-    if (/^\d{4,}$/.test(n)) return Number(n).toLocaleString("en-US");
+    if (/^\d{4,}$/.test(n)) return NF_.format(Number(n));
     return s;
   }
 
@@ -332,11 +333,11 @@
     const out = [], th = num((school || {}).announce) || 1500000;
     const est = feeEstimate(p || {});
     const amt = num(p.fee) || (p.method === "建造費用百分比法" ? num(calcFee(p)) : 0) || (est ? est.fee : 0);
-    if (amt >= th) out.push("服務費達公告金額（" + th.toLocaleString("en-US") + "元）以上：招標文件應納入《臺北市政府委託技術服務履約績效管理要點》，評選須列「廠商過去履約績效」項目且權重不低於15%");
+    if (amt >= th) out.push("服務費達公告金額（" + NF_.format(th) + "元）以上：招標文件應納入《臺北市政府委託技術服務履約績效管理要點》，評選須列「廠商過去履約績效」項目且權重不低於15%");
     if (est && est.notes.length) est.notes.forEach(n => out.push(n));
     // 百分比法：手填的服務費小計和「建造費用×費率」不同時，Word 會同時出現兩個對不上的數字
     if (p.method === "建造費用百分比法" && num(p.fee) && num(calcFee(p)) && Math.abs(num(p.fee) - num(calcFee(p))) >= 1)
-      out.push(`服務費小計 ${num(p.fee).toLocaleString("en-US")} 元與「預估建造費用 × 費率」${num(calcFee(p)).toLocaleString("en-US")} 元不同（差 ${Math.abs(num(p.fee) - num(calcFee(p))).toLocaleString("en-US")} 元）。契約寫的是「小計＝建造費用×費率」，請把服務費清空讓系統計算，或修正費率。`);
+      out.push(`服務費小計 ${NF_.format(num(p.fee))} 元與「預估建造費用 × 費率」${NF_.format(num(calcFee(p)))} 元不同（差 ${NF_.format(Math.abs(num(p.fee) - num(calcFee(p))))} 元）。契約寫的是「小計＝建造費用×費率」，請把服務費清空讓系統計算，或修正費率。`);
     return out;
   }
 

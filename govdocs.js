@@ -1,9 +1,10 @@
 /* 公文簽稿：依工程資料自動帶入常用簽、函的草稿（可複製到公文系統或下載 Word）。 */
 (function (G) {
   "use strict";
+  const NF_ = new Intl.NumberFormat("en-US");   // 共用一個數字格式器（每次建立很慢）
   const C = () => G.Checklist;
   const num = v => Number(String(v == null ? "" : v).replace(/[,\s]/g, "")) || 0;
-  const money = v => num(v) ? num(v).toLocaleString("en-US") : "";
+  const money = v => num(v) ? NF_.format(num(v)) : "";
   const amt = v => money(v) ? "新臺幣" + money(v) + "元" : "新臺幣○○元";
   const rocLong = d => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d || ""))) return "○○年○○月○○日";
@@ -12,7 +13,7 @@
   };
   const val = (v, ph) => (v !== undefined && v !== null && String(v).trim()) || ph || "○○";
   const NUMS = "一二三四五六七八九十";
-  const today = () => G.Checklist ? G.Checklist.today() : new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date());
+  const today = () => G.Checklist.today();
 
   /** 施工契約名稱：優先用「施工」頁填的，否則由技術服務案名去掉「委託…」推得 */
   function projName(p) {

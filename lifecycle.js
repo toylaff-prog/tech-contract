@@ -5,6 +5,7 @@
    - 日曆天：末日遇放假日，順延至次一辦公日 */
 (function (G) {
   "use strict";
+  const NF_ = new Intl.NumberFormat("en-US");   // 共用一個數字格式器（每次建立很慢）
   const C = G.Checklist;
   const pd = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ""); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
   const iso = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -167,7 +168,7 @@
       ["verify", "會同查證竣工，填「會同查證屬實日」", R(3), "收受竣工報告日起7日內"],
       ["actual", "填「實際竣工日」（查證確認廠商實際完工的日期）", R(3), "竣工文件期限、結算驗收證明書都以這天為準"],
       ["docs", "收到竣工文件後，填「機關收受竣工文件日」", R(6), "廠商應於竣工次日起15日內提送"],
-    ].concat(needPre ? [["pre", "辦理初驗，合格後填「初驗合格日」", R(13), `預算逾 ${C.money({ preTh: school.preTh }).preTh.toLocaleString("en-US")} 元須先初驗`]] : [])
+    ].concat(needPre ? [["pre", "辦理初驗，合格後填「初驗合格日」", R(13), `預算逾 ${NF_.format(C.money({ preTh: school.preTh }).preTh)} 元須先初驗`]] : [])
       .concat([
         ["accept", "辦理驗收，合格後填「驗收合格日」", needPre ? R(14) : R(13), ""],
         ["cert", "填製並核定結算驗收證明書，填「核定日」", R(19), "驗收合格後15日內"],
@@ -214,10 +215,11 @@
     if (r.phase === "tech") { p.tech = p.tech || {}; p.tech.ms = p.tech.ms || {}; return (p.tech.ms[r.key] = p.tech.ms[r.key] || {}); }
     p.chk = p.chk || {}; p.chk.items = p.chk.items || {}; return (p.chk.items[r.key] = p.chk.items[r.key] || {});
   }
-  function upcoming(projects, school, now) {
+  // evs：呼叫端已算好的各案評估結果（首頁共用，不必每案再算一次）
+  function upcoming(projects, school, now, evs) {
     now = now || C.today(); const out = [];
     Object.keys(projects).forEach(id => {
-      const p = projects[id], ev = evaluate(p, school, now);
+      const p = projects[id], ev = (evs && evs[id]) || evaluate(p, school, now);
       ev.tech.concat(ev.accept.rows).forEach(r => {
         if (!notifiable(r) || r.left === null || r.left > 7) return;
         if (r.nt && C.daysBetween(r.nt, now) < 3) return;
@@ -294,7 +296,7 @@
   function changeList(oldStr, p) {
     let old = {}; try { old = JSON.parse(oldStr || "{}"); } catch (e) { old = {}; }
     const skip = /^(updatedAt|updatedBy|id|changes|v|folder)$|^files(\.|$)/;
-    const show = (v, money) => v === undefined ? "" : /^\d{4}-\d{2}-\d{2}$/.test(v) ? C.roc(v) : money && /^[1-9]\d{3,}$/.test(v) ? Number(v).toLocaleString("en-US") : cut(v, 200);
+    const show = (v, money) => v === undefined ? "" : /^\d{4}-\d{2}-\d{2}$/.test(v) ? C.roc(v) : money && /^[1-9]\d{3,}$/.test(v) ? NF_.format(Number(v)) : cut(v, 200);
     const a = flat(old, "", {}), b = flat(p, "", {}), out = [];
     Array.from(new Set(Object.keys(a).concat(Object.keys(b)))).forEach(k => {
       if (skip.test(k) || (a[k] || "") === (b[k] || "")) return;

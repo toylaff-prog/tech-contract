@@ -1,6 +1,7 @@
 /* 竣工驗收至保固檢核表（依「B.3完工驗收階段」資料夾，臺北市政府所屬各機關工程施工及驗收基準第17～29點整理） */
 (function (G) {
   "use strict";
+  const NF_ = new Intl.NumberFormat("en-US");   // 共用一個數字格式器（每次建立很慢）
   const U = id => "https://drive.google.com/file/d/" + id + "/view";
   const FILES = {
     "00": ["00 竣工驗收作業流程", "1r5lrfzRlMgnVaXkTOQe4i9ZHvK87TDbq"],
@@ -119,14 +120,16 @@
     const d = new Date(base); d.setDate(d.getDate() + rule[1]); return iso(d);
   }
   // 「今天」一律以臺北時間為準（裝置設在其他時區時也不會差一天）
-  const today = () => { try { return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date()); } catch (e) { return iso(new Date()); } };
+  let TWF = null; try { TWF = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }); } catch (e) {}
+  const today = () => TWF ? TWF.format(new Date()) : iso(new Date());
+  const twDate = v => { if (!v) return ""; const d = new Date(v); return isNaN(d) ? "" : TWF ? TWF.format(d) : iso(d); };
   // 日期字串加減天數：全程用年月日計算，不經過 UTC，避免時區造成差一天
   const addDays = (s, n) => { const d = pd(s); if (!d) return ""; d.setDate(d.getDate() + Number(n || 0)); return iso(d); };
   const daysBetween = (a, b) => Math.round((pd(b) - pd(a)) / 86400000);
 
   // 依預算判斷初驗、查核金額（預算未填時，以契約金額能確定的部分判斷）
   const num = v => { const n = parseFloat(String(v ?? "").replace(/,/g, "")); return isFinite(n) ? n : 0; };
-  const fmt = n => Number(n).toLocaleString("en-US");
+  const fmt = n => NF_.format(Number(n));
   function money(ctx) {
     ctx = ctx || {}; const budget = num(ctx.budget), amount = num(ctx.amount), preTh = num(ctx.preTh) || 2e7, auditTh = num(ctx.auditTh) || 5e7;
     const base = budget || amount, by = budget ? "預算" : "契約金額";
@@ -183,5 +186,5 @@
     23: "竣工計價前檢核清單", 24: "竣工計價單", 25: "付款簽呈", 26: "監造報告書核定", 27: "工程決算書", 29: "保固保證金收據",
     30: "瑕疵通知及修復紀錄", 31: "保固期滿會勘紀錄", 32: "保固保證金發還簽呈" };
   const warrantyEnd = dates => dueOf(["accept", "years"], dates || {});
-  G.Checklist = { addDays, warrantyEnd, DOCS, DATES, ORDER, STAGES, ITEMS, STATUS, FILES, evaluate, dueOf, roc, today, daysBetween, money };
+  G.Checklist = { twDate, addDays, warrantyEnd, DOCS, DATES, ORDER, STAGES, ITEMS, STATUS, FILES, evaluate, dueOf, roc, today, daysBetween, money };
 })(typeof globalThis !== "undefined" ? globalThis : this);
