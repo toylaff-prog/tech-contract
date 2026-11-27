@@ -393,7 +393,7 @@ details.calm>summary small{font-weight:400}
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
-/* ---------- 20261127p-lts 新增 ---------- */
+/* ---------- 20261127q-lts 新增 ---------- */
 fieldset.opts{border:1px solid var(--line);border-radius:8px;padding:8px 12px 10px;margin:0 0 12px}
 fieldset.opts legend{font-weight:700;padding:0 4px}
 label.opt{display:flex;gap:10px;align-items:flex-start;padding:6px 4px;cursor:pointer;min-height:44px}
@@ -581,10 +581,13 @@ dialog.dlg{border-radius:20px}
       <h3 style="font-size:20px;margin:16px 0 6px">其他</h3>
       <ul>
         <li>新增工程時可選從哪個階段開始（契約準備／已有技服／直接施工／驗收／保固追蹤），也可設定學校自辦或無委託技術服務；<!--
-          -->中途建檔不必回頭補填前面的欄位。</li>
+          -->中途建檔不必回頭補填前面的欄位。已經建好的工程，也可以在工程頁標題下方的「起始階段」選單隨時更改，已填的資料都會保留。</li>
         <li>第一次使用先到「學校設定」確認一次（保險、違約金、仲裁、申訴會、放假日等）。每年人事行政總處公告新年度辦公日曆表後，<!--
           -->補上放假日，並在「已維護假日資料年度」加上該年；期限跨入沒有維護的年度時，會標示「日期為試算」。</li>
-        <li>首頁「先記下來」是這台裝置的小筆記，可以匯出 JSON，也可以「帶入表件備註」（記事原文會保留）。</li>
+        <li>首頁最上方四張卡片：<b>優先處理</b>（逾期或 3 日內到期、追蹤日到了）、<b>輪到校內</b>（表件在學校承辦或校內核章）、
+          <b>等待他人</b>（在廠商或監造手上、還沒到追蹤日）、<b>本週已完成</b>。點卡片可展開清單。
+          每件工程頁最上方會顯示「上次做到哪裡／現在卡在哪裡／接下來要做什麼」。</li>
+          <li>首頁「先記下來」是這台裝置的小筆記，可以匯出 JSON，也可以「帶入表件備註」（記事原文會保留）。</li>
         <li>「學校設定 → 同仁共用與通知」：一份名單，每人可勾選「日曆」「資料夾」「週報」；網站網址也在這裡設定（週報與日曆連結用）。<!--
           -->日曆同步失敗時，頁首會出現「日曆未同步（點此重試）」。</li>
         <li>「工程 → 公文簽稿」：付款簽呈的金額只接受非負整數（可有千分位逗號）；空白、負數、小數、1e4、全形數字、超付或零尾款都會擋下 Word。</li>
@@ -635,15 +638,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261127p-lts"></script>
-<script src="engine.js?v=20261127p-lts"></script>
-<script src="checklist.js?v=20261127p-lts"></script>
-<script src="lifecycle.js?v=20261127p-lts"></script>
-<script src="govdocs.js?v=20261127p-lts"></script>
+<script src="config.js?v=20261127q-lts"></script>
+<script src="engine.js?v=20261127q-lts"></script>
+<script src="checklist.js?v=20261127q-lts"></script>
+<script src="lifecycle.js?v=20261127q-lts"></script>
+<script src="govdocs.js?v=20261127q-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261127p-lts";
+  const VER = "20261127q-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
@@ -2267,7 +2270,7 @@ dialog.dlg{border-radius:20px}
         `type="button" class="link" data-folder="1">📁 雲端資料夾</button><button type="button" class="link" ` +
         `data-hist="1">🕘 修改紀錄</button>`
       : ""
-  }<label class="entrysel">從哪個階段開始建檔<select id="entrySel" class="inp">${ENTRY_OPTS.map(
+  }<label class="entrysel">起始階段<select id="entrySel" class="inp" title="從哪個階段開始建檔；前面的階段不必補填">${ENTRY_OPTS.map(
     ([v, label]) => `<option value="${v}" ${v === (p.entryStage || "proj") ? "selecte" + "d" : ""}>${esc(label)}</option>`
   ).join("")}</select></label><span class="hint" id="wmsg" role="status"></span></div>
   ${projSummary(st.cur, ev)}
