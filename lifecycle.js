@@ -54,7 +54,11 @@
   const SRC_ID = { planSubmit: "F046", planReview: "F047", stageReview: "F048", roster: "F049", certPlan: "F052", days: "F040" };
   function contractDays(p, school) {
     const E = G.ContractEngine; if (!E) return { unit: school.daytype === "日曆天" ? "日曆天" : "工作天", n: k => k === "days" ? num(p.days) : num(school[k]) };
-    const v = E.computeValues(p, school, "sign").values, dft = {};
+    // 已下載正式簽約版：以當時寫進契約的內容（簽約版快照）為準，之後改學校設定或範本不影響本案；
+    // 但本案自己改的欄位（每案欄位、進階覆寫）視為本案契約的更正，照樣套用
+    const sn = p.snap && p.snap.sign && p.snap.sign.values, cur = E.computeValues(p, school, "sign"), dft = {};
+    let v = cur.values;
+    if (sn) { v = Object.assign({}, sn); Object.keys(cur.values).forEach(k => { if (cur.source[k] === "project" || cur.source[k] === "adv") v[k] = cur.values[k]; }); }
     E.FIXED.forEach(f => { dft[f[1]] = f[3]; });
     return { unit: v.F045 === "V" ? "日曆天" : "工作天", n: k => num(v[SRC_ID[k]]) || (k === "days" ? 0 : num(dft[k])) };
   }
@@ -295,7 +299,7 @@
   }
   function changeList(oldStr, p) {
     let old = {}; try { old = JSON.parse(oldStr || "{}"); } catch (e) { old = {}; }
-    const skip = /^(updatedAt|updatedBy|id|changes|v|folder)$|^files(\.|$)/;
+    const skip = /^(updatedAt|updatedBy|id|changes|v|folder)$|^(files|snap)(\.|$)|\.(flow|flowLog)(\.|$)/;
     const show = (v, money) => v === undefined ? "" : /^\d{4}-\d{2}-\d{2}$/.test(v) ? C.roc(v) : money && /^[1-9]\d{3,}$/.test(v) ? NF_.format(Number(v)) : cut(v, 200);
     const a = flat(old, "", {}), b = flat(p, "", {}), out = [];
     Array.from(new Set(Object.keys(a).concat(Object.keys(b)))).forEach(k => {
@@ -308,6 +312,16 @@
       const had = new Set((fa[key] || []).map(f => f.id));
       (fb[key] || []).filter(f => !had.has(f.id)).forEach(f => out.push(["上傳檔案・" + fileKeyLabel(key), "", f.name]));
     });
+    // 表件流向：每一筆新的流向紀錄寫進修改紀錄（工程裡只留最近 20 筆，完整紀錄在試算表）
+    const each = (o, f) => [["chk", "items", "acc-"], ["tech", "ms", "tech-"]].forEach(([a, b, pre]) => {
+      const m = (o[a] || {})[b] || {}; Object.keys(m).forEach(k => f(pre + k, a + "." + b + "." + k, m[k] || {}));
+    });
+    const seen = {};
+    each(old, (key, path, it) => { seen[key] = new Set((it.flowLog || []).map(e => e.at + "|" + e.status)); });
+    each(p, (key, path, it) => (it.flowLog || []).forEach(e => {
+      if (seen[key] && seen[key].has(e.at + "|" + e.status)) return;
+      out.push([`表件流向［${key}］${fileKeyLabel(key)}`, "", [e.status || "待確認", e.owner || "經手待確認", e.follow ? "追蹤 " + C.roc(e.follow) : "", e.note || "", e.by ? "登錄：" + e.by : ""].filter(Boolean).join("｜")]);
+    }));
     return out.slice(0, 200);
   }
 

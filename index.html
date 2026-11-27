@@ -64,7 +64,7 @@ section.card h2 .no{font:700 15px "Noto Sans TC";color:var(--seal);border:1.5px 
 .f label,.f .lb{font-weight:500;font-size:17px}
 .hint{font-size:15px;color:var(--mute)}
 .f input[type=text],.f select,.inp{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px;width:100%}
-input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible,textarea:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
 .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg button{min-height:44px;padding:8px 16px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer}
@@ -75,7 +75,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .seal{position:sticky;top:132px;border:1.5px solid var(--ink);border-radius:8px;padding:18px;background:var(--paper)}
 .seal h3{font-size:20px;margin-bottom:12px;padding-inline-end:84px;min-height:56px}
 .stamp{position:absolute;top:14px;right:16px;width:64px;height:64px;border:3px solid var(--seal);border-radius:6px;color:var(--seal);display:grid;place-items:center;font:900 19px/1.1 "Noto Serif TC";text-align:center;transform:rotate(-6deg);transition:opacity .3s}
-.stamp.dim{opacity:.3}
+.stamp.dim{border-style:dashed;color:light-dark(#b4505a,#e0a0a3);border-color:currentColor}
 .dl{width:100%;min-height:52px;border:0;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:700;font-size:19px;cursor:pointer;margin-top:10px}
 .dl:disabled{opacity:.5;cursor:default}
 .chk{list-style:none;padding:0;margin:8px 0;font-size:16px}
@@ -121,7 +121,7 @@ tr.s-done td{color:var(--mute)}tr.s-done td:first-child{box-shadow:inset 4px 0 v
 .files a{display:block;font-size:15px;color:var(--ink);margin-top:2px}
 #dashBody tr{cursor:pointer}#dashBody tbody tr:hover{background:var(--field)}
 .lineb{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px}
-.lbtn{display:inline-grid;place-items:center;min-height:36px;padding:4px 12px;border-radius:6px;background:#06c755;color:#fff;font-size:16px;font-weight:700;text-decoration:none;border:0;cursor:pointer}
+.lbtn{display:inline-grid;place-items:center;min-height:36px;padding:4px 12px;border-radius:6px;background:#00803c;color:#fff;font-size:16px;font-weight:700;text-decoration:none;border:0;cursor:pointer}
 .lbtn.ghostb{background:var(--paper);color:var(--ink);border:1px solid var(--line);font-weight:500}
 nav.tabs.sub{top:118px;margin-top:10px;border-bottom:1px solid var(--line);gap:2px;z-index:2}
 nav.tabs.sub button{padding:10px 12px 9px;font-size:17px}
@@ -176,6 +176,7 @@ dialog.dlg{width:min(900px,94vw);max-height:86vh;border:1px solid var(--line);bo
 @media(max-width:760px){.savebox{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);justify-content:space-between;flex-wrap:nowrap}.savebox #sync{font-size:16px;line-height:1.35}.savebox #saveBtn{flex:none}body{padding-bottom:84px}
 body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{order:-1}body.ondash .dashtop .note{display:none}body.ondash .side{border-top:1px solid var(--line)}
 .side-more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--mute);font-size:17px}.side-more>summary::before{content:"▸";margin-inline-end:6px}.side-more[open]>summary::before{content:"▾"}.steps{grid-template-columns:minmax(0,1fr)}.steps li button::after{display:none}nav.tabs.sub{top:0;position:relative}nav.tabs.sub .minor{margin-inline-start:0}.wrap{grid-template-columns:minmax(0,1fr)}aside.side{border-inline-end:0;border-bottom:1px solid var(--line)}#plist{flex-direction:row;overflow-x:auto;max-height:none}#plist li{flex:none;width:200px}.row2{grid-template-columns:minmax(0,1fr)}nav.tabs{top:0;position:relative}header{position:relative}.savebox{margin-inline-start:0;width:100%}#saveBtn{flex:1}}
+@media(max-width:760px){.link,.upl .link,.wtools .link{min-height:40px;padding-block:8px}.files a{display:flex;align-items:center;min-height:40px}}
 @media(max-width:600px){table{font-size:15px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -184,7 +185,7 @@ body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{orde
 <header>
   <h1>工程契約與驗收管理</h1>
   <span class="sub" id="tplName">範本載入中…</span>
-  <div class="savebox"><button type="button" class="link calsync" id="calSync" hidden title="到學校設定查看共用行事曆"></button><span id="sync">載入中…</span><button id="saveBtn" type="button" disabled title="Ctrl+S">暫存</button></div>
+  <div class="savebox"><button type="button" class="link calsync" id="calSync" hidden title="到學校設定查看共用行事曆"></button><span id="sync" role="status" aria-live="polite">載入中…</span><button id="saveBtn" type="button" disabled title="Ctrl+S">暫存</button></div>
 </header>
 <div class="wrap">
   <aside class="side">
@@ -205,7 +206,7 @@ body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{orde
     </details>
   </aside>
   <main>
-    <div id="banners"></div>
+    <div id="banners" aria-live="polite"></div>
     <nav class="tabs" id="mainNav" role="tablist" aria-label="主選單">
       <button role="tab" data-v="dash" aria-selected="true">工程總表</button>
       <button role="tab" data-v="work" aria-selected="false">工程</button>
@@ -309,11 +310,11 @@ body.ondash .wrap{display:flex;flex-direction:column}body.ondash .wrap>main{orde
 <div class="dlgf"><button type="button" class="ghost" id="flowSource">前往原清單</button><button type="button" class="primary" id="flowSave">儲存</button></div></dialog>
 <dialog id="dlDlg" class="dlg" aria-labelledby="dlH"><div class="dlgh"><h2 id="dlH">下載前核對</h2><button type="button" class="ghost" data-close="1">取消</button></div><div id="dlBody"></div><div class="dlgf"><button type="button" class="ghost" data-close="1">取消</button><button type="button" class="primary" id="dlGo">確認並下載</button></div></dialog>
 <dialog id="histDlg" class="dlg" aria-labelledby="histH"><div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div><div id="histBody"></div></dialog>
-<script src="config.js?v=20261127k"></script>
-<script src="engine.js?v=20261127k"></script>
-<script src="checklist.js?v=20261127k"></script>
-<script src="lifecycle.js?v=20261127k"></script>
-<script src="govdocs.js?v=20261127k"></script>
+<script src="config.js?v=20261127m"></script>
+<script src="engine.js?v=20261127m"></script>
+<script src="checklist.js?v=20261127m"></script>
+<script src="lifecycle.js?v=20261127m"></script>
+<script src="govdocs.js?v=20261127m"></script>
 <script>
 {
 const E = window.ContractEngine, CFG = window.TSC_CONFIG || {};
@@ -321,7 +322,7 @@ const E = window.ContractEngine, CFG = window.TSC_CONFIG || {};
 const LAZY = { zip: "vendor/jszip.min.js", templater: "templater.js", import: "contract-import.js", exporter: "exporter.js" }, lazyP = {};
 function need(k) {
   return lazyP[k] = lazyP[k] || new Promise((ok, no) => {
-    const el = document.createElement("script"); el.src = LAZY[k] + "?v=20261127k";
+    const el = document.createElement("script"); el.src = LAZY[k] + "?v=20261127m";
     el.onload = () => ok(); el.onerror = () => { delete lazyP[k]; el.remove(); no(new Error("元件下載失敗，請確認網路後再試一次")); };
     document.head.appendChild(el);
   });
@@ -408,7 +409,32 @@ function mergeSchool(baseJson, server, local) {
   return { school: out, both };
 }
 function schoolLabel(k) { const f = E.FIXED.find(x => x[1] === k); return f ? f[2] : k; }
+/* ---------- 同一台電腦開了好幾個分頁：互相告知誰有未暫存的修改、誰剛暫存 ---------- */
+const TAB = Math.random().toString(36).slice(2, 10), otherTabs = new Map();
+let bc = null, tabSig = "";
+try { bc = new BroadcastChannel("tsc-" + location.pathname); } catch (e) {}
+function tell(m) { if (bc) try { bc.postMessage(Object.assign({ from: TAB }, m)); } catch (e) {} }
+function tellDirty(force) {
+  const sig = JSON.stringify([[...st.dirty].sort(), !!st.schoolDirty]);
+  if (!force && sig === tabSig) return;
+  tabSig = sig; tell({ t: "dirty", ids: [...st.dirty], school: !!st.schoolDirty });
+  if (otherTabs.size) renderBanners();   // 自己開始或結束修改時，也要更新「另一個分頁也在改」的提醒
+}
+function bothEditing() {
+  const out = new Set();
+  otherTabs.forEach(o => { o.ids.forEach(id => { if (st.dirty.has(id) && st.projects[id]) out.add("「" + (st.projects[id].name || st.projects[id].title || "未命名工程") + "」"); }); if (o.school && st.schoolDirty) out.add("學校設定"); });
+  return [...out];
+}
+if (bc) bc.onmessage = e => {
+  const m = e.data || {}; if (!m.from || m.from === TAB) return;
+  if (m.t === "hello") { tellDirty(true); return; }
+  if (m.t === "dirty") { otherTabs.set(m.from, { ids: new Set(m.ids || []), school: !!m.school }); renderBanners(); return; }
+  if (m.t === "bye") { otherTabs.delete(m.from); renderBanners(); return; }
+  if (m.t === "saved") { lastPull = 0; if (!document.hidden) pullLatest(); }   // 另一個分頁剛暫存：馬上取得最新，減少版本衝突
+};
+window.addEventListener("pagehide", () => tell({ t: "bye" }));
 function updSync(msg) {
+  tellDirty();
   const n = st.dirty.size + (st.schoolDirty ? 1 : 0), el = $("#sync");
   $("#saveBtn").disabled = st.saving || n === 0;
   if (msg) { el.textContent = msg; el.className = ""; return; }
@@ -440,7 +466,7 @@ async function saveAll(only) {
         if ((st.rev[s.id] || 0) === sentRev[s.id] && st.projects[s.id]) { st.dirty.delete(s.id); dropDraft(s.id); }
         else if (st.projects[s.id]) putDraft(s.id);   // 暫存途中又改了：保留未暫存狀態，下次再存
       });
-      queueSync(res.saved.map(s => s.id)); if (res.saved.length) cacheSave();
+      queueSync(res.saved.map(s => s.id)); if (res.saved.length) { cacheSave(); tell({ t: "saved" }); }
       st.force = null;
       const all = res.conflicts || [];
       all.filter(c => c.deleted).forEach(c => keepDeleted(c));
@@ -458,7 +484,7 @@ async function saveAll(only) {
         st.notices.push("學校設定已和其他人的修改合併" + (m.both.length ? "；以下項目兩人都改過，採用你的值：" + m.both.map(schoolLabel).join("、") : "") + "。");
         renderSchool();
       }
-      st.schoolAt = r.updatedAt; st.schoolBase = sentJson; cacheSave();   // 版本基準＝實際送出成功的內容，暫存途中又改的部分仍算未暫存
+      st.schoolAt = r.updatedAt; st.schoolBase = sentJson; cacheSave(); tell({ t: "saved" });   // 版本基準＝實際送出成功的內容，暫存途中又改的部分仍算未暫存
       if (st.schoolRev === rev) { st.schoolDirty = false; ls.set("schoolDraft", null); }
       queueSync([], true);
     }
@@ -500,6 +526,8 @@ function renderBanners() {
   if (da.length) b.push(`<div class="banner">新範本的預設值改了，但學校設定仍是舊值：${esc(da.map(a => a.label + "（" + (st.school[a.key] ?? "") + " → 新預設 " + a.newVal + "）").join("、"))}。<button class="ghost" data-b="defall" type="button">全部改成新預設值</button><button class="link" data-b="defkeep" type="button">保留學校設定</button></div>`);
   st.notices.forEach((n, i) => b.push(`<div class="banner">${esc(n)}<button class="link" data-b="note" data-i="${i}" type="button">知道了</button></div>`));
   st.conflicts.forEach(c => b.push(`<div class="banner">「${esc(c.name || c.title || c.id)}」已被 ${esc(c.updatedBy || "其他人")} 在 ${esc(tm(c.updatedAt))} 更新，你的版本沒有存入。<button class="ghost" data-b="theirs" data-id="${esc(c.id)}" type="button">改用對方版本</button><button class="ghost" data-b="mine" data-id="${esc(c.id)}" type="button">用我的版本覆蓋</button></div>`));
+  const twin = bothEditing();
+  if (twin.length) b.push(`<div class="banner">${esc(twin.join("、"))}在這台電腦的另一個分頁也有未暫存的修改。兩邊都暫存時，後存的會出現版本衝突；建議只在一個分頁修改，另一個分頁按左下「重新載入最新資料」。</div>`);
   $("#banners").innerHTML = b.join("");
 }
 $("#banners").addEventListener("click", e => {
@@ -585,7 +613,7 @@ function refreshDerived() {
       <p class="hint" style="margin:8px 0 0">附表為編列預算之參考，實際費率仍須簽報機關首長核定並載明於招標文件。</p>`;
   const vals = E.computeValues(p, st.school, st.stage).values;
   const pre = E.presetChecked(vals, st.tpl.points);
-  const rems = E.reminders(p, st.school).concat(pre.length ? [`範本原檔已預先勾選：${pre.join("、")}。送出前請確認是否適用本案；要改可到「契約進階欄位」。`] : []);
+  const rems = E.reminders(p, st.school).concat(pre.length ? [`範本原檔已預先勾選：${pre.join("、")}。送出前請確認是否適用本案；要改可到「契約進階欄位」。`] : []).concat(snapNote(p));
   $("#rem").innerHTML = rems.map(x => `<li>ⓘ ${esc(x)}</li>`).join("");
   const ck = E.checks(p, st.stage);
   $("#chk").innerHTML = ck.length ? ck.map(x => `<li>${esc(x)}</li>`).join("") : `<li class="ok">✓ 必要欄位都填好了</li>`;
@@ -639,7 +667,7 @@ $("#projBody").addEventListener("click", e => {
 /* ---------- 下載 ---------- */
 async function tplParts() {
   if (st.tpl.parts) return st.tpl.parts;
-  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261127k").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
+  const r = st.tpl.id === "builtin" ? await fetch("tpl.json?v=20261127m").then(x => x.json()) : JSON.parse(await (await fetch(API + "?" + new URLSearchParams({ action: "tplfile", id: st.tpl.id, part: "tpl", code: st.code }))).text());
   if (!Array.isArray(r)) throw new Error("範本檔讀取失敗");
   st.tpl.parts = r; return r;
 }
@@ -683,7 +711,7 @@ function dlSummary(s) {
     : esc(v.F421 || v.F485 || "（未填）");
   const shape = p.method === "建造費用百分比法" ? `${box("F369")}分期 ${box("F370")}分區 ${box("F371")}開口契約（${esc(p.shape || "單一工程")}）` : "—";
   const pre = E.presetChecked(v, s.tpl.points), miss = E.checks(p, s.stage), bad = E.conflicts(v);
-  s.miss = miss; s.bad = bad;
+  s.miss = miss; s.bad = bad; s.values = v;
   const row = (k, val, warn) => `<tr><th>${k}</th><td class="${warn ? "warn" : ""}">${val}</td></tr>`;
   return `<p class="note">以下是這次要寫進 Word 的最終內容（已套用學校設定與進階覆寫）。確認無誤再下載。</p><table class="sum">
     ${row("版本", tender ? "招標版" : "簽約版")}
@@ -709,7 +737,13 @@ $("#dlGo").addEventListener("click", async () => {
     await saveBlob(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }), fname);
     msg.textContent = "已下載：" + fname + (draft ? "（草稿：尚有欄位未填，不列入下載紀錄）" : "");
     const p = st.projects[s.id];   // 下載紀錄寫回當初那個工程，不管畫面現在停在哪一案
-    if (p && !draft) { p.docs = p.docs || {}; p.docs[s.stage] = C.today(); markDirty(s.id); saveAll(); if (st.cur === s.id) refreshDerived(); }
+    if (p && !draft) {
+      p.docs = p.docs || {}; p.docs[s.stage] = C.today();
+      // 契約快照：記下這份正式版實際寫進 Word 的內容；簽約後的期限依這份計算，之後改學校設定或範本不會改動本案
+      p.snap = p.snap || {};
+      p.snap[s.stage] = { at: new Date().toISOString(), by: ls.get("who", ""), tpl: s.tpl.version || "", tplId: s.tpl.id || "", schoolAt: st.schoolAt || "", values: s.values || {} };
+      markDirty(s.id); saveAll(); if (st.cur === s.id) { refreshDerived(); if (st.sub === "proj") renderProject(); }
+    }
   } catch (e) { msg.textContent = "下載失敗：" + (e.message || e); }
 });
 $("#dlDlg").addEventListener("click", e => { if (e.target.closest("[data-close]")) { $("#dlDlg").close(); dlSnap = null; } });
@@ -865,7 +899,8 @@ function goTo(go) {
 function renderTech() {
   const host = $("#techBody"), p = st.projects[st.cur]; if (!p) { host.innerHTML = ""; return; }
   const t = p.tech || {}, ev = evalP(st.cur), unit = st.school.daytype === "日曆天" ? "日曆天" : "工作天";
-  host.innerHTML = `<p class="note">依技術服務契約（第7、8條）與「學校設定」的日數，自動計算建築師／技術顧問應交付的期限，以及學校應完成審查的期限。日數以<b>${esc(unit)}</b>計（不計週六、日及設定中的放假日）；「自通知指定之日起」當日算入，「收到後」次日起算。</p>
+  const sn = p.snap && p.snap.sign;
+  host.innerHTML = (sn ? `<div class="banner ok" style="margin:0 0 12px">期限依 ${esc(C.roc(twDate(sn.at)))} 下載的簽約版內容計算（簽約版快照），之後改學校設定不會改動本案期限。</div>` : "") + `<p class="note">依技術服務契約（第7、8條）與「學校設定」的日數，自動計算建築師／技術顧問應交付的期限，以及學校應完成審查的期限。日數以<b>${esc(unit)}</b>計（不計週六、日及設定中的放假日）；「自通知指定之日起」當日算入，「收到後」次日起算。</p>
   <div class="kd">
     <div class="f"><span class="lb">技術服務廠商（乙方）</span><div style="min-height:44px;display:flex;align-items:center">${esc(p.vendor || "（尚未填，請到「技術服務契約」頁）")}</div></div>
     <div class="f"><label for="tf-vendorLine">LINE 稱呼</label><input id="tf-vendorLine" data-tf="vendorLine" type="text" value="${esc(p.vendorLine || "")}" placeholder="例：○○建築師事務所 陳建築師"></div>
@@ -1095,7 +1130,7 @@ function openFlow(id, key, keepInputs) {
     <tr><th>契約應完成日</th><td>${x.r.due ? esc(C.roc(x.r.due)) : "—"}<div class="hint">${esc([x.r.when, x.r.basis].filter(Boolean).join("｜") || "")}</div></td></tr>
     <tr><th>流程主辦</th><td>${esc(x.r.who || "")}</td></tr>
     <tr><th>附件</th><td>${files}${API ? ` <button type="button" class="link" data-up="${esc(key)}" data-upid="${esc(id)}" data-dir="${x.r.phase === "tech" ? 0 : 2 + x.r.stage}" data-pre="${esc(x.name)}">＋上傳附件</button>` : ""}</td></tr></table>
-    ${x.log.length ? `<details><summary>流向紀錄（${x.log.length}）</summary><ol class="flog">${x.log.slice().reverse().map(l => `<li>${esc(C.roc(twDate(l.at)))} ${esc(l.by || "")}：${esc(l.status)}・${esc(l.owner || "待確認")}${l.follow ? "・追蹤 " + esc(C.roc(l.follow)) : ""}${l.note ? "<br><span class='hint'>" + esc(l.note) + "</span>" : ""}</li>`).join("")}</ol></details>` : ""}`;
+    ${x.log.length || API ? `<details><summary>流向紀錄（最近 ${x.log.length} 筆）</summary>${API ? `<button type="button" class="link" id="flowAll">查看試算表裡的完整紀錄</button><div id="flowAllBox"></div>` : ""}<ol class="flog">${x.log.slice().reverse().map(l => `<li>${esc(C.roc(twDate(l.at)))} ${esc(l.by || "")}：${esc(l.status)}・${esc(l.owner || "待確認")}${l.follow ? "・追蹤 " + esc(C.roc(l.follow)) : ""}${l.note ? "<br><span class='hint'>" + esc(l.note) + "</span>" : ""}</li>`).join("")}</ol></details>` : ""}`;
   if (!keepInputs) {   // 上傳附件後只更新上方資訊，不清掉正在填的狀態、追蹤日、備註
     $("#flowStatus").value = x.flow.status || "";
     $("#flowOwner").value = x.flow.owner || "";
@@ -1115,7 +1150,21 @@ $("#flowStatus").addEventListener("change", () => {
   else if (s === "退回補正" || s === "待送件") { if (!$("#flowOwner").value || INSIDE.has($("#flowOwner").value)) $("#flowOwner").value = ownerGuess(r); }
   else if (s === "已收件" && !INSIDE.has($("#flowOwner").value)) $("#flowOwner").value = "學校承辦";   // 收件後輪到學校處理（轉送審查或自行審查）
 });
+/* 完整流向紀錄：工程裡只留最近 20 筆，每一筆也寫進試算表的「修改紀錄」 */
+async function flowAll(btn) {
+  const c = flowCtx, box = $("#flowAllBox"); if (!c || !box) return;
+  btn.disabled = true; box.textContent = "讀取中…";
+  try {
+    const r = await apiGet({ action: "history", id: c.id, key: c.key });
+    if (!flowCtx || flowCtx.key !== c.key) return;
+    const rows = r.rows || [];
+    box.innerHTML = rows.length ? `<p class="hint">試算表修改紀錄共 ${rows.length} 筆（新到舊；20261127m 版以後的流向才會寫入）</p><ol class="flog">${rows.map(x => `<li>${esc(C.roc(twDate(x.at)))} ${esc(x.who || "")}：${esc(x.to)}</li>`).join("")}</ol>`
+      : `<p class="hint">試算表裡還沒有這份表件的流向紀錄（20261127m 版以後的流向才會寫入）。</p>`;
+    btn.hidden = true;
+  } catch (err) { box.textContent = "讀不到完整紀錄：" + (err.message || err); btn.disabled = false; }
+}
 $("#flowDlg").addEventListener("click", async e => {
+  if (e.target.id === "flowAll") { flowAll(e.target); return; }
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.fq) { const t = todayTW(); const add = { tomorrow: 1, d3: 3, week: 7 }[b.dataset.fq]; $("#flowFollow").value = b.dataset.fq === "clear" ? "" : addDays(t, add); return; }
   if (b.id === "flowCancel") { $("#flowDlg").close(); return; }
@@ -1412,7 +1461,7 @@ drop.addEventListener("drop", e => handleTplFile(e.dataTransfer.files[0]));
 
 async function useTemplate(id) {
   if (id === "builtin" || !API) {
-    const [points, regions] = await Promise.all([fetch("points.json?v=20261127k").then(r => r.json()), fetch("regions.json?v=20261127k").then(r => r.json())]);
+    const [points, regions] = await Promise.all([fetch("points.json?v=20261127m").then(r => r.json()), fetch("regions.json?v=20261127m").then(r => r.json())]);
     st.tpl = { id: "builtin", version: "115.4.23", points, regions, parts: null };
   } else {
     // 上傳的範本內容不會再改（改版會是新的編號），讀過一次就留在這台裝置
@@ -1442,6 +1491,27 @@ function loadTpl() {
   });
 }
 const needTpl = () => st.tplP || loadTpl();
+/* 簽約版快照與目前內容的差異：mine＝本案自己改的（期限照用）；other＝學校設定或範本改的（本案不受影響） */
+function snapDiff(p) {
+  const sn = p.snap && p.snap.sign; if (!sn || !sn.values) return null;
+  const cur = E.computeValues(p, st.school, "sign"), now = cur.values, old = sn.values;
+  const ids = [...new Set(Object.keys(now).concat(Object.keys(old)))].filter(k => String(now[k] ?? "") !== String(old[k] ?? "")).sort();
+  const pt = Object.fromEntries((st.tpl.points || []).map(x => [x.id, x]));
+  const show = v => v === "V" ? "■" : v === "X" ? "□" : String(v ?? "") === "" ? "（空白）" : String(v).slice(0, 20);
+  const row = k => ({ id: k, label: pt[k] ? (pt[k].sec + " " + (pt[k].label || pt[k].ctx || "")).slice(0, 30) : k, from: show(old[k]), to: show(now[k]) });
+  const mine = ids.filter(k => cur.source[k] === "project" || cur.source[k] === "adv").map(row), other = ids.filter(k => !(cur.source[k] === "project" || cur.source[k] === "adv")).map(row);
+  return { sn, mine, other };
+}
+function snapNote(p) {
+  const d = snapDiff(p);
+  if (!d) return p.docs && p.docs.sign ? ["簽約版是舊版網站下載的，沒有內容快照；契約期限依目前設定計算。重新下載一次簽約版即可建立快照。"] : [];
+  const when = `${C.roc(twDate(d.sn.at))}${d.sn.by ? " " + d.sn.by : ""}`, list = a => a.slice(0, 8).map(x => `${x.label}（${x.from}→${x.to}）`).join("、") + (a.length > 8 ? "…" : "");
+  const out = [];
+  if (!d.mine.length && !d.other.length) out.push(`已建立簽約版快照（${when}）：契約期限依這份內容計算，之後改學校設定也不會改動本案。`);
+  if (d.other.length) out.push(`簽約版快照（${when}）之後，學校設定或範本改了 ${d.other.length} 處：${list(d.other)}。本案已簽約，期限仍依簽約版。`);
+  if (d.mine.length) out.push(`簽約版快照（${when}）之後，本案自己改了 ${d.mine.length} 處：${list(d.mine)}。期限已改依新內容；請確認簽約文件也一致，需要時重新下載簽約版。`);
+  return out;
+}
 function afterTpl() {
   st.tplWant = st.tpl.id; if (!st.tplP) st.tplP = Promise.resolve();
   $("#tplName").textContent = "契約範本 " + st.tpl.version + " 版" + (st.tpl.id === "builtin" ? "" : "（上傳）");
@@ -1469,9 +1539,19 @@ function showTab(v) {
   }
   if (main === "dash") renderDash();
   if (main === "school") { renderSchool(); renderShare(); }
+  tabStops();
   ls.set("main", main);
 }
 document.addEventListener("click", e => { const b = e.target.closest("nav.tabs button[data-v]"); if (b) showTab(b.dataset.v); });
+/* 分頁列：左右鍵切換、Home／End 到頭尾；只有目前分頁在 Tab 鍵順序裡 */
+document.addEventListener("keydown", e => {
+  const b = e.target.closest && e.target.closest("nav.tabs[role=tablist] button[role=tab]"); if (!b) return;
+  const all = [...b.closest("nav").querySelectorAll("button[role=tab]")].filter(x => x.offsetParent !== null), i = all.indexOf(b);
+  const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: all.length - 1 }[e.key];
+  if (to === undefined || !all.length) return;
+  e.preventDefault(); const t = all[(to + all.length) % all.length]; t.focus(); t.click();
+});
+function tabStops() { document.querySelectorAll("nav.tabs[role=tablist] button[role=tab]").forEach(x => x.tabIndex = x.getAttribute("aria-selected") === "true" ? 0 : -1); }
 /* 只重繪看得到的頁面；其他頁面切換過去時才畫 */
 function renderMain() {
   const on = document.querySelector(".view.on"), v = on ? on.id.slice(2) : "";
@@ -1868,7 +1948,7 @@ async function boot() {
     renderBanners();
   }
 }
-renderBanners(); boot();
+renderBanners(); boot(); tell({ t: "hello" });
 
 /* ---------- 與其他裝置同步：回到畫面時、每 2 分鐘比對一次版本清單，只下載有變動的工程 ---------- */
 // 正在輸入、開著視窗或正在處理衝突時不重繪（未暫存的工程本來就不會被覆蓋）

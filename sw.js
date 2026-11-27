@@ -1,5 +1,5 @@
 /* 工程契約與驗收管理：離線外殼快取。改版時把 VERSION 改成和 index.html 的 ?v= 相同。 */
-const VERSION = "20261127k";
+const VERSION = "20261127m";
 const CACHE = "tc-" + VERSION;
 const SHELL = [
   "./", "index.html", "manifest.webmanifest",
