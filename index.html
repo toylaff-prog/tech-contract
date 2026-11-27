@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>工程契約與驗收管理</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2F6FB0">
+<meta name="theme-color" content="#344D45">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,13 +24,15 @@ COLOUR: 湖水藍（主色、標題）、糖果粉（暫存、逾期、下一步
 TYPE: 標題與品牌用粉圓 Huninn（圓體），內文 Noto Sans TC；公文預覽保留明體
 LAYOUT: 頂列暫存鍵、左欄工程清單、中間單欄表單、右側輸出欄；窄螢幕依序堆疊；圓角膠囊按鈕，偏移色塊陰影 */
 :root{
-  color-scheme:light dark;--bg:light-dark(#F4F8FE,#161927);--paper:light-dark(#ffffff,#1E2233);--ink:light-dark(#2B2D42,#ECEBF5);
-  --mute:light-dark(#596079,#A9AEC4);--line:light-dark(#D9E2F0,#343A52);--field:light-dark(#EAF1FB,#262B3E);
-  --seal:light-dark(#C92A62,#FF86AE);--onseal:light-dark(#ffffff,#161927);--pinkbg:light-dark(#FFF0F5,#2E1A26);
-  --lake:light-dark(#2F6FB0,#7FB4EC);--onlake:light-dark(#ffffff,#161927);--sky:light-dark(#DDEBFB,#24324D);
-  --sticky:light-dark(#FFE89A,#4A4020);--sun:light-dark(#F2B705,#E0B23A);
-  --ok:light-dark(#137A57,#6FD8B0);--warn:light-dark(#94440A,#FFC27A);
-  --warnbg:light-dark(#FFF3C9,#33291A);--okbg:light-dark(#E2F6EE,#16291F);
+  /* 米白底、墨綠主色；柔和綠＝完成、暖棕金＝即將到期、磚紅＝真正逾期、灰藍＝等待。只用淺色，不隨系統深色模式變黑底 */
+  color-scheme:light;--bg:#F7F6F2;--paper:#ffffff;--ink:#1F2A27;
+  --mute:#5B6360;--line:#DEDBD2;--field:#EFEDE7;
+  --seal:#344D45;--onseal:#ffffff;--pinkbg:#E6EDE9;
+  --lake:#344D45;--onlake:#ffffff;--sky:#E6EDE9;
+  --sticky:#F4ECDD;--sun:#A47C36;
+  --ok:#3E6B57;--warn:#85612A;
+  --warnbg:#F4ECDD;--okbg:#E3EEE8;
+  --danger:#A2473A;--dangerfill:#B45343;--ondanger:#ffffff;--wait:#55657A;--waitbg:#E8ECF1;
 }
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
@@ -53,7 +55,7 @@ header .sub{color:var(--mute);font-size:16px}
 .wrap{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:calc(100vh - 70px)}
 aside.side{border-inline-end:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:10px}
 .newbtn{
-  min-height:44px;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:6px;font-weight:700;cursor:pointer;
+  min-height:44px;border:1.5px solid var(--lake);background:var(--lake);color:var(--onlake);border-radius:6px;font-weight:700;cursor:pointer;
 }
 #psearch{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px}
 #plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto}
@@ -100,7 +102,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,su
 .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg button{min-height:44px;padding:8px 16px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer}
-.seg button[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--bg);font-weight:700}
+.seg button[aria-pressed=true]{border-color:var(--lake);background:var(--lake);color:var(--onlake);font-weight:700}
 .calc{
   display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--field);border-radius:6px;margin-bottom:14px;
 }
@@ -113,9 +115,9 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,su
   display:grid;place-items:center;font:400 19px/1.1 "Huninn","Noto Sans TC",sans-serif;text-align:center;
   transform:rotate(-6deg);transition:opacity .3s;
 }
-.stamp.dim{border-style:dashed;color:light-dark(#b4505a,#e0a0a3);border-color:currentColor}
+.stamp.dim{border-style:dashed;color:var(--warn);border-color:currentColor}
 .dl{
-  width:100%;min-height:52px;border:0;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:700;font-size:19px;cursor:pointer;
+  width:100%;min-height:52px;border:0;border-radius:6px;background:var(--lake);color:var(--onlake);font-weight:700;font-size:19px;cursor:pointer;
   margin-top:10px;
 }
 .dl:disabled{opacity:.5;cursor:default}
@@ -132,7 +134,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,su
 .stat{font-size:16px;color:var(--mute);margin:8px 0}
 .att{font-size:15px;color:var(--mute);margin:6px 0 0;padding-inline-start:18px}
 .msg{font-size:16px;margin-top:8px;min-height:1.4em}
-.danger{color:var(--seal)}
+.danger{color:var(--danger)}
 .acts{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
 table{width:100%;border-collapse:collapse;font-size:16px}
 th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -176,12 +178,12 @@ summary{cursor:pointer;font-weight:700;min-height:36px}
 .stg{font-size:20px;margin:22px 0 6px;display:flex;gap:10px;align-items:baseline}
 .stg small{font:400 15px "Noto Sans TC",sans-serif;color:var(--mute)}
 .badge{display:inline-block;font-size:14px;padding:1px 7px;border-radius:10px;white-space:nowrap;margin-top:2px}
-.b-late{background:var(--seal);color:var(--onseal)}
+.b-late{background:var(--dangerfill);color:var(--ondanger)}
 .b-soon{background:var(--warnbg);color:var(--warn)}
 .b-ok{background:var(--field);color:var(--mute)}
 tr.s-done td{color:var(--mute)}
 tr.s-done td:first-child{box-shadow:inset 4px 0 var(--ok)}
-tr.s-late td:first-child{box-shadow:inset 4px 0 var(--seal)}
+tr.s-late td:first-child{box-shadow:inset 4px 0 var(--dangerfill)}
 .files a{display:block;font-size:15px;color:var(--ink);margin-top:2px}
 #dashBody tr{cursor:pointer}
 #dashBody tbody tr:hover{background:var(--field)}
@@ -230,7 +232,7 @@ nav.tabs.sub .minor+.minor{margin-inline-start:0}
 .exc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
 select.isauto{color:var(--mute)}
 .kn{
-  display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:14px;
+  display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--lake);color:var(--onlake);font-size:14px;
   margin-inline-end:6px;
 }
 details.stgd{border-top:1px solid var(--line);padding:4px 0}
@@ -239,7 +241,7 @@ details.stgd>summary{
 }
 details.stgd>summary small{font:400 15px "Noto Sans TC",sans-serif;color:var(--mute)}
 .calsync{font-size:15px;padding:0 4px;text-decoration:none}
-.calsync.bad{color:var(--seal);text-decoration:underline}
+.calsync.bad{color:var(--danger);text-decoration:underline}
 .calcard{border-top:0;padding-top:4px}
 .calcard .stack td{padding:8px 10px;vertical-align:middle}
 details.calhelp{margin-top:10px}
@@ -299,9 +301,9 @@ dialog.dlg.wide{width:min(980px,96vw)}
 .deskh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .deskh select{max-width:14em;margin-inline-start:auto}
 .tagc{display:inline-block;font-size:15px;padding:1px 8px;border-radius:10px;margin-inline-start:4px;white-space:nowrap}
-.tagc.chase{background:var(--seal);color:var(--onseal)}
-.tagc.inside{background:var(--ink);color:var(--bg)}
-.tagc.warn{background:#fff3cd;color:#5c4400;border:1px solid #d9b44a}
+.tagc.chase{background:var(--dangerfill);color:var(--ondanger)}
+.tagc.inside{background:var(--sky);color:var(--lake);border:1px solid currentColor}
+.tagc.warn{background:var(--warnbg);color:var(--warn);border:1px solid currentColor}
 .desk .dname{font-weight:700;text-align:left}
 .flog{margin:6px 0 0;padding-inline-start:1.4em;font-size:16px}
 .flowtag{font-size:15px;margin-top:4px}
@@ -309,7 +311,7 @@ dialog.dlg.wide{width:min(980px,96vw)}
 .sum td{overflow-wrap:anywhere}
 .sum th{white-space:nowrap;text-align:left;width:7em;color:var(--mute);font-weight:500;padding:7px 10px 7px 0;vertical-align:top}
 .sum td{padding:7px 0;border-bottom:1px solid var(--line,#ddd)}
-.sum .warn{color:var(--seal)}
+.sum .warn{color:var(--danger)}
 @media(max-width:760px){
   .savebox{
     position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom));
@@ -354,7 +356,7 @@ dialog.dlg.wide{width:min(980px,96vw)}
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
-/* ---------- 20261127m-lts 新增 ---------- */
+/* ---------- 20261127n-lts 新增 ---------- */
 fieldset.opts{border:1px solid var(--line);border-radius:8px;padding:8px 12px 10px;margin:0 0 12px}
 fieldset.opts legend{font-weight:700;padding:0 4px}
 label.opt{display:flex;gap:10px;align-items:flex-start;padding:6px 4px;cursor:pointer;min-height:44px}
@@ -393,7 +395,7 @@ header{background:var(--paper);border-bottom:2px solid var(--line);box-shadow:0 
 #plist button[aria-current=true]{border-color:var(--lake);box-shadow:4px 4px 0 var(--sky)}
 .seal{border:2px solid var(--line);border-radius:18px;box-shadow:6px 6px 0 var(--sky)}
 .stamp{width:70px;height:70px;border:0;border-radius:50%;background:var(--seal);color:var(--onseal);transform:rotate(-10deg)}
-.stamp.dim{background:var(--pinkbg);color:var(--seal);border:2px dashed var(--seal)}
+.stamp.dim{background:var(--warnbg);color:var(--warn);border:2px dashed var(--warn)}
 .steps li button{border-radius:14px}
 .steps li.cur button{border-color:var(--lake);box-shadow:4px 4px 0 var(--sky)}
 .nextcard{border-color:var(--seal)}
@@ -412,12 +414,12 @@ dialog.dlg{border-radius:20px}
 }
 .quote::before{
   content:"";position:absolute;top:-9px;left:50%;width:72px;height:18px;border-radius:2px;
-  background:light-dark(rgba(124,180,236,.6),rgba(127,180,236,.35));transform:translateX(-50%) rotate(2deg);
+  background:rgba(164,124,54,.35);transform:translateX(-50%) rotate(2deg);
 }
 .quote.off{transform:none;box-shadow:none;background:none;padding:0;margin:8px 0 0}
 .quote.off::before{display:none}
 .hcard{border-radius:18px;border-top:6px solid var(--lake)}
-.hcard.pri{border-top-color:var(--seal)}.hcard.qn{border-top-color:var(--sun)}.hcard.eod{border-top-color:var(--ok)}
+.hcard.pri{border-top-color:var(--dangerfill)}.hcard.qn{border-top-color:var(--sun)}.hcard.eod{border-top-color:var(--ok)}
 .hitem{border-radius:12px}
 .hitem:hover{border-color:var(--lake);background:var(--sky)}
 </style>
@@ -596,15 +598,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261127m-lts"></script>
-<script src="engine.js?v=20261127m-lts"></script>
-<script src="checklist.js?v=20261127m-lts"></script>
-<script src="lifecycle.js?v=20261127m-lts"></script>
-<script src="govdocs.js?v=20261127m-lts"></script>
+<script src="config.js?v=20261127n-lts"></script>
+<script src="engine.js?v=20261127n-lts"></script>
+<script src="checklist.js?v=20261127n-lts"></script>
+<script src="lifecycle.js?v=20261127n-lts"></script>
+<script src="govdocs.js?v=20261127n-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261127m-lts";
+  const VER = "20261127n-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
