@@ -255,6 +255,17 @@
     return plan;
   }
 
+  /** 互斥選項檢查（在學校設定與進階覆寫都套用後的最終值上做）：回傳 [{ ids, msg }] */
+  function conflicts(values) {
+    const on = id => values[id] === "V", out = [];
+    const PH = { plan: "規劃", design: "設計", super: "監造" };
+    Object.entries(ART3).forEach(([ph, ids]) => { const hit = ids.filter(on); if (hit.length > 1) out.push({ ids: hit, msg: `第3條「${PH[ph]}」同時勾了 ${hit.length} 種計價方式（${hit.join("、")}）` }); });
+    const shape = ["F369", "F370", "F371"].filter(on); if (shape.length > 1) out.push({ ids: shape, msg: `附件2 分期／分區／開口契約勾了 ${shape.length} 項（${shape.join("、")}）` });
+    const pay = ["F482", "F483", "F484"].filter(on); if (pay.length > 1) out.push({ ids: pay, msg: `計酬方式按月／按日／按時勾了 ${pay.length} 項（${pay.join("、")}）` });
+    const t = Object.entries(ATT2).filter(([, o]) => Object.values(o).flat().some(on)).map(([k]) => k);
+    if (t.length > 1) out.push({ ids: [], msg: "附件2 的「建築工程」和「非建築公共工程」技術服務項目都有勾選" });
+    return out;
+  }
   const PRESET_REVIEW = [
     ["F093", "第10條 保險「天災責任附加條款」"], ["F095", "第10條 保險「定作人通知附加條款」"],
     ["F099", "第11條「甲方不收取保證金」"], ["F121", "第14條「以乙方為著作人」"],
@@ -422,5 +433,5 @@
   }
 
   const USED_IDS = ["F001","F002","F003","F004","F009","F010","F011","F012","F013","F014","F015","F016","F017","F018","F019","F020","F021","F022","F023","F024","F033","F036","F039","F040","F044","F045","F046","F047","F048","F049","F052","F062","F064","F070","F071","F072","F075","F078","F079","F084","F085","F086","F087","F088","F089","F090","F091","F092","F102","F103","F104","F105","F106","F107","F108","F109","F182","F193","F194","F196","F197","F198","F199","F200","F201","F202","F203","F204","F210","F211","F212","F213","F214","F215","F216","F217","F218","F222","F230","F231","F242","F245","F246","F247","F249","F256","F257","F266","F268","F269","F270","F285","F287","F288","F338","F339","F340","F341","F342","F343","F372","F373","F421","F425","F426","F477","F478","F479","F482","F483","F484","F485","F486","F487","F537","F538","F539","F540"];
-  G.ContractEngine = { USED_IDS, feeEstimate, reminders, defVal, defaultAlerts, fixedIdMap, PROJECT_FIELDS, FIXED, OPTIONS, defaultSchool, computeValues, regionPlan, checks, buildDocx, calcFee, fmt, presetChecked, PRESET_REVIEW };
+  G.ContractEngine = { USED_IDS, feeEstimate, reminders, defVal, defaultAlerts, fixedIdMap, PROJECT_FIELDS, FIXED, OPTIONS, defaultSchool, computeValues, regionPlan, checks, buildDocx, calcFee, fmt, presetChecked, PRESET_REVIEW, conflicts };
 })(typeof globalThis !== "undefined" ? globalThis : this);

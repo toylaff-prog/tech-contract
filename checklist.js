@@ -118,7 +118,10 @@
     }
     const d = new Date(base); d.setDate(d.getDate() + rule[1]); return iso(d);
   }
-  const today = () => iso(new Date());
+  // 「今天」一律以臺北時間為準（裝置設在其他時區時也不會差一天）
+  const today = () => { try { return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date()); } catch (e) { return iso(new Date()); } };
+  // 日期字串加減天數：全程用年月日計算，不經過 UTC，避免時區造成差一天
+  const addDays = (s, n) => { const d = pd(s); if (!d) return ""; d.setDate(d.getDate() + Number(n || 0)); return iso(d); };
   const daysBetween = (a, b) => Math.round((pd(b) - pd(a)) / 86400000);
 
   // 依預算判斷初驗、查核金額（預算未填時，以契約金額能確定的部分判斷）
@@ -180,5 +183,5 @@
     23: "竣工計價前檢核清單", 24: "竣工計價單", 25: "付款簽呈", 26: "監造報告書核定", 27: "工程決算書", 29: "保固保證金收據",
     30: "瑕疵通知及修復紀錄", 31: "保固期滿會勘紀錄", 32: "保固保證金發還簽呈" };
   const warrantyEnd = dates => dueOf(["accept", "years"], dates || {});
-  G.Checklist = { warrantyEnd, DOCS, DATES, ORDER, STAGES, ITEMS, STATUS, FILES, evaluate, dueOf, roc, today, daysBetween, money };
+  G.Checklist = { addDays, warrantyEnd, DOCS, DATES, ORDER, STAGES, ITEMS, STATUS, FILES, evaluate, dueOf, roc, today, daysBetween, money };
 })(typeof globalThis !== "undefined" ? globalThis : this);

@@ -129,13 +129,21 @@
     const field = (k, last, ctx, extra) => { F[k] = Object.assign({ last: last == null ? "" : String(last), ctx: ctx || "" }, extra || {}); };
     field("title", v.F003 || "", c.F003, { sure: !!v.F003 });
     field("vendor", v.F002 || "", c.F002, { sure: !!v.F002 });
-    // 工程類型與委託階段：只有明確勾選才預填
+    // 工程類型：先找附件2 的兩個區段標題（建築工程／公共工程不含建築），標「本案不適用」或被刪掉的不算。
+    // 兩區段的勾選條文完全相同，只靠「■監造：」這類文字無法分辨類型。
+    const HEAD = { "建築工程": "建築工程之規劃設計監造", "非建築公共工程": "公共工程（不包括建築工程）之規劃設計監造" };
+    const live = Object.entries(HEAD).filter(([, h]) => { let i = -1, ok = false; while ((i = flatAll.indexOf(h, i + 1)) >= 0) { const tail = flatAll.slice(i + h.length, i + h.length + 12); if (/^（本案不適用）|^本案不適用/.test(tail)) continue; if (/^甲方|^乙方|^[（(]?一/.test(tail) || tail) ok = true; } return ok; }).map(([t]) => t);
     const typeHits = Object.entries(ATT2).filter(([, o]) => Object.values(o).flat().some(on)).map(([t]) => t);
-    field("type", typeHits.length === 1 ? typeHits[0] : "", typeHits.map(t => t).join("、"), { sure: typeHits.length === 1, options: typeHits.length > 1 ? typeHits : null });
-    const T = ATT2[typeHits.length === 1 ? typeHits[0] : "建築工程"];
+    let type = "", typeSure = false;
+    if (live.length === 1) { type = live[0]; typeSure = true; }
+    else if (live.length === 2 && typeHits.length === 1) { type = typeHits[0]; typeSure = true; }
+    field("type", type, live.length ? "附件2 有效區段：" + live.join("、") : "找不到附件2 區段標題", { sure: typeSure, options: !typeSure && typeHits.length > 1 ? typeHits : null });
+    // 委託階段：只有一個區段時，兩組相同條文的辨識結果都屬於這個區段；整組勾選點都找到才判斷「否」
     ["plan", "design", "super", "permit", "tender"].forEach(k => {
-      const ids = T[k], seen = ids.filter(id => id in v);
-      field(k, seen.length ? (ids.some(on) ? "是" : "否") : "", seen.map(id => c[id]).join("｜"), { sure: seen.length > 0 });
+      const sets = live.length === 1 ? [ATT2["建築工程"][k], ATT2["非建築公共工程"][k]] : [ATT2[type || "建築工程"][k]];
+      const ids = sets.find(ids => ids.every(id => id in v)) || sets.find(ids => ids.some(id => id in v)) || sets[0];
+      const seen = ids.filter(id => id in v), yes = ids.some(on), all = seen.length === ids.length;
+      field(k, yes ? "是" : all ? "否" : "", seen.map(id => c[id]).join("｜"), { sure: yes || all, partial: !yes && seen.length > 0 && !all });
     });
     // 計價方式：各委託階段勾的是哪一欄；一致才預填，不一致或多選讓承辦選
     const phases = ["plan", "design", "super"].filter(k => F[k].last === "是");
@@ -153,19 +161,24 @@
     field("days", (v.F040 || "").replace(/[^\d.]/g, ""), c.F040, { sure: !!v.F040 });
     // 金額：契約上各處的服務費＋全文關鍵字，去重後列為候選
     const cand = [];
-    const add = (val, ctx, label) => { const m2 = money(val); if (m2 && !cand.some(x => x.value === m2)) cand.push({ value: m2, ctx: ctx || "", label }); };
+    const add = (val, ctx, label, conf) => { const m2 = money(val); if (m2 && !cand.some(x => x.value === m2)) cand.push({ value: m2, ctx: ctx || "", label: label + "｜" + (conf || "條文定位"), conf: conf || "條文定位" }); };
     add(v.F341, c.F341, "服務費用小計（百分比法）"); add(v.F285, c.F285, "議定服務費（總包價法）"); add(v.F421, c.F421, "服務費用上限（成本加公費）"); add(v.F485, c.F485, "服務費用上限（計酬）");
-    amountsNear(text, ["服務費用之小計", "議定服務費", "服務費用上限", "服務費用新臺幣", "服務費新臺幣", "契約價金總額"], 22).forEach(x => add(x.value, x.ctx, "全文「" + x.word + "」附近"));
-    field("fee", cand.length === 1 ? cand[0].value : "", cand[0] ? cand[0].ctx : "", { sure: cand.length === 1, candidates: cand });
+    amountsNear(text, ["服務費用之小計", "議定服務費", "服務費用上限", "服務費用新臺幣", "服務費新臺幣", "契約價金總額"], 22).forEach(x => add(x.value, x.ctx, "全文「" + x.word + "」附近", "關鍵字附近，信心較低"));
+    // 只有「條文定位」得到的唯一金額才算確定；關鍵字附近找到的即使只有一個也要人工確認
+    field("fee", cand.length === 1 && cand[0].conf === "條文定位" ? cand[0].value : "", cand[0] ? cand[0].ctx : "", { sure: cand.length === 1 && cand[0].conf === "條文定位", candidates: cand });
     // 建造費用：契約通常不寫，由「服務費用小計 ÷ 費率」推算，另找全文的工程預算
     const costC = [];
     const r0 = parseFloat(String(v.F339 || "").replace(/[%％]/g, "")), f0 = Number(money(v.F341));
-    if (r0 > 0 && f0 > 0) costC.push({ value: String(Math.round(f0 / (r0 / 100))), ctx: c.F341 || "", label: "由服務費用小計 ÷ 費率推算" });
-    amountsNear(text, ["工程預算", "工程經費", "預估建造費用", "建造費用預算"], 22).forEach(x => { if (!costC.some(y => y.value === x.value)) costC.push({ value: x.value, ctx: x.ctx, label: "全文「" + x.word + "」附近" }); });
-    field("cost", costC.length === 1 ? costC[0].value : "", costC[0] ? costC[0].ctx : "", { sure: costC.length === 1, candidates: costC });
-    // 需人工確認：已對應欄位以外，去年和今年預設不同的勾選或填寫
-    const now = opts.defaults || {}, tplText = points.map(p => norm(p.ctx)).join("|");
-    const review = [];
+    if (r0 > 0 && f0 > 0) costC.push({ value: String(Math.round(f0 / (r0 / 100))), ctx: c.F341 || "", label: "由服務費用小計 ÷ 費率推算｜推算值，請核對" });
+    amountsNear(text, ["工程預算", "工程經費", "預估建造費用", "建造費用預算"], 22).forEach(x => { if (!costC.some(y => y.value === x.value)) costC.push({ value: x.value, ctx: x.ctx, label: "全文「" + x.word + "」附近｜關鍵字附近，信心較低" }); });
+    field("cost", "", costC[0] ? costC[0].ctx : "", { sure: false, candidates: costC });
+    const review = reviewList(v, c, points, opts.defaults || {});
+    return { fields: F, review, found: sc.found, total: sc.total, values: v, ctx: c };
+  }
+
+  /** 需人工確認：已對應欄位以外，去年和「今年這份設定會產生的值」不同的勾選或填寫。今年採用值改變時可重算。 */
+  function reviewList(v, c, points, now) {
+    const on = id => v[id] === "V", tplText = points.map(p => norm(p.ctx)).join("|"), review = [];
     points.forEach(p => {
       if (MAPPED.has(p.id) || !(p.id in v)) return;
       const old = v[p.id], cur = now[p.id] !== undefined ? now[p.id] : (p.kind === "勾選" ? (p.orig === "■" ? "V" : "X") : "");
@@ -173,8 +186,7 @@
       else if (old && old.length <= 40 && old !== cur && old !== String(p.def || "") && !tplText.includes(norm(old))) review.push({ id: p.id, kind: p.kind, sec: p.sec, old, now: cur || "（空白）", value: old, ctx: c[p.id] });
     });
     if (on("F371")) review.unshift({ id: "F371", kind: "勾選", sec: "第3條附件2", old: "■ 開口契約", now: "依本案「契約型態」", value: "V", ctx: c.F371, shape: true });
-    return { fields: F, review, found: sc.found, total: sc.total, values: v };
+    return review;
   }
-
-  G.ContractImport = { docxText, scan, analyze, amountsNear, norm };
+  G.ContractImport = { reviewList, docxText, scan, analyze, amountsNear, norm };
 })(typeof globalThis !== "undefined" ? globalThis : this);

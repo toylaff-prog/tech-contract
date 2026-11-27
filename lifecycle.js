@@ -36,7 +36,7 @@
   const TECH = [
     ["T1", "提出「服務實施計畫書」送甲方核可", "start", "planSubmit", true, "技服廠商", "第8條(一)", "", null],
     ["T2", "審查服務實施計畫書", "T1", "planReview", false, "學校", "第8條(一)", "", null],
-    ["T3", "檢具派駐甲方處所勞工名冊", "sign", "roster", false, "技服廠商", "第8條", "學校設定未填日數者不列入", s => num(s.roster) > 0],
+    ["T3", "檢具派駐甲方處所勞工名冊", "sign", "roster", false, "技服廠商", "第8條", "本案契約未填日數者不列入", (s, p, cd) => cd.n("roster") > 0],
     ["T4", "提報技師簽證執行計畫", "start", "certPlan", true, "技服廠商", "第8條", "", null],
     ["T5", "交付規劃／設計成果", "start", "days", true, "技服廠商", "第7條(一)", "", (s, p) => p.plan === "是" || p.design === "是"],
     ["T6", "審查各階段書面資料（設計成果）", "T5", "stageReview", false, "學校", "第8條", "逾期未審視同甲方接受", (s, p) => p.plan === "是" || p.design === "是"],
@@ -59,7 +59,8 @@
   }
   function techRows(p, school, cal, now) {
     const t = p.tech || {}, ms = t.ms || {}, cd = contractDays(p, school), unit = cd.unit;
-    return TECH.filter(r => !r[8] || r[8](school, p)).map(([id, item, base, src, incl, who, basis, note]) => {
+    // 是否列入、日數、單位都用同一組「本案契約」數值（學校設定＋本案進階覆寫）
+    return TECH.filter(r => !r[8] || r[8](school, p, cd)).map(([id, item, base, src, incl, who, basis, note]) => {
       const n = cd.n(src);
       // 審查期限從「學校收件日」起算；只填了廠商提出日時暫以提出日計算
       const b = ms[base] || {}, baseDate = base === "start" ? t.start : base === "sign" ? t.sign : (b.r || b.d || "");

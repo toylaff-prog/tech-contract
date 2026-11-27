@@ -12,7 +12,7 @@
   };
   const val = (v, ph) => (v !== undefined && v !== null && String(v).trim()) || ph || "○○";
   const NUMS = "一二三四五六七八九十";
-  const today = () => { const t = new Date(); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
+  const today = () => G.Checklist ? G.Checklist.today() : new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date());
 
   /** 施工契約名稱：優先用「施工」頁填的，否則由技術服務案名去掉「委託…」推得 */
   function projName(p) {
