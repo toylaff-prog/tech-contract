@@ -1,4 +1,4 @@
-# node tests/lts_backend_test.js  (2026-11-27 21:37:51 CST)
+# node tests/lts_backend_test.js  (2026-11-27 21:46:59 CST)
 v22.23.5
 PASS  11a doGet 拒絕網址帶存取碼
 PASS  11b doPost 驗證 ACCESS_CODE（錯誤碼回 code、正確碼 ping 成功）

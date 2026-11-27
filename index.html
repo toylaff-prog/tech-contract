@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>工程契約與驗收管理</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#b8121f">
+<meta name="theme-color" content="#2F6FB0">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,33 +15,38 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
+<!-- 標題用 justfont 粉圓（Huninn）圓體；分開載入，讀不到時自動改用 Noto Sans TC -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
 <style>
-/* VOICE: 公文承辦的工作台——正式、安靜、精準
-IDEA: 一份等待用印的契約：白紙、黑字、一枚朱紅印
-PICTURE: 表單本身；右側「用印欄」顯示契約狀態與下載
-COLOUR and TYPE: 白紙＋墨黑＋朱紅一色；標題 Noto Serif TC，內文 Noto Sans TC
-LAYOUT: 頂列暫存鍵、左欄工程清單、中間單欄表單、右側用印欄；窄螢幕依序堆疊 */
+/* VOICE: 總務處的溫暖工作台——親切、清楚、不慌張
+IDEA: 「湖水便利貼」：東湖的湖水藍＋粉圓的糖果粉，貼在教室窗邊的一張黃色便利貼
+COLOUR: 湖水藍（主色、標題）、糖果粉（暫存、逾期、下一步）、便利貼黃（提醒）、薄荷綠（完成）；淡藍筆記紙底
+TYPE: 標題與品牌用粉圓 Huninn（圓體），內文 Noto Sans TC；公文預覽保留明體
+LAYOUT: 頂列暫存鍵、左欄工程清單、中間單欄表單、右側輸出欄；窄螢幕依序堆疊；圓角膠囊按鈕，偏移色塊陰影 */
 :root{
-  color-scheme:light dark;--bg:light-dark(#ffffff,#121316);--paper:light-dark(#ffffff,#1a1c20);--ink:light-dark(#17181b,#ecebe8);
-  --mute:light-dark(#5c6068,#a3a6ad);--line:light-dark(#dcdde0,#33363d);--field:light-dark(#f4f5f6,#23262c);
-  --seal:light-dark(#b8121f,#ff5a5f);--ok:light-dark(#1d6b45,#6fd39f);--warn:light-dark(#9a4a00,#ffb366);
-  --warnbg:light-dark(#fff1e0,#3a2a17);--okbg:light-dark(#e8f5ee,#16291f);
+  color-scheme:light dark;--bg:light-dark(#F4F8FE,#161927);--paper:light-dark(#ffffff,#1E2233);--ink:light-dark(#2B2D42,#ECEBF5);
+  --mute:light-dark(#596079,#A9AEC4);--line:light-dark(#D9E2F0,#343A52);--field:light-dark(#EAF1FB,#262B3E);
+  --seal:light-dark(#C92A62,#FF86AE);--onseal:light-dark(#ffffff,#161927);--pinkbg:light-dark(#FFF0F5,#2E1A26);
+  --lake:light-dark(#2F6FB0,#7FB4EC);--onlake:light-dark(#ffffff,#161927);--sky:light-dark(#DDEBFB,#24324D);
+  --sticky:light-dark(#FFE89A,#4A4020);--sun:light-dark(#F2B705,#E0B23A);
+  --ok:light-dark(#137A57,#6FD8B0);--warn:light-dark(#94440A,#FFC27A);
+  --warnbg:light-dark(#FFF3C9,#33291A);--okbg:light-dark(#E2F6EE,#16291F);
 }
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
-h1,h2,h3{font-family:"Noto Serif TC",serif;line-height:1.15;margin:0;text-wrap:balance}
+h1,h2,h3{font-family:"Huninn","Noto Sans TC",sans-serif;font-weight:400;line-height:1.2;margin:0;text-wrap:balance}
 button,input,select{font:inherit;color:inherit}
 header{
   position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;
   padding:12px max(3vw,16px);border-bottom:2px solid var(--ink);
 }
-header h1{font-size:clamp(22px,2.6vw,30px);font-weight:900}
+header h1{font-size:clamp(22px,2.6vw,30px);font-weight:400;color:var(--lake)}
 header .sub{color:var(--mute);font-size:16px}
 .savebox{margin-inline-start:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 #sync{font-size:16px;color:var(--mute)}
 #sync.dirty{color:var(--warn);font-weight:700}
 #saveBtn{
-  min-height:44px;padding:8px 22px;border:0;border-radius:6px;background:var(--seal);color:#fff;font-weight:700;font-size:18px;
+  min-height:44px;padding:8px 22px;border:0;border-radius:6px;background:var(--seal);color:var(--onseal);font-weight:700;font-size:18px;
   cursor:pointer;
 }
 #saveBtn:disabled{opacity:.45;cursor:default}
@@ -80,7 +85,7 @@ nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--s
 section.card{border-top:1px solid var(--line);padding:18px 0 8px}
 section.card h2{font-size:22px;margin-bottom:12px;display:flex;gap:10px;align-items:baseline}
 section.card h2 .no{
-  font:700 15px "Noto Sans TC";color:var(--seal);border:1.5px solid var(--seal);border-radius:50%;width:26px;height:26px;
+  font:700 15px "Noto Sans TC",sans-serif;color:var(--seal);border:1.5px solid var(--seal);border-radius:50%;width:26px;height:26px;
   display:inline-grid;place-items:center;flex:none;
 }
 .f{display:grid;gap:4px;margin-bottom:14px;align-content:start}
@@ -99,13 +104,14 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,su
 .calc{
   display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--field);border-radius:6px;margin-bottom:14px;
 }
-.calc b{font:900 clamp(24px,3.2vw,32px) "Noto Serif TC",serif;white-space:nowrap}
+.calc b{font:400 clamp(24px,3.2vw,32px) "Huninn","Noto Sans TC",sans-serif;white-space:nowrap}
 .calc span{color:var(--mute);font-size:16px}
 .seal{position:sticky;top:132px;border:1.5px solid var(--ink);border-radius:8px;padding:18px;background:var(--paper)}
 .seal h3{font-size:20px;margin-bottom:12px;padding-inline-end:84px;min-height:56px}
 .stamp{
   position:absolute;top:14px;right:16px;width:64px;height:64px;border:3px solid var(--seal);border-radius:6px;color:var(--seal);
-  display:grid;place-items:center;font:900 19px/1.1 "Noto Serif TC";text-align:center;transform:rotate(-6deg);transition:opacity .3s;
+  display:grid;place-items:center;font:400 19px/1.1 "Huninn","Noto Sans TC",sans-serif;text-align:center;
+  transform:rotate(-6deg);transition:opacity .3s;
 }
 .stamp.dim{border-style:dashed;color:light-dark(#b4505a,#e0a0a3);border-color:currentColor}
 .dl{
@@ -121,7 +127,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,su
 .est td,.est th{padding:4px 6px}
 .est .r{text-align:right;white-space:nowrap}
 .estbig{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;margin:4px 0 6px}
-.estbig b{font:900 clamp(22px,3vw,28px) "Noto Serif TC",serif;white-space:nowrap}
+.estbig b{font:400 clamp(22px,3vw,28px) "Huninn","Noto Sans TC",sans-serif;white-space:nowrap}
 .chk li.ok{background:none;color:var(--ok);padding-inline:0}
 .stat{font-size:16px;color:var(--mute);margin:8px 0}
 .att{font-size:15px;color:var(--mute);margin:6px 0 0;padding-inline-start:18px}
@@ -145,12 +151,14 @@ tr.todo td:first-child{box-shadow:inset 4px 0 var(--warn)}
   min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px;
 }
 .ghost{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer}
-.primary{min-height:44px;padding:8px 18px;border:0;border-radius:6px;background:var(--seal);color:#fff;font-weight:700;cursor:pointer}
+.primary{
+  min-height:44px;padding:8px 18px;border:0;border-radius:6px;background:var(--seal);color:var(--onseal);font-weight:700;cursor:pointer;
+}
 .empty{padding:48px 0;text-align:center;color:var(--mute)}
 .note{font-size:16px;color:var(--mute);max-width:72ch}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
 .kpi{border:1px solid var(--line);border-radius:6px;padding:10px 12px}
-.kpi b{display:block;font:900 30px "Noto Serif TC",serif}
+.kpi b{display:block;font:400 30px "Huninn","Noto Sans TC",sans-serif}
 .kpi span{font-size:15px;color:var(--mute)}
 .kpi.w b{color:var(--warn)}
 .drop{border:2px dashed var(--line);border-radius:8px;padding:22px;text-align:center;margin:12px 0}
@@ -166,9 +174,9 @@ summary{cursor:pointer;font-weight:700;min-height:36px}
   min-height:44px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px;width:100%;
 }
 .stg{font-size:20px;margin:22px 0 6px;display:flex;gap:10px;align-items:baseline}
-.stg small{font:400 15px "Noto Sans TC";color:var(--mute)}
+.stg small{font:400 15px "Noto Sans TC",sans-serif;color:var(--mute)}
 .badge{display:inline-block;font-size:14px;padding:1px 7px;border-radius:10px;white-space:nowrap;margin-top:2px}
-.b-late{background:var(--seal);color:#fff}
+.b-late{background:var(--seal);color:var(--onseal)}
 .b-soon{background:var(--warnbg);color:var(--warn)}
 .b-ok{background:var(--field);color:var(--mute)}
 tr.s-done td{color:var(--mute)}
@@ -202,7 +210,7 @@ nav.tabs.sub .minor+.minor{margin-inline-start:0}
   cursor:pointer;min-height:44px;position:relative;
 }
 .steps li.cur button{border-color:var(--ink);box-shadow:3px 3px 0 var(--seal)}
-.steps .sn{font:700 14px "Noto Sans TC";color:var(--seal)}
+.steps .sn{font:700 14px "Noto Sans TC",sans-serif;color:var(--seal)}
 .steps b{font-size:18px}
 .steps li:not(:last-child) button::after{
   content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:16px;
@@ -210,7 +218,7 @@ nav.tabs.sub .minor+.minor{margin-inline-start:0}
 .ministeps{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:14px;color:var(--mute);margin-top:2px}
 .nextcard{
   display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px;padding:12px 16px;border:1.5px solid var(--seal);
-  border-radius:8px;background:light-dark(#fff7f7,#2a1517);
+  border-radius:16px;background:var(--pinkbg);
 }
 .nextcard.done{border-color:var(--ok);background:var(--okbg)}
 .nextcard .nlabel{font-weight:700;color:var(--seal);white-space:nowrap}
@@ -227,9 +235,9 @@ select.isauto{color:var(--mute)}
 }
 details.stgd{border-top:1px solid var(--line);padding:4px 0}
 details.stgd>summary{
-  display:flex;gap:10px;align-items:baseline;padding:10px 0;font:700 20px "Noto Serif TC",serif;list-style-position:inside;
+  display:flex;gap:10px;align-items:baseline;padding:10px 0;font:400 20px "Huninn","Noto Sans TC",sans-serif;list-style-position:inside;
 }
-details.stgd>summary small{font:400 15px "Noto Sans TC";color:var(--mute)}
+details.stgd>summary small{font:400 15px "Noto Sans TC",sans-serif;color:var(--mute)}
 .calsync{font-size:15px;padding:0 4px;text-decoration:none}
 .calsync.bad{color:var(--seal);text-decoration:underline}
 .calcard{border-top:0;padding-top:4px}
@@ -291,7 +299,7 @@ dialog.dlg.wide{width:min(980px,96vw)}
 .deskh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .deskh select{max-width:14em;margin-inline-start:auto}
 .tagc{display:inline-block;font-size:15px;padding:1px 8px;border-radius:10px;margin-inline-start:4px;white-space:nowrap}
-.tagc.chase{background:#b8121f;color:#fff}
+.tagc.chase{background:var(--seal);color:var(--onseal)}
 .tagc.inside{background:var(--ink);color:var(--bg)}
 .tagc.warn{background:#fff3cd;color:#5c4400;border:1px solid #d9b44a}
 .desk .dname{font-weight:700;text-align:left}
@@ -301,7 +309,7 @@ dialog.dlg.wide{width:min(980px,96vw)}
 .sum td{overflow-wrap:anywhere}
 .sum th{white-space:nowrap;text-align:left;width:7em;color:var(--mute);font-weight:500;padding:7px 10px 7px 0;vertical-align:top}
 .sum td{padding:7px 0;border-bottom:1px solid var(--line,#ddd)}
-.sum .warn{color:#b8121f}
+.sum .warn{color:var(--seal)}
 @media(max-width:760px){
   .savebox{
     position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom));
@@ -356,7 +364,7 @@ label.opt span{display:grid;gap:0}
 .trial{color:var(--warn)}
 .home{padding:4px 0 10px}
 .hello h2{font-size:clamp(24px,3vw,32px);margin-bottom:6px}
-.slogan{font:700 19px "Noto Serif TC",serif;margin:2px 0;color:var(--seal)}
+.slogan{font:400 19px "Huninn","Noto Sans TC",sans-serif;margin:2px 0;color:var(--seal)}
 .slogan2{margin:0 0 4px;color:var(--mute)}
 .quote{margin:8px 0 0;padding:8px 12px;border-inline-start:3px solid var(--seal);background:var(--field);border-radius:0 6px 6px 0}
 .quote .link{margin-inline-start:10px;font-size:15px}.quote.off{background:none;border:0;padding:0}
@@ -372,8 +380,46 @@ label.opt span{display:grid;gap:0}
 .qnpick{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.qnpick select{flex:1 1 200px;width:auto}
 #qnText{width:100%;min-height:64px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font:inherit}
 details.lazy{border-top:1px solid var(--line);padding:10px 0}
-details.lazy>summary{font:700 22px "Noto Serif TC",serif;padding:6px 0}
+details.lazy>summary{font:400 22px "Huninn","Noto Sans TC",sans-serif;padding:6px 0}
 .ovcard .dashtop{align-items:center}
+/* ---------- 可愛配色：湖水便利貼 ---------- */
+header{background:var(--paper);border-bottom:2px solid var(--line);box-shadow:0 3px 0 var(--sky)}
+#saveBtn,.primary,.newbtn,.ghost,.seg button,.lbtn,.dl{border-radius:999px}
+.newbtn,.dl,.seg button[aria-pressed=true]{background:var(--lake);border-color:var(--lake);color:var(--onlake)}
+.f input[type=text],.f select,.inp,#psearch,td input,td select,.tools input,.tools select,.kd .f input,.side-foot input,
+#qnText,td textarea.ta,.govform textarea{border-radius:10px}
+.banner{border-radius:12px}
+#plist button{border-radius:12px}
+#plist button[aria-current=true]{border-color:var(--lake);box-shadow:4px 4px 0 var(--sky)}
+.seal{border:2px solid var(--line);border-radius:18px;box-shadow:6px 6px 0 var(--sky)}
+.stamp{width:70px;height:70px;border:0;border-radius:50%;background:var(--seal);color:var(--onseal);transform:rotate(-10deg)}
+.stamp.dim{background:var(--pinkbg);color:var(--seal);border:2px dashed var(--seal)}
+.steps li button{border-radius:14px}
+.steps li.cur button{border-color:var(--lake);box-shadow:4px 4px 0 var(--sky)}
+.nextcard{border-color:var(--seal)}
+.calc{border-radius:12px;background:var(--sky)}
+.est,.drop,.missing,.svc>div,.impsum,fieldset.opts,.kpi{border-radius:14px}
+dialog.dlg{border-radius:20px}
+.badge{border-radius:999px;padding:1px 9px}
+.b-soon{background:var(--sticky);color:var(--warn)}
+.b-ok{background:var(--sky);color:var(--lake)}
+.bar{border-radius:999px}.bar i{border-radius:999px}
+.hello h2{color:var(--lake)}
+/* 每日語錄做成一張貼在頁面上的黃色便利貼（全站唯一的裝飾） */
+.quote{
+  position:relative;display:inline-block;max-width:calc(100% - 16px);margin:16px 0 6px 8px;padding:14px 18px 12px;border:0;
+  border-radius:4px;background:var(--sticky);color:var(--ink);transform:rotate(-1.2deg);box-shadow:0 10px 14px -10px rgba(80,60,0,.45);
+}
+.quote::before{
+  content:"";position:absolute;top:-9px;left:50%;width:72px;height:18px;border-radius:2px;
+  background:light-dark(rgba(124,180,236,.6),rgba(127,180,236,.35));transform:translateX(-50%) rotate(2deg);
+}
+.quote.off{transform:none;box-shadow:none;background:none;padding:0;margin:8px 0 0}
+.quote.off::before{display:none}
+.hcard{border-radius:18px;border-top:6px solid var(--lake)}
+.hcard.pri{border-top-color:var(--seal)}.hcard.qn{border-top-color:var(--sun)}.hcard.eod{border-top-color:var(--ok)}
+.hitem{border-radius:12px}
+.hitem:hover{border-color:var(--lake);background:var(--sky)}
 </style>
 </head>
 <body class="ondash">
@@ -2727,7 +2773,7 @@ details.lazy>summary{font:700 22px "Noto Serif TC",serif;padding:6px 0}
         `<div class="qnpick" id="qnpick-${esc(n.id)}"></div></li>`
       );
     };
-    return `<section class="hcard" aria-labelledby="qnH"><h3 id="qnH">先記下來</h3>
+    return `<section class="hcard qn" aria-labelledby="qnH"><h3 id="qnH">先記下來</h3>
       <p class="hint">電話、走廊上聽到的交代，先記一筆；只存在這台裝置。</p>
       <textarea id="qnText" class="ta" rows="2" aria-label="記事內容" placeholder="例：屋頂防水廠商說週四補送竣工圖"></textarea>
       <div class="tools" style="margin:6px 0 0"><select id="qnPid" class="inp" aria-label="相關工程（選填）" style="width:auto;max-width:100%">
@@ -2756,7 +2802,7 @@ details.lazy>summary{font:700 22px "Noto Serif TC",serif;padding:6px 0}
       notes ? `「先記下來」還有 <b>${notes}</b> 則未處理` : "「先記下來」都處理完了 ✓",
     ];
     if (!ls.get("who", "")) checks.push("左下「你的名字」還沒填，修改紀錄會看不出是誰");
-    return `<section class="hcard" aria-labelledby="eodH"><h3 id="eodH">下班前的小確認</h3>
+    return `<section class="hcard eod" aria-labelledby="eodH"><h3 id="eodH">下班前的小確認</h3>
       <ul class="eodc">${checks.map(c => `<li>${c}</li>`).join("")}</ul>
       ${block("明天", tmr)}${nwd !== tmr ? block("下一個工作日", nwd) : ""}</section>`;
   }
@@ -2814,7 +2860,7 @@ details.lazy>summary{font:700 22px "Noto Serif TC",serif;padding:6px 0}
     const pri = items.filter(x => (late ? x.left >= 4 && x.left <= 7 : x.left <= 3));
     const nLater = items.filter(x => x.left >= 4 && x.left <= 7).length;
     const nOver = items.filter(x => x.kind === "due" && x.left < 0 && !x.r.hold).length;
-    const priHtml = `<section class="hcard" aria-labelledby="priH"><h3 id="priH">${late ? "未來第 4～7 日" : "優先處理"}</h3>
+    const priHtml = `<section class="hcard pri" aria-labelledby="priH"><h3 id="priH">${late ? "未來第 4～7 日" : "優先處理"}</h3>
       <p class="hint">${late ? "提早準備，下週就不慌。" : `逾期 ${nOver} 項；今天起 3 日內到期或要追蹤的事項。`}
       <button type="button" class="link" data-later="${late ? "" : "1"}">${late ? "回到優先處理" : `看未來第 4～7 日（${nLater}）`}</button></p>
       ${pri.length ? `<ul class="hlist">${pri.slice(0, 40).map(homeRow).join("")}</ul>` : '<p class="note">沒有需要優先處理的事項，喘口氣吧。</p>'}
