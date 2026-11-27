@@ -55,7 +55,8 @@ header .sub{color:var(--mute);font-size:16px}
 .wrap{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:calc(100vh - 70px)}
 aside.side{border-inline-end:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:10px}
 .newbtn{
-  min-height:44px;border:1.5px solid var(--lake);background:var(--lake);color:var(--onlake);border-radius:6px;font-weight:700;cursor:pointer;
+  min-height:44px;border:1.5px solid var(--lake);background:var(--lake);color:var(--onlake);border-radius:6px;
+  font-weight:700;cursor:pointer;
 }
 #psearch{min-height:40px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--field);font-size:18px}
 #plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto}
@@ -117,7 +118,8 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,su
 }
 .stamp.dim{border-style:dashed;color:var(--warn);border-color:currentColor}
 .dl{
-  width:100%;min-height:52px;border:0;border-radius:6px;background:var(--lake);color:var(--onlake);font-weight:700;font-size:19px;cursor:pointer;
+  width:100%;min-height:52px;border:0;border-radius:6px;background:var(--lake);color:var(--onlake);font-weight:700;
+  font-size:19px;cursor:pointer;
   margin-top:10px;
 }
 .dl:disabled{opacity:.5;cursor:default}
@@ -353,10 +355,45 @@ dialog.dlg.wide{width:min(980px,96vw)}
   .stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}
   .stack td:empty{display:none}
 }
+/* 首頁四張摘要卡、等待他人、本週完成、繼續上次辦理；工程摘要卡 */
+.cards4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 6px}
+.cards4 button{display:grid;gap:2px;text-align:start;padding:12px 14px;border-radius:14px;border:1px solid var(--line);
+  background:var(--paper);
+  box-shadow:inset 0 5px 0 currentColor;cursor:pointer;font:inherit}
+.cards4 .lb{font-size:16px;font-weight:700;color:var(--ink)}.cards4 b{font-size:32px;line-height:1.15}
+.cards4 small{font-size:15px;color:var(--mute)}
+.cards4 button[aria-pressed=true]{border:2px solid currentColor}
+.c-prio{color:var(--danger)}.c-prio.zero{color:var(--ok)}.c-in{color:var(--lake)}.c-wait{color:var(--wait)}.c-done{color:var(--ok)}
+details.def{margin:0 0 12px;color:var(--mute);font-size:15px}details.def>summary{cursor:pointer;min-height:32px}
+.cont{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;border:1px solid var(--line);
+  background:var(--paper);border-radius:14px;padding:10px 14px;margin:0 0 14px}
+.todo{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.todo li{border:1px solid var(--line);background:var(--paper);border-radius:12px;overflow:hidden}
+.todo li.k-in{box-shadow:inset 5px 0 var(--lake)}.todo li.k-wait{box-shadow:inset 5px 0 var(--wait)}
+.todo li.k-done{box-shadow:inset 5px 0 var(--ok)}
+.todo button{display:block;width:100%;text-align:start;background:none;border:0;padding:10px 14px 10px 20px;
+  cursor:pointer;font:inherit;color:inherit}
+.todo .t{font-weight:700}.todo .m{display:block;color:var(--mute);font-size:16px}
+details.calm,details.wdone,details.hin{border-radius:14px;padding:2px 16px 10px;margin:0 0 14px}
+details.calm{background:var(--waitbg)}details.wdone{background:var(--okbg)}details.hin{background:var(--sky)}
+details.calm>summary,details.wdone>summary,details.hin>summary{min-height:44px;display:flex;align-items:center;flex-wrap:wrap;gap:0 10px;
+  cursor:pointer;font-weight:700}
+details.calm>summary{color:var(--wait)}details.wdone>summary{color:var(--ok)}details.hin>summary{color:var(--lake)}
+details.calm>summary small{font-weight:400}
+.sumgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 8px}
+.sumgrid>div{background:var(--field);border-radius:12px;padding:10px 14px}
+.sumgrid .q{display:block;color:var(--mute);font-size:15px;margin-bottom:2px}
+.sumgrid .nextcard{margin:0;border:0;background:var(--sky);display:block;padding:10px 14px}
+.sumgrid .nextcard .nlabel{display:block;font-size:15px}.sumgrid .nextcard .nbody{display:block}.sumgrid .nextcard button{margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:4px 18px;color:var(--mute);font-size:16px;margin:0 0 10px}
+.chips .bad{color:var(--danger);font-weight:700}
+.entrysel{display:inline-flex;align-items:center;gap:6px;font-size:15px;color:var(--mute)}.entrysel select{min-height:36px;padding:2px 8px}
+@media(max-width:900px){.sumgrid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.cards4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
-/* ---------- 20261127n-lts 新增 ---------- */
+/* ---------- 20261127p-lts 新增 ---------- */
 fieldset.opts{border:1px solid var(--line);border-radius:8px;padding:8px 12px 10px;margin:0 0 12px}
 fieldset.opts legend{font-weight:700;padding:0 4px}
 label.opt{display:flex;gap:10px;align-items:flex-start;padding:6px 4px;cursor:pointer;min-height:44px}
@@ -598,15 +635,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261127n-lts"></script>
-<script src="engine.js?v=20261127n-lts"></script>
-<script src="checklist.js?v=20261127n-lts"></script>
-<script src="lifecycle.js?v=20261127n-lts"></script>
-<script src="govdocs.js?v=20261127n-lts"></script>
+<script src="config.js?v=20261127p-lts"></script>
+<script src="engine.js?v=20261127p-lts"></script>
+<script src="checklist.js?v=20261127p-lts"></script>
+<script src="lifecycle.js?v=20261127p-lts"></script>
+<script src="govdocs.js?v=20261127p-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261127n-lts";
+  const VER = "20261127p-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
@@ -2126,6 +2163,88 @@ dialog.dlg{border-radius:20px}
   }
 
   // 工程頁頂部：三階段進度
+  /* ---------- 工程摘要卡：上次做到哪裡、現在卡在哪裡、接下來要做什麼（只用已登錄的紀錄） ---------- */
+  function projLast(p, today) {
+    const out = [],
+      push = (d, t, at) => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(d || "") && d <= today) out.push({ d, t, at: at || "" });
+      };
+    Object.entries((p.chk || {}).items || {}).forEach(([k, it]) => {
+      const nm = C.DOCS[k] || ((C.ITEMS[+k] || [])[1] || "").slice(0, 20);
+      if (it && it.s === "已完成" && it.d) push(it.d, `${nm}：完成`);
+      ((it && it.flowLog) || []).forEach(l =>
+        push(twDate(l.at), `${nm}：${l.status}${l.owner ? "（" + l.owner + "）" : ""}${l.note ? "，" + l.note : ""}`, l.at)
+      );
+    });
+    Object.entries((p.tech || {}).ms || {}).forEach(([k, it]) => {
+      const r = (LC.TECH || []).find(x => x[0] === k),
+        nm = r ? String(r[1]).slice(0, 20) : k;
+      if (it && it.s === "已完成" && it.d) push(it.d, `${nm}：完成`);
+      ((it && it.flowLog) || []).forEach(l => push(twDate(l.at), `${nm}：${l.status}${l.owner ? "（" + l.owner + "）" : ""}`, l.at));
+    });
+    const dt = (p.chk || {}).dates || {};
+    C.DATES.forEach(([k, label]) => {
+      if (k !== "wplan" && k !== "years") push(dt[k], label);
+    });
+    const b = p.build || {},
+      t = p.tech || {},
+      dd = p.docs || {};
+    push(b.award, "工程決標／簽約");
+    push(b.start, "工程開工");
+    push(t.sign, "技術服務簽約");
+    push(t.start, "技術服務開始");
+    push(dd.tender, "下載招標版契約");
+    push(dd.sign, "下載簽約版契約");
+    return out.sort((x, y) => y.d.localeCompare(x.d) || y.at.localeCompare(x.at))[0] || null;
+  }
+  function projSummary(id, ev) {
+    const p = st.projects[id];
+    if (!p) return "";
+    const today = todayTW(),
+      last = projLast(p, today),
+      es = formEntries(id, p, ev, today);
+    const late = es.filter(x => x.late).sort((a, b) => a.r.due.localeCompare(b.r.due));
+    const live = es.filter(x => x.tracked).sort((a, b) => (a.flow.follow || "9").localeCompare(b.flow.follow || "9"));
+    const where = x =>
+      x.flow.owner ? (INSIDE.has(x.flow.owner) ? "輪到校內（" + x.flow.owner + "）" : "等" + x.flow.owner) : "流向待登錄";
+    const stuck = late.length
+      ? `${late[0].name}：逾期 ${C.daysBetween(late[0].r.due, today)} 天，${where(late[0])}`
+      : live.length
+        ? `${live[0].name}：${live[0].flow.status}，${where(live[0])}${live[0].flow.follow ? `（追蹤 ${C.roc(live[0].flow.follow)}）` : ""}`
+        : "沒有登錄中的表件";
+    const more = new Set(late.concat(live).map(x => x.key)).size - 1;
+    const b = p.build || {},
+      dt = (p.chk || {}).dates || {},
+      chips = [];
+    if (p.fee && nf(p.fee)) chips.push(`技術服務費 ${nf(p.fee)} 元`);
+    if (b.amount && nf(b.amount)) chips.push(`工程契約 ${nf(b.amount)} 元`);
+    chips.push(ev.accept.started ? `竣工驗收表件 ${ev.accept.done}／${ev.accept.total}` : `技術服務事項 ${ev.techDone}／${ev.techTotal}`);
+    if (dt.actual || dt.verify) chips.push(`已竣工 ${esc(C.roc(dt.actual || dt.verify))}`);
+    else if (b.start && ev.plan && ev.plan.date) {
+      const tot = C.daysBetween(b.start, ev.plan.date),
+        gone = C.daysBetween(b.start, today);
+      if (tot > 0)
+        chips.push(
+          `<span title="依開工日與預定竣工日計算的時間比例，不是施工進度">工期已過 ` +
+            `${Math.max(0, Math.min(100, Math.round((gone / tot) * 100)))}%（預定竣工 ${esc(C.roc(ev.plan.date))}）</span>`
+        );
+    }
+    const w = C.warrantyEnd(dt);
+    if (w) chips.push(`保固至 ${esc(C.roc(w))}`);
+    if (ev.next)
+      chips.push(
+        `最近期限：${esc(ev.next.item.slice(0, 20))}（${esc(C.roc(ev.next.due))}）` +
+          (ev.next.left < 0 ? ` <span class="bad">逾期 ${-ev.next.left} 天</span>` : "")
+      );
+    return `<div class="sumgrid">
+    <div><span class="q">上次做到哪裡？</span>${last ? `${esc(C.roc(last.d))} ${esc(last.t)}` : "還沒有辦理紀錄"}</div>
+    <div><span class="q">現在卡在哪裡？</span>${late.length ? `<b class="danger">${esc(stuck)}</b>` : esc(stuck)}${
+      more > 0 ? `<span class="hint">　另有 ${more} 份在流程中</span>` : ""
+    }</div>
+    ${nextCard(ev.step).replace('class="nlabel">下一步</span>', 'class="nlabel q">接下來要做什麼？</span>')}
+  </div>
+  <div class="chips">${chips.map(c => `<span>${c}</span>`).join("")}</div>`;
+  }
   function renderWorkHead() {
     const p = st.projects[st.cur],
       host = $("#workHead");
@@ -2148,7 +2267,10 @@ dialog.dlg{border-radius:20px}
         `type="button" class="link" data-folder="1">📁 雲端資料夾</button><button type="button" class="link" ` +
         `data-hist="1">🕘 修改紀錄</button>`
       : ""
-  }<span class="hint" id="wmsg" role="status"></span></div>
+  }<label class="entrysel">從哪個階段開始建檔<select id="entrySel" class="inp">${ENTRY_OPTS.map(
+    ([v, label]) => `<option value="${v}" ${v === (p.entryStage || "proj") ? "selecte" + "d" : ""}>${esc(label)}</option>`
+  ).join("")}</select></label><span class="hint" id="wmsg" role="status"></span></div>
+  ${projSummary(st.cur, ev)}
   <ol class="steps">${ev.steps
     .map(
       (s, i) =>
@@ -2157,14 +2279,17 @@ dialog.dlg{border-radius:20px}
         `type="button" data-goto="${go[s.key]}"><span class="sn">${i + 1}</span><b>${esc(s.name)}</b>` +
         `<span>${esc(s.status)}</span>${s.sub ? `<span class="hint">${esc(s.sub)}</span>` : ""}</button></li>`
     )
-    .join("")}</ol>
-  ${nextCard(ev.step)}
-  ${
-    ev.next && (!ev.step.due || ev.next.due !== ev.step.due)
-      ? `<p class="note" style="margin:6px 0 ` + `0">最近期限：${esc(ev.next.item)}（${esc(C.roc(ev.next.due))}）${badge(ev.next)}</p>`
-      : ""
-  }`;
+    .join("")}</ol>`;
   }
+  /* 已經建好的工程也能改「從哪個階段開始」：前面階段不再要求補填，已填的資料都保留 */
+  $("#workHead").addEventListener("change", e => {
+    if (e.target.id !== "entrySel") return;
+    const p = st.projects[st.cur];
+    if (!p) return;
+    p.entryStage = e.target.value;
+    markDirty(st.cur);
+    refreshWork();
+  });
   $("#workHead").addEventListener("click", e => {
     if (e.target.closest("button[data-folder]")) {
       openFolder();
@@ -2845,6 +2970,106 @@ dialog.dlg{border-radius:20px}
         : `<p class="note">目前沒有需要通知廠商的事項。</p>`);
     return renderDesk(list) + upHtml;
   }
+  /* ---------- 首頁四張摘要卡：優先處理／輪到校內／等待他人／本週已完成（都只用已登錄的資料） ---------- */
+  let homeCat = "";
+  const SUBNAME = { proj: "技術服務契約", tech: "技術服務履約", build: "施工", chk: "竣工驗收至保固", gov: "公文簽稿", adv: "契約進階欄位" };
+  function weekDone(today) {
+    const mon = addDays(today, -((new Date(today + "T00:00:00").getDay() + 6) % 7)),
+      seen = new Map();
+    Object.entries(st.projects).forEach(([id, p]) => {
+      const pn = p.name || p.title || "未命名工程";
+      const add = (key, name, d) => {
+        if (d && d >= mon && d <= today && !seen.has(id + key)) seen.set(id + key, { id, pn, name, d });
+      };
+      Object.entries((p.chk || {}).items || {}).forEach(([k, it]) => {
+        const nm = C.DOCS[k] || ((C.ITEMS[+k] || [])[1] || "").slice(0, 24);
+        if (it && it.s === "已完成") add("acc-" + k, nm, it.d);
+        ((it && it.flowLog) || []).filter(l => l.status === "已辦結").forEach(l => add("acc-" + k, nm, twDate(l.at)));
+      });
+      Object.entries((p.tech || {}).ms || {}).forEach(([k, it]) => {
+        const r = (LC.TECH || []).find(x => x[0] === k),
+          nm = r ? String(r[1]).slice(0, 24) : k;
+        if (it && it.s === "已完成") add("tech-" + k, nm, it.d);
+      });
+    });
+    return [...seen.values()].sort((a, b) => b.d.localeCompare(a.d));
+  }
+  function cardsHtml(list, items, today) {
+    const es = list.flatMap(({ id, p, ev }) => formEntries(id, p, ev, today));
+    const ins = es.filter(x => x.inside),
+      wait = es.filter(x => x.tracked && !x.inside && !x.late && !x.followDue),
+      done = weekDone(today);
+    const nPri = items.filter(x => x.left <= 3).length,
+      nOver = items.filter(x => x.kind === "due" && x.left < 0 && !x.r.hold).length;
+    const nofollow = wait.filter(x => !x.flow.follow).length;
+    const card = (k, cls, lb, n, sub) =>
+      `<button type="button" class="${cls}${k === "prio" && !n ? " zero" : ""}" data-hc="${k}" aria-pressed="${homeCat === k}">` +
+      `<span class="lb">${lb}</span><b>${n}</b><small>${sub}</small></button>`;
+    const flowLi = (x, cls, extra) =>
+      `<li class="${cls}"><button type="button" data-todo-id="${esc(x.id)}" data-todo-key="${esc(x.key)}">` +
+      `<span class="t">${esc(x.project)}・${esc(x.name)}</span><span class="m">${extra}</span>` +
+      `<span class="m">上次：${esc(lastDone(x))}</span></button></li>`;
+    const due = x => (x.r.due ? `・契約期限 ${esc(C.roc(x.r.due))}` : "");
+    const inLi = x =>
+      flowLi(x, "k-in", `${esc(x.flow.status)}・經手：${esc(x.flow.owner)}${due(x)}・下一步：${esc(flowNext(x.flow))}`);
+    const waitLi = x =>
+      flowLi(
+        x,
+        "k-wait",
+        `等${esc(x.flow.owner || "他人")}・${esc(x.flow.status)}・` +
+          (x.flow.follow ? `下次追蹤 ${esc(C.roc(x.flow.follow))}` : `<span class="tagc warn">未設追蹤日</span>`) +
+          due(x)
+      );
+    const doneLi = x =>
+      `<li class="k-done"><button type="button" data-open-p="${esc(x.id)}"><span class="t">${esc(x.pn)}・${esc(x.name)}</span>` +
+      `<span class="m">${esc(C.roc(x.d))} 完成</span></button></li>`;
+    const owners = {};
+    wait.forEach(x => {
+      const o = x.flow.owner || "他人";
+      owners[o] = (owners[o] || 0) + 1;
+    });
+    const last = ls.get("last", null),
+      lp = last && st.projects[last.id];
+    const stale = st.offline ? "（目前離線，數字是上次同步時的資料）" : st.stale ? "（正在取得最新資料）" : "";
+    return (
+      `<div class="cards4" role="group" aria-label="今日摘要">` +
+      card("prio", "c-prio", "優先處理", nPri, nOver ? `含逾期 ${nOver} 項` : nPri ? "3 日內到期或該追蹤" : "沒有急件") +
+      card("in", "c-in", "輪到校內", ins.length, "可以安排辦理") +
+      card("wait", "c-wait", "等待他人", wait.length, nofollow ? `${nofollow} 件未設追蹤日` : "已安排追蹤") +
+      card("done", "c-done", "本週已完成", done.length, "依完成日期") +
+      `</div><details class="def"><summary>這些數字怎麼算？</summary>優先處理：契約期限已過或 3 日內到期的事項，加上追蹤日到了的表件` +
+      `（和下方「優先處理」清單相同）。輪到校內：表件流向登錄在學校承辦或校內核章。等待他人：流向登錄在廠商、監造等單位，` +
+      `還沒到追蹤日、契約期限也還沒過。本週已完成：星期一起在清單填了完成日期，或流向標為已辦結的表件。${stale}</details>` +
+      (lp
+        ? `<div class="cont"><span>▶ 繼續上次辦理：<b>${esc(lp.name || lp.title || "未命名工程")}</b>・${esc(SUBNAME[last.sub] || "工程")}` +
+          `<span class="hint">（${esc(tm(last.at))}）</span></span><button type="button" class="ghost" id="contBtn">開啟</button></div>`
+        : "") +
+      (homeCat === "in"
+        ? `<details class="hin" open><summary>輪到校內處理（${ins.length}）</summary>` +
+          (ins.length
+            ? `<ul class="todo">${ins.map(inLi).join("")}</ul>`
+            : `<p class="note">目前沒有登錄在校內的表件。</p>`) +
+          `</details>`
+        : "") +
+      (homeCat === "wait" || (wait.length && !homeCat)
+        ? `<details class="calm" ${homeCat === "wait" ? "open" : ""}><summary>這些事情可以先不用掛心 <small>${wait.length} 項正在等待他人回覆` +
+          (wait.length ? `（${Object.entries(owners).map(([o, n]) => `等${esc(o)} ${n}`).join("、")}）` : "") +
+          `</small></summary>` +
+          (wait.length
+            ? `<ul class="todo">${wait.map(waitLi).join("")}</ul>` +
+              `<p class="hint">已記錄下次追蹤日期的事項，可以先安排其他工作；追蹤日或契約期限一到，會自動移到「優先處理」。</p>`
+            : `<p class="note">目前沒有在等別人回覆的表件。</p>`) +
+          `</details>`
+        : "") +
+      (homeCat === "done"
+        ? `<details class="wdone" open><summary>本週已完成（${done.length}）</summary>` +
+          (done.length
+            ? `<ul class="todo">${done.map(doneLi).join("")}</ul>`
+            : `<p class="note">本週還沒有登錄完成的表件。完成時在清單填完成日期，或把表件流向標為「已辦結」，這裡就會出現。</p>`) +
+          `</details>`
+        : "")
+    );
+  }
   let dashList = [];
   function renderDash() {
     if (deskProject && !st.projects[deskProject]) deskProject = "";
@@ -2873,6 +3098,7 @@ dialog.dlg{border-radius:20px}
         <p class="slogan">校園的美好，由我們一起打造。</p>
         <p class="slogan2">讓繁瑣的行政交給系統，讓用心的你留一點時間給自己。</p>
         <p class="hint">今天 ${esc(rocW(today))}・共 ${list.length} 件工程</p>${quoteHtml(today)}</div>
+      ${list.length ? cardsHtml(list, items, today) : ""}
       <div class="homegrid">${priHtml}${quickHtml(list)}${eodHtml(items, today)}</div></section>
       ${list.length ? overviewHtml(list) : '<p class="note">尚無工程。按左上「＋ 新增工程」開始。</p>'}
       ${
@@ -2892,6 +3118,44 @@ dialog.dlg{border-radius:20px}
     true
   );
   $("#dashBody").addEventListener("click", e => {
+    const hc = e.target.closest("button[data-hc]");
+    if (hc) {
+      const k = hc.dataset.hc;
+      if (k === "prio") {
+        homeCat = "";
+        if (ls.get("uiLater", false)) ls.set("uiLater", false);
+        renderDash();
+        const el = $("#priH");
+        if (el) el.scrollIntoView({ block: "start" });
+        return;
+      }
+      homeCat = homeCat === k ? "" : k;
+      renderDash();
+      return;
+    }
+    const td = e.target.closest("button[data-todo-id]");
+    if (td) {
+      openFlow(td.dataset.todoId, td.dataset.todoKey);
+      return;
+    }
+    const op = e.target.closest("button[data-open-p]");
+    if (op) {
+      st.cur = op.dataset.openP;
+      ls.set("cur", st.cur);
+      renderList();
+      showTab("chk");
+      return;
+    }
+    if (e.target.closest("#contBtn")) {
+      const l = ls.get("last", null);
+      if (l && st.projects[l.id]) {
+        st.cur = l.id;
+        ls.set("cur", st.cur);
+        renderList();
+        showTab(l.sub || "proj");
+      }
+      return;
+    }
     const tr = e.target.closest("tr[data-open]");
     if (tr) {
       st.cur = tr.dataset.open;
@@ -4121,6 +4385,8 @@ dialog.dlg{border-radius:20px}
       renderSchool();
       renderShare();
     }
+    // 繼續上次辦理（只記在這台裝置）
+    if (main === "work" && st.cur && st.projects[st.cur]) ls.set("last", { id: st.cur, sub: st.sub, at: new Date().toISOString() });
     tabStops();
     ls.set("main", main);
   }
