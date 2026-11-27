@@ -1,0 +1,26 @@
+# node tests/lts_backend_test.js  (2026-11-27 21:37:51 CST)
+v22.23.5
+PASS  11a doGet 拒絕網址帶存取碼
+PASS  11b doPost 驗證 ACCESS_CODE（錯誤碼回 code、正確碼 ping 成功）
+PASS  11c 存取碼少於 12 字元時拒絕服務
+PASS  11d 15 分鐘內錯 30 次暫停猜碼，但正確碼不受阻斷
+PASS  11e safeText_ 防公式注入（含前導空白）
+PASS  11f ID_RE 防原型污染（__proto__、constructor 不得當工程編號）
+PASS  11g 試算表寫入的名稱與修改者經過 safeText_
+PASS  9a 版本衝突：舊 base 回傳衝突；以剛看到的衝突版本為 base 可覆蓋儲存
+PASS  9b 已刪除的工程不會被舊頁面存回（回傳 deleted 衝突）
+PASS  12a 允許學校常用工程檔案（pdf/docx/xlsx/pptx/jpg/png/heic/dwg/zip）
+PASS  12b 拒絕 html/js/exe/svg/bat/sh，及偽裝成 PDF 的 HTML
+PASS  12c 單檔超過 20MB 拒絕
+PASS  13a 最後一筆待辦完成送出 list: [] → 移除舊日曆事件、不攔截
+PASS  13b 移除時遇 404：視同已刪除，移除對照
+PASS  13c 移除時遇配額錯誤：保留對照並回報，等手動重試
+PASS  13d 更新時活動已不存在（404）→ 重新建立；說明欄移除外部網址並附 SITE_URL
+PASS  13e 學校設定版本不是最新時略過同步（不用舊設定改日曆）
+PASS  13f siteSet 只接受 https 網址
+PASS  14 每週摘要信分列已逾期、7 日內、8～30 日內（停工中另列、不算逾期）
+PASS  範本上傳：基礎 JSON/XML 檢查、防路徑穿越、無孤兒記號，預設待核對
+PASS  LTS 不含已刪除的機制（管理員密碼、DOCX 封存、限期改正鎖死、硬編碼範本型別、大量取消攔截）
+PASS  後端每行不超過 140 字元
+
+後端測試：22/22 PASS
