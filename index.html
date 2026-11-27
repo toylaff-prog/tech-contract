@@ -355,6 +355,15 @@ dialog.dlg.wide{width:min(980px,96vw)}
   .stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;white-space:normal;color:var(--mute)}
   .stack td:empty{display:none}
 }
+.quick{list-style:none;counter-reset:q;padding:0;margin:0;display:grid;gap:10px}
+.quick li{counter-increment:q;display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:12px;align-items:center;
+  background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.quick li::before{content:counter(q);grid-row:span 2;width:44px;height:44px;border-radius:50%;background:var(--lake);color:var(--onlake);
+  display:grid;place-items:center;font-size:22px;font-weight:700}
+.quick b{font-size:20px}.quick span{color:var(--mute);grid-column:2}
+.faq{margin:0}.faq dt{font-weight:700;margin-top:10px}.faq dd{margin:0 0 0 0;color:var(--mute)}
+details.more{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+details.more>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}details.more h4{margin:14px 0 4px}
 /* 首頁四張摘要卡、等待他人、本週完成、繼續上次辦理；工程摘要卡 */
 .cards4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 6px}
 .cards4 button{display:grid;gap:2px;text-align:start;padding:12px 14px;border-radius:14px;border:1px solid var(--line);
@@ -393,7 +402,7 @@ details.calm>summary small{font-weight:400}
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
-/* ---------- 20261127q-lts 新增 ---------- */
+/* ---------- 20261127r-lts 新增 ---------- */
 fieldset.opts{border:1px solid var(--line);border-radius:8px;padding:8px 12px 10px;margin:0 0 12px}
 fieldset.opts legend{font-weight:700;padding:0 4px}
 label.opt{display:flex;gap:10px;align-items:flex-start;padding:6px 4px;cursor:pointer;min-height:44px}
@@ -558,16 +567,25 @@ dialog.dlg{border-radius:20px}
     </div>
 
     <div class="view help" id="v-help">
-      <h2 style="font-size:24px;margin-bottom:10px">怎麼用</h2>
-      <p><b>最簡單的用法：照「下一步」做。</b>每個工程頁上方的紅框會告訴你現在該做什麼，按「前往」就跳到要填的欄位；<!--
-        -->首頁的「我的工程進度總覽」也列出每案的下一步，點一下直接帶到那一格。</p>
-      <h3 style="font-size:20px;margin:16px 0 6px">日常 3 條操作守則</h3>
-      <ol>
-        <li><b>改完就按右上「暫存」</b>（或 Ctrl+S）。沒暫存的修改只在這台裝置的草稿裡，重開網頁會提示還原到同一件工程。</li>
-        <li><b>看到「同仁已更新」的提示，先選一個版本再繼續。</b>選「改用同仁版本」時，你的修改會自動備份並下載一份 JSON，不會遺失。</li>
-        <li><b>正式簽約後，到「技術服務履約」勾選「鎖定正式簽約內容快照」</b>，之後改學校設定不會改動這件工程的期限。</li>
+      <h2 style="font-size:24px;margin-bottom:10px">3 步驟就會用</h2>
+      <ol class="quick">
+        <li><b>看首頁</b><span>「優先處理」列出今天該辦的事，點一下就跳到那一格。</span></li>
+        <li><b>照「接下來要做什麼」做</b><span>每件工程最上方都有，按「前往」，填完那一格就好。</span></li>
+        <li><b>改完按右上「暫存」</b><span>右上角出現「共用試算表已儲存」就完成了。</span></li>
       </ol>
-      <h3 style="font-size:20px;margin:16px 0 6px">三個階段</h3>
+      <h3 style="font-size:20px;margin:18px 0 6px">常見問題</h3>
+      <dl class="faq">
+        <dt>要新增一件工程？</dt><dd>按左上「＋ 新增工程」，選從哪個階段開始；已經在施工或驗收的工程，前面不用補填。</dd>
+        <dt>文件送出去了，怕忘記追？</dt><dd>點那份表件，選「目前等誰」和「下次追蹤日」，到時候首頁會提醒你。</dd>
+        <dt>要催廠商或監造？</dt><dd>首頁最下面「表件追蹤／LINE 催辦」，按「LINE 傳送」或「複製訊息」。</dd>
+        <dt>臨時聽到一件事？</dt><dd>首頁「先記下來」打一行，之後再處理。</dd>
+        <dt>跳出「同仁已更新」？</dt><dd>選一個版本再繼續；選同仁的版本時，你的修改會自動備份，不會不見。</dd>
+        <dt>忘記暫存就關掉了？</dt><dd>重開網頁會問你要不要還原草稿，按「還原」。</dd>
+        <dt>用的是共用電腦？</dt><dd>用完按左下「安全登出並清除本機資料」。</dd>
+      </dl>
+      <details class="more"><summary>進階說明（需要時再看）</summary>
+      <p><b>正式簽約後</b>，到「技術服務履約」勾選「鎖定正式簽約內容快照」，之後改學校設定不會改動這件工程的期限。</p>
+      <h4>三個階段</h4>
       <ol>
         <li><b>技術服務</b>（委託建築師／技術顧問設計監造）
           <ul><li>「技術服務契約」：填案名、委託階段、計價方式與金額，下載招標版或簽約版 Word。<!--
@@ -578,7 +596,7 @@ dialog.dlg{border-radius:20px}
         <li><b>竣工驗收至保固</b>：依序填關鍵日期，前面的例行項目自動完成。初驗可選「依金額建議／須初驗／免初驗」；<!--
           -->已填驗收合格日而沒有初驗日期時，一律視為免初驗，不會卡住結案。保固年數須能換算為整月（例如 1、2、0.5 年）。</li>
       </ol>
-      <h3 style="font-size:20px;margin:16px 0 6px">其他</h3>
+      <h4>其他</h4>
       <ul>
         <li>新增工程時可選從哪個階段開始（契約準備／已有技服／直接施工／驗收／保固追蹤），也可設定學校自辦或無委託技術服務；<!--
           -->中途建檔不必回頭補填前面的欄位。已經建好的工程，也可以在工程頁標題下方的「起始階段」選單隨時更改，已填的資料都會保留。</li>
@@ -593,6 +611,7 @@ dialog.dlg{border-radius:20px}
         <li>「工程 → 公文簽稿」：付款簽呈的金額只接受非負整數（可有千分位逗號）；空白、負數、小數、1e4、全形數字、超付或零尾款都會擋下 Word。</li>
         <li>共用電腦用完，按左下「安全登出並清除本機資料」。</li>
       </ul>
+      </details>
       <p class="note">產生的 Word 只動填寫處，其餘條文與範本一字不差；送出前仍請承辦人核對。正式契約以學校紙本用印與雲端資料夾歸檔為準。</p>
     </div>
   </main>
@@ -638,15 +657,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261127q-lts"></script>
-<script src="engine.js?v=20261127q-lts"></script>
-<script src="checklist.js?v=20261127q-lts"></script>
-<script src="lifecycle.js?v=20261127q-lts"></script>
-<script src="govdocs.js?v=20261127q-lts"></script>
+<script src="config.js?v=20261127r-lts"></script>
+<script src="engine.js?v=20261127r-lts"></script>
+<script src="checklist.js?v=20261127r-lts"></script>
+<script src="lifecycle.js?v=20261127r-lts"></script>
+<script src="govdocs.js?v=20261127r-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261127q-lts";
+  const VER = "20261127r-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
