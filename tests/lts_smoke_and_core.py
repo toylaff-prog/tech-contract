@@ -654,17 +654,22 @@ def t15_quality():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     sw = (ROOT / "sw.js").read_text(encoding="utf-8")
     ensure("controllerchange" not in html, "前端不得監聽 controllerchange 自動重新整理")
-    ensure(all(x in sw for x in ("skipWaiting()", "clients.claim()", 'VERSION = "20261127m-lts"', 'startsWith("tc-")')), "sw.js 基本設定")
+    ensure(all(x in sw for x in ("skipWaiting()", "clients.claim()", 'startsWith("tc-")')), "sw.js 基本設定")
+    # 版本號：sw.js 的 VERSION、index.html 的 VER 與所有 ?v= 必須是同一個（改版時三處一起改）
+    m = re.search(r'const VERSION = "([\w-]+)"', sw)
+    ensure(m, "sw.js 找不到 VERSION")
+    ver = m.group(1)
+    ensure(f'const VER = "{ver}"' in html, f"index.html 的 VER 應為 {ver}")
     ensure("postMessage" not in sw and "setInterval" not in sw, "sw.js 不應有訊息握手或輪詢")
     srcs = re.findall(r'<script src="([^"]+)"', html)
-    ensure(srcs and all(s.endswith("?v=20261127m-lts") for s in srcs), f"靜態資源版本號：{srcs}")
+    ensure(srcs and all(s.endswith("?v=" + ver) for s in srcs), f"靜態資源版本號應為 {ver}：{srcs}")
     banned = ["ADMIN_CODE", "archiveContract", "mergeProject", "chooseConflicts", "DRAFT_SESSION", "syncPending",
               "checkFixHistory", "templateStructure", "ready-update", "legacy-ext"]
     hits = [b for b in banned for f in files[:11] if b in (ROOT / f).read_text(encoding="utf-8")]
     ensure(not hits, f"不得帶入已刪除的機制：{hits}")
     errs = [e for e in CONSOLE_ERRORS]
     ensure(not errs, "Console 錯誤：" + " | ".join(errs[:5]))
-    return f"API 為空字串；{len(files)} 個檔案最長 {max(longest.values())} 字元；sw 極簡；無已刪除機制；全程 Console 無錯誤"
+    return f"版本 {ver}；API 設定正確；{len(files)} 個檔案最長 {max(longest.values())} 字元；sw 極簡；無已刪除機制；全程 Console 無錯誤"
 
 
 def main():
