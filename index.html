@@ -304,6 +304,16 @@ dialog.dlg.wide{width:min(980px,96vw)}
 .impt input.inp,.impt select.inp{width:100%}
 .cand{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
 .impsum{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--field);line-height:1.7}
+/* 新舊版差異：刪除的字加刪除線、新增的字淺綠底粗體；去年填的值加底線，今年的填寫處以方框／底線表示 */
+.dfrow{border-top:1px solid var(--line);padding:10px 0}
+.dfsec{font-size:15px;color:var(--mute)}
+.dfline{display:flex;gap:8px;line-height:1.7;font-size:16px}
+.dflab{flex:none;width:2.6em;font-size:14px;color:var(--mute);padding-top:2px}
+.dfline del{background:var(--sticky);color:var(--warn);text-decoration:line-through}
+.dfline ins{background:var(--okbg);color:var(--ok);text-decoration:none;font-weight:700}
+.dfline .dfval{font-weight:700;text-decoration:underline}
+.dfitems{list-style:none;padding:0;margin:6px 0 0}
+.dfitems li{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;padding:4px 0}
 .deskh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .deskh select{max-width:14em;margin-inline-start:auto}
 .tagc{display:inline-block;font-size:15px;padding:1px 8px;border-radius:10px;margin-inline-start:4px;white-space:nowrap}
@@ -605,8 +615,9 @@ dialog.dlg{border-radius:20px}
       <ul>
         <li>新增工程時可選從哪個階段開始（契約準備／已有技服／直接施工／驗收／保固追蹤），也可設定學校自辦或無委託技術服務；<!--
           -->中途建檔不必回頭補填前面的欄位。已經建好的工程，也可以在工程頁標題下方的「起始階段」選單隨時更改，已填的資料都會保留。</li>
-        <li>「匯入歷年契約」會讀出去年契約封面的範本版本（例如 115.4.23 版），用同一版範本辨識。去年用的是舊版範本時，<!--
-          -->先到「範本管理」上傳那一版範本，按「先存成待審版（不啟用）」，再匯入一次就能完整辨識；目前使用的範本不會改變。</li>
+        <li>「匯入歷年契約」會把去年的 Word 契約逐段和今年範本比對，在「新舊版差異」列出改寫、新增、刪掉的條文，<!--
+          -->並推出去年在改寫處勾了什麼、填了什麼；打勾「套用去年」的才會帶入今年。去年用的是舊版範本時，<!--
+          -->也可以先到「範本管理」上傳那一版範本，按「先存成待審版（不啟用）」再匯入，辨識會更完整；目前使用的範本不會改變。</li>
         <li>第一次使用先到「學校設定」確認一次（保險、違約金、仲裁、申訴會、放假日等）。每年人事行政總處公告新年度辦公日曆表後，<!--
           -->補上放假日，並在「已維護假日資料年度」加上該年；期限跨入沒有維護的年度時，會標示「日期為試算」。</li>
         <li>首頁最上方四張卡片：<b>優先處理</b>（逾期或 3 日內到期、追蹤日到了）、<b>輪到校內</b>（表件在學校承辦或校內核章）、
@@ -664,15 +675,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261128c-lts"></script>
-<script src="engine.js?v=20261128c-lts"></script>
-<script src="checklist.js?v=20261128c-lts"></script>
-<script src="lifecycle.js?v=20261128c-lts"></script>
-<script src="govdocs.js?v=20261128c-lts"></script>
+<script src="config.js?v=20261128d-lts"></script>
+<script src="engine.js?v=20261128d-lts"></script>
+<script src="checklist.js?v=20261128d-lts"></script>
+<script src="lifecycle.js?v=20261128d-lts"></script>
+<script src="govdocs.js?v=20261128d-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261128c-lts";
+  const VER = "20261128d-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
@@ -3713,6 +3724,11 @@ dialog.dlg{border-radius:20px}
     }
     return out;
   }
+  /* 今年範本的各段條文（比對新舊版差異用；範本檔與產生 Word 共用快取） */
+  async function impTplParas() {
+    if (!IMP.tp || IMP.tp.id !== st.tpl.id) IMP.tp = { id: st.tpl.id, list: ContractImport.tplParas(DOMParser, await tplParts()) };
+    return IMP.tp.list;
+  }
   async function impPoints(id) {
     IMP.pts = IMP.pts || {};
     if (!IMP.pts[id]) {
@@ -3755,6 +3771,18 @@ dialog.dlg{border-radius:20px}
       if (my !== IMP.seq) return;
       IMP.ver = { want: pk.want, used: pk.pick.version, cur: pk.pick.id === st.tpl.id, exact: pk.exact };
       IMP.res = ContractImport.analyze(text, pk.pick.points, { defaults, paras, reviewPoints: st.tpl.points });
+      // 新舊版差異：去年契約逐段對今年範本（貼上的文字段落不完整，不比對）
+      IMP.diff = null;
+      if (paras) {
+        try {
+          msg.textContent = "比對新舊版條文中…";
+          const tp = await impTplParas();
+          if (my !== IMP.seq) return;
+          IMP.diff = ContractImport.compareVersions(text, tp, st.tpl.points, IMP.res.values);
+        } catch (e) {
+          IMP.diff = { error: e.message || String(e) };
+        }
+      }
       IMP.file = name;
       IMP.id = null;
       IMP.dupOk = false;
@@ -3830,8 +3858,10 @@ dialog.dlg{border-radius:20px}
     }
     <table class="stack impt"><thead><tr><th style="width:9em">欄位</th><th>去年辨識值</th><th ` +
       `style="width:45%">今年採用值</th></tr></thead><tbody>${IMP_ROWS.map(cell).join("")}</tbody></table>
+    <div id="impDiff"></div>
     <div id="impRev"></div>
-    <p class="note">特約條款、手寫修改的條文不會自動帶入，建立後請在「契約進階欄位」或下載的 Word 核對。去年的履約進度、收件與核定日期、附件、下載紀錄都不會帶入。</p>
+    <p class="note">特約條款、手寫修改的條文不會自動帶入（Word 匯入時會列在「新舊版差異」），建立後請在「契約進階欄位」或下載的 Word 核對。<!--
+    -->去年的履約進度、收件與核定日期、附件、下載紀錄都不會帶入。</p>
     <div class="impsum" id="impSum"></div><div class="msg" id="impMsg" role="status"></div>`;
     $("#impFoot").hidden = false;
     $("#impGo").textContent = "建立今年工程";
@@ -3847,9 +3877,9 @@ dialog.dlg{border-radius:20px}
     if (v.exact)
       return `<p class="note">去年契約是工程會 ${esc(v.want)} 版，已用範本管理裡的 ${esc(v.used)} 版辨識；建立後套用目前的範本。</p>`;
     return (
-      `<div class="banner">去年契約是工程會 ${esc(v.want)} 版，範本管理裡沒有這一版，先用 ${esc(v.used)} 版辨識，` +
-      `條文改過的地方可能讀不到。${
-        API ? `可到「範本管理」上傳 ${esc(v.want)} 版範本，按「先存成待審版（不啟用）」，再重新匯入一次。` : ""
+      `<div class="banner">去年契約是工程會 ${esc(v.want)} 版，和今年的 ${esc(ContractImport.versionOf(st.tpl.version) || "")} 版不同，` +
+      `範本管理裡沒有這一版。改寫過的條文會列在下方「新舊版差異」，請逐項確認。${
+        API ? `（到「範本管理」上傳 ${esc(v.want)} 版範本、按「先存成待審版（不啟用）」後再匯入，辨識會更完整。）` : ""
       }</div>`
     );
   }
@@ -3859,6 +3889,7 @@ dialog.dlg{border-radius:20px}
     const base = impBuild(NEWP(), true);
     base.adv = {};
     const now = E.computeValues(base, st.school, "sign").values;
+    IMP.now = now;
     IMP.res.review = ContractImport.reviewList(IMP.res.values, IMP.res.ctx, st.tpl.points, now);
     const r = IMP.res;
     $("#impRev").innerHTML =
@@ -3883,6 +3914,120 @@ dialog.dlg{border-radius:20px}
             .join("")}</tbody></table>`
         : `<p class="note">沒有發現和今年設定不同的個案勾選。</p>`
     }`;
+    impDiffRender();
+  }
+  /* ---------- 新舊版差異 ---------- */
+  // 長段落只留差異附近的文字
+  function dfSegs(segs) {
+    return segs
+      .map(([k, t], i) => {
+        if (k !== "eq" || t.length <= 50) return [k, t];
+        if (i === 0) return [k, "…" + t.slice(-24)];
+        if (i === segs.length - 1) return [k, t.slice(0, 24) + "…"];
+        return [k, t.slice(0, 20) + "…" + t.slice(-20)];
+      })
+      .map(([k, t]) =>
+        k === "del"
+          ? `<del>${esc(t)}</del>`
+          : k === "ins"
+            ? `<ins>${esc(t)}</ins>`
+            : k === "val"
+              ? `<span class="dfval">${esc(t)}</span>`
+              : esc(t)
+      )
+      .join("");
+  }
+  const dfLines = r =>
+    `<div class="dfline"><span class="dflab">去年</span><span>${dfSegs(r.old)}</span></div>` +
+    `<div class="dfline"><span class="dflab">今年</span><span>${dfSegs(r.now)}</span></div>`;
+  // 今年這份設定在這個填寫點會產生什麼（與「需人工確認」相同的判斷）
+  function dfNow(id) {
+    const pt = st.tpl.points.find(x => x.id === id) || {},
+      cur = (IMP.now || {})[id];
+    if (pt.kind === "勾選") return (cur !== undefined ? cur === "V" || cur === "■" : pt.orig === "■") ? "V" : "X";
+    return cur !== undefined ? String(cur) : String(pt.def || "");
+  }
+  const dfShow = (x, v) => (x.kind === "勾選" ? (v === "V" ? "■ 有勾" : "□ 沒勾") : v ? `「${v}」` : "（空白）");
+  function dfItem(x, keep) {
+    const lab = Object.fromEntries(IMP_ROWS.map(r => [r[0], r[1]]));
+    const head = `<b>${esc(x.label)}</b>　去年 ${esc(dfShow(x, x.value))}`;
+    if (x.field) {
+      if (x.kind === "填空" && x.value)
+        return `<li>${head}<button type="button" class="ghost" data-impuse="${esc(x.field)}" data-v="${esc(x.value)}">` +
+          `填入上方「${esc(lab[x.field] || x.field)}」</button></li>`;
+      return `<li>${head}<span class="hint">請在上方「${esc(lab[x.field] || x.field)}」確認</span></li>`;
+    }
+    const now = dfNow(x.id);
+    return (
+      `<li>${head}　今年 ${esc(dfShow(x, now))}<label><input type="checkbox" data-impdiff="${esc(x.id)}" data-v="${esc(x.value)}" ` +
+      `${keep.has(x.id) ? "checked" : ""}> 套用去年</label>${x.sure ? "" : '<span class="hint">位置是推估的，請看條文確認</span>'}</li>`
+    );
+  }
+  function impDiffRender() {
+    const host = $("#impDiff"),
+      d = IMP.diff;
+    if (!host) return;
+    if (!d) return void (host.innerHTML = "");
+    if (d.error) return void (host.innerHTML = `<p class="note">沒有比對新舊版條文：${esc(d.error)}</p>`);
+    const keep = new Set([...host.querySelectorAll("[data-impdiff]:checked")].map(c => c.dataset.impdiff));
+    const n = d.changed.length + d.added.length + d.removed.length + d.text.length;
+    const sub = t => `<small>${t}</small>`;
+    if (!n) {
+      host.innerHTML = `<h3 class="stg">新舊版差異${sub("去年契約的條文和今年範本相同")}</h3>`;
+      return;
+    }
+    const group = (title, list, body, open) =>
+      list.length ? `<details class="dfgrp" ${open ? "open" : ""}><summary><b>${title}（${list.length}）</b></summary>${body}</details>` : "";
+    host.innerHTML =
+      `<h3 class="stg">新舊版差異（${n}）${sub("去年契約逐段和今年範本比對；打勾的才會套用到今年")}</h3>` +
+      group(
+        "條文改寫，去年有勾選或填寫",
+        d.changed,
+        d.changed
+          .map(r => {
+            // 和今年設定相同、或去年留空白的填寫處不必套用，合併成一行
+            const same = r.items.filter(x => !x.field && (dfNow(x.id) === x.value || (x.kind === "填空" && !x.value))),
+              act = r.items.filter(x => !same.includes(x));
+            const more = same.length
+              ? `<li class="hint">其餘 ${same.length} 項與今年設定相同或去年空白，不必套用（${esc(
+                  same
+                    .slice(0, 4)
+                    .map(x => x.label)
+                    .join("、") + (same.length > 4 ? "等" : "")
+                )}）</li>`
+              : "";
+            return `<div class="dfrow"><div class="dfsec">${esc(r.sec)}</div>${dfLines(r)}<ul class="dfitems">` +
+              `${act.map(x => dfItem(x, keep)).join("")}${more}</ul></div>`;
+          })
+          .join(""),
+        true
+      ) +
+      group(
+        "新版新增的條文",
+        d.added,
+        d.added
+          .map(a => `<div class="dfrow"><div class="dfsec">${esc(a.sec)}</div><div class="dfline"><span class="dflab">今年</span>` +
+            `<span><ins>${esc(a.now.length > 140 ? a.now.slice(0, 140) + "…" : a.now)}</ins></span></div>` +
+            `<div class="hint">去年契約沒有這一段，今年依學校設定；需要時建立後到「契約進階欄位」調整</div></div>`)
+          .join(""),
+        d.added.length <= 5
+      ) +
+      group(
+        "新版刪掉或改寫太多、去年有勾選的條文",
+        d.removed,
+        d.removed
+          .map(a => `<div class="dfrow"><div class="dfsec">約在 ${esc(a.sec)}</div><div class="dfline"><span class="dflab">去年</span>` +
+            `<span><del>${esc(a.old.length > 140 ? a.old.slice(0, 140) + "…" : a.old)}</del></span></div>` +
+            `<div class="hint">今年範本找不到對應的條文，不會帶入</div></div>`)
+          .join(""),
+        d.removed.length <= 5
+      ) +
+      group(
+        "其他條文文字修改",
+        d.text,
+        d.text.map(r => `<div class="dfrow"><div class="dfsec">${esc(r.sec)}</div>${dfLines(r)}</div>`).join(""),
+        false
+      );
   }
   function impValues() {
     const o = {};
@@ -3897,12 +4042,15 @@ dialog.dlg{border-radius:20px}
     const kept = IMP_ROWS.filter(r => v[r[0]]).map(r => lab[r[0]]),
       blank = IMP_ROWS.filter(r => !v[r[0]]).map(r => lab[r[0]]);
     const rev = document.querySelectorAll("#impRev [data-imprev]:checked").length,
-      revAll = IMP.res.review.filter(x => !x.shape).length;
+      revAll = IMP.res.review.filter(x => !x.shape).length,
+      dfAll = document.querySelectorAll("#impDiff [data-impdiff]").length,
+      dfOn = document.querySelectorAll("#impDiff [data-impdiff]:checked").length;
     const need = ["type", "plan", "design", "super", "shape"].filter(k => !v[k]).map(k => lab[k]);
     $("#impSum").innerHTML =
       `<b>建立前確認</b><br>將帶入：${esc(kept.join("、") || "（無）")}<br>` +
-      `今年留白：${esc(blank.join("、") || "（無）")}<br>需人工確認：${revAll} 項，勾選帶入 ${rev} ` +
-      `項${need.length ? `<br><span class='danger'>尚待確認（建立前必填）` + `：${esc(need.join("、"))}</span>` : ""}${
+      `今年留白：${esc(blank.join("、") || "（無）")}<br>需人工確認：${revAll} 項，勾選帶入 ${rev} 項` +
+      `${dfAll ? `<br>新舊版差異：可套用 ${dfAll} 項，勾選套用 ${dfOn} 項` : ""}` +
+      `${need.length ? `<br><span class='danger'>尚待確認（建立前必填）：${esc(need.join("、"))}</span>` : ""}${
         !v.method ? "<br><span class='hint'>計價方式待確認：可先建立，產生 " + "Word 前再選</span>" : ""
       }${v.shape === "開口契約" ? "<br><span class='danger'>契約型態選了「開口契約」，請確認今年確實是開口契約。</span>" : ""}`;
   }
@@ -3920,6 +4068,9 @@ dialog.dlg{border-radius:20px}
     document.querySelectorAll("#impRev [data-imprev]:checked").forEach(c => {
       const x = IMP.res.review.find(y => y.id === c.dataset.imprev);
       if (x) p.adv[x.id] = x.value;
+    });
+    document.querySelectorAll("#impDiff [data-impdiff]:checked").forEach(c => {
+      p.adv[c.dataset.impdiff] = c.dataset.v;
     });
     p.importedFrom = { file: IMP.file, at: new Date().toISOString(), by: ls.get("who", ""), tpl: st.tpl.version || "" };
     return p;

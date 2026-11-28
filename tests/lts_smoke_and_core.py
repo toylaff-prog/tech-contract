@@ -636,6 +636,22 @@ def t14_digest():
     return line.replace("PASS  ", "")
 
 
+def rewrite_docx(data, pairs):
+    """改寫 Word 裡的條文文字（模擬舊版範本做的契約）"""
+    zin, buf = zipfile.ZipFile(io.BytesIO(data)), io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zout:
+        for it in zin.infolist():
+            b = zin.read(it.filename)
+            if it.filename == "word/document.xml":
+                x = b.decode("utf-8")
+                for a, c in pairs:
+                    ensure(x.count(a) == 1, f"測試資料：Word 裡找不到唯一的「{a}」")
+                    x = x.replace(a, c)
+                b = x.encode("utf-8")
+            zout.writestr(it, b)
+    return buf.getvalue()
+
+
 def t15_import(B):
     """匯入歷年契約：用網站產生「去年」的簽約版 Word，再匯入辨識（含不同版本範本的辨識）"""
     title = "臺北市立東湖國民中學114年度外牆整修工程委託設計監造案"
@@ -694,8 +710,34 @@ def t15_import(B):
     pg.wait_for_selector("#impBody table.impt", timeout=20000)
     note = pg.locator("#impBody").inner_text()
     ensure("去年契約是工程會 113.6.5 版" in note and "範本管理裡沒有這一版" in note, "應說明去年契約的範本版本")
+    # 新舊版差異：條文改寫過的舊契約（Word）→ 列出差異並推出去年的勾選與填寫，打勾才套用
+    old = rewrite_docx(data, [("施工安全評估", "施工安全性評估"), ("乙方應於甲方書面通知指定之日起", "乙方應於甲方通知之日起")])
+    pg.click("#impCancel")
+    pg.click("#impOld")
+    with pg.expect_file_chooser() as fc:
+        pg.click("#impPick")
+    fc.value.set_files({"name": "113年度外牆整修.docx", "mimeType": mime, "buffer": old})
+    pg.wait_for_selector("#impDiff details", timeout=20000)
+    box = '#impDiff [data-impdiff="F055"]'
+    ensure(pg.locator(box).count() == 1, "改寫條文裡去年的勾選應列在「新舊版差異」")
+    ensure(not pg.is_checked(box), "新舊版差異預設不套用")
+    days = pg.locator('#impDiff button[data-impuse="days"]')
+    ensure(days.count() == 1 and "60" not in pg.input_value('#impBody input[data-imp="days"]'), "交付期限應由差異區提供「填入」")
+    pg.check(box)
+    days.click()
+    pg.select_option('#impBody select[data-imp="shape"]', "單一工程")
+    pg.dispatch_event('#impBody select[data-imp="shape"]', "change")
+    ensure(pg.is_checked(box), "改了上方欄位後，差異區的勾選要保留")
+    ensure("新舊版差異：可套用 1 項，勾選套用 1 項" in pg.locator("#impSum").inner_text(), "建立前確認應列出差異套用數")
+    pg.click("#impGo")
+    pg.wait_for_function("!document.querySelector('#impDlg').open", timeout=15000)
+    saved = pg.evaluate("Object.values(JSON.parse(localStorage.getItem('tsc-local')).projects)"
+                        ".filter(p => p.importedFrom && p.importedFrom.file === '113年度外牆整修.docx')")
+    ensure(len(saved) == 1, f"應建立 1 件匯入工程：{len(saved)}")
+    ensure(saved[0]["adv"].get("F055") == "V" and saved[0]["days"] == "60", f"套用結果：{saved[0]['adv']}、{saved[0]['days']}")
     pg.context.close()
-    return "基本欄位正確；附件1 不錯置到附件4；「其他」空格不誤讀；選用同一版範本後讀到改寫條文；缺版本時有提示"
+    return ("基本欄位正確；附件1 不錯置到附件4；「其他」空格不誤讀；選用同一版範本後讀到改寫條文；缺版本時有提示；"
+            "新舊版差異列出改寫條文並推出去年值，打勾才套用")
 
 
 def t16_quality():
@@ -755,7 +797,7 @@ def main():
             record(12, "附件上傳白名單", lambda: t12_upload(api))
             record(13, "日曆同步與完工清零", lambda: t13_calendar(B, api))
             record(14, "週報產出", t14_digest)
-            record(15, "匯入歷年契約（辨識、附件不錯置、不同版本範本）", lambda: t15_import(B))
+            record(15, "匯入歷年契約（辨識、附件不錯置、不同版本範本、新舊版差異）", lambda: t15_import(B))
             record(16, "程式碼品質檢查", t16_quality)
             B.b.close()
     finally:

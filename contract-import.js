@@ -43,14 +43,15 @@
     ...Object.keys(PAY),
   ]);
 
-  /** 從 .docx 讀出純文字（段落以換行分隔；Wingdings 方框轉成 □／■） */
-  async function docxText(JSZip, DOMParser, buf) {
-    const zip = await JSZip.loadAsync(buf);
-    const f = zip.file("word/document.xml");
-    if (!f) throw new Error("這不是 Word（.docx）檔，或檔案已損毀");
-    const doc = new DOMParser().parseFromString(await f.async("string"), "application/xml");
+  /** document.xml 的各段文字（Wingdings 方框轉成 □／■）。去年契約與今年範本共用 */
+  function xmlParas(DOMParser, xml, withNum) {
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
     const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     const out = [];
+    const kid = (el, name) => {
+      for (let c = el && el.firstChild; c; c = c.nextSibling) if (c.nodeType === 1 && c.localName === name) return c;
+      return null;
+    };
     const ps = doc.getElementsByTagNameNS(W, "p");
     for (let i = 0; i < ps.length; i++) {
       let s = "";
@@ -69,9 +70,45 @@
         }
       };
       walk(ps[i]);
-      out.push(s);
+      if (!withNum) {
+        out.push(s);
+        continue;
+      }
+      const np = kid(kid(ps[i], "pPr"), "numPr"),
+        val = el => (el ? el.getAttributeNS(W, "val") || el.getAttribute("w:val") : null);
+      out.push({ text: s, numId: val(kid(np, "numId")), ilvl: val(kid(np, "ilvl")) });
     }
-    return out.join("\n");
+    return out;
+  }
+  /** 從 .docx 讀出純文字（段落以換行分隔） */
+  async function docxText(JSZip, DOMParser, buf) {
+    const zip = await JSZip.loadAsync(buf);
+    const f = zip.file("word/document.xml");
+    if (!f) throw new Error("這不是 Word（.docx）檔，或檔案已損毀");
+    return xmlParas(DOMParser, await f.async("string")).join("\n");
+  }
+  /** 今年範本（tpl.json 的 parts，填寫處是 ⟦F001⟧ 記號）的各段文字 */
+  function tplParas(DOMParser, parts) {
+    const d = (parts || []).find(x => x.name === "word/document.xml");
+    if (!d || !d.text) throw new Error("範本缺少 document.xml");
+    const ps = xmlParas(DOMParser, d.text, true);
+    // 條次：與 templater.js 相同，條文標題是「契約文件及效力」那一段的自動編號（第一層）
+    const head = ps.find(p => p.text.trim().startsWith("契約文件及效力"));
+    const artNum = head && head.numId ? head.numId : "11";
+    let art = 0,
+      sec = "前言";
+    return ps.map(p => {
+      const s = p.text.trim();
+      if (p.numId === artNum && (p.ilvl === null || p.ilvl === "0") && !/^第\d+條附件/.test(s)) {
+        art++;
+        sec = "第" + art + "條 " + s.slice(0, 14);
+      }
+      if (/^(第\d+條附件\d*)/.test(s) && s.length < 40) sec = s.slice(0, 20);
+      if (s.startsWith("附錄") && s.length < 30) sec = s.slice(0, 20);
+      if (s.startsWith("契約範本使用說明")) sec = "使用說明";
+      if (s.startsWith("立契約人")) sec = "前言";
+      return { text: p.text, sec };
+    });
   }
 
   // 比對用的正規化：去掉空白、方框統一、底線合併
@@ -474,6 +511,316 @@
       });
     return review;
   }
+  /* ---------- 新舊版差異：去年契約逐段對今年範本 ----------
+     不需要去年那一版的空白範本：去年契約本身就是「舊版條文＋去年填的內容」。
+     1. 條文完全相同的段落先對上（填寫處當成萬用字元），當作錨點；
+     2. 錨點之間用文字相似度配對「改寫過」的段落；
+     3. 改寫的段落逐字比對，標出新增／刪除的文字，並從對應位置推出去年在每個填寫點勾了什麼、填了什麼。 */
+  const PH_FILL = "\uE000",
+    PH_BOX = "\uE001",
+    BOXCH = "□■☐☒☑✔✓▣";
+  const squash = s =>
+    String(s || "")
+      .replace(/[\s　]+/g, "")
+      .replace(/_+/g, "_");
+  const nbox = s => s.replace(/[□■☐☒☑✔✓▣]/g, "□");
+  // 已對應到核對表欄位的填寫點：套用時改填上方表格，不放進契約進階欄位
+  const FIELD_OF = (() => {
+    const o = { F003: "title", F002: "vendor", F040: "days", F339: "rate", F340: "range" };
+    ["F341", "F285", "F421", "F485"].forEach(id => (o[id] = "fee"));
+    Object.values(ATT2).forEach(t => Object.entries(t).forEach(([k, ids]) => ids.forEach(id => (o[id] = k))));
+    Object.values(ART3)
+      .flat()
+      .concat(Object.keys(PAY), ["F477", "F478", "F479"])
+      .forEach(id => (o[id] = "method"));
+    ["F338", "F342", "F343"].forEach(id => (o[id] = "method"));
+    ["F369", "F370", "F371"].forEach(id => (o[id] = "shape"));
+    return o;
+  })();
+  function bigramSet(s) {
+    const m = new Map();
+    for (let i = 0; i < s.length - 1; i++) {
+      const g = s.substr(i, 2);
+      m.set(g, (m.get(g) || 0) + 1);
+    }
+    return m;
+  }
+  function overlap(A, B) {
+    let inter = 0;
+    const [s, l] = A.size < B.size ? [A, B] : [B, A];
+    s.forEach((v, k) => {
+      if (l.has(k)) inter += Math.min(v, l.get(k));
+    });
+    return inter;
+  }
+  const diceSim = (A, B, na, nb) => (na && nb ? (2 * overlap(A, B)) / (na + nb) : 0);
+  /** 逐字最長共同子序列，回傳 a 每個字對到 b 的位置（-1＝沒對上） */
+  function alignChars(a, b) {
+    const n = a.length,
+      m = b.length,
+      W = m + 1,
+      L = new Uint16Array((n + 1) * W);
+    for (let i = n - 1; i >= 0; i--)
+      for (let j = m - 1; j >= 0; j--)
+        L[i * W + j] = a[i] === b[j] ? L[(i + 1) * W + j + 1] + 1 : Math.max(L[(i + 1) * W + j], L[i * W + j + 1]);
+    const map = new Int32Array(n).fill(-1);
+    let i = 0,
+      j = 0;
+    while (i < n && j < m) {
+      if (a[i] === b[j]) {
+        map[i] = j;
+        i++;
+        j++;
+      } else if (L[(i + 1) * W + j] >= L[i * W + j + 1]) i++;
+      else j++;
+    }
+    return map;
+  }
+  /** 一組配對段落的逐字差異：old／now 各是 [類別, 文字] 的片段（eq 相同、del 刪除、ins 新增、val 去年填寫值、tok 今年填寫處），
+      items 為每個填寫點推得的去年值 */
+  function diffPair(tp, op, pmap) {
+    const a = tp.sk,
+      b = nbox(op.s),
+      raw = op.s;
+    const map = a.length * b.length > 400000 ? null : alignChars(a, b);
+    if (!map) return null;
+    const isPh = c => c === PH_FILL || c === PH_BOX;
+    const valRange = new Uint8Array(b.length); // 屬於填寫值的字，不算刪除
+    const items = tp.toks.map(t => {
+      let l = t.at - 1,
+        r = t.at + 1;
+      while (l >= 0 && (map[l] < 0 || isPh(a[l]))) l--;
+      while (r < a.length && (map[r] < 0 || isPh(a[r]))) r++;
+      const bl = l >= 0 ? map[l] + 1 : 0,
+        br = r < a.length ? map[r] : b.length;
+      let v = br > bl ? raw.slice(bl, br) : "";
+      for (let k = bl; k < br; k++) valRange[k] = 1;
+      const p = pmap[t.id] || {};
+      // 填寫處緊鄰的今年條文文字在去年找不到時，填寫值的邊界是推估的
+      const edge = k => k >= 0 && k < a.length && !isPh(a[k]) && map[k] < 0;
+      let value = null,
+        sure = !edge(t.at - 1) && !edge(t.at + 1);
+      if (t.box) {
+        const boxes = [...v].filter(c => BOXCH.includes(c));
+        if (boxes.length === 1) {
+          value = BOX_ON.includes(boxes[0]) ? "V" : "X";
+          sure = sure && v.length === 1;
+        }
+      } else {
+        const t2 = v.replace(/^【|】$/g, "").replace(/^[_＿]+|[_＿]+$/g, "");
+        if (!/[□■☐☒☑]/.test(t2) && t2.length <= 60) {
+          value = t2;
+          sure = sure && t2.length <= 40;
+        }
+      }
+      const after = a.slice(t.at + 1).split(/[\uE000\uE001，。；、：]/)[0],
+        before = a.slice(0, t.at).split(/[\uE000\uE001]/).pop();
+      const label = (t.box ? after.slice(0, 18) : before.split(/[，。；、：（）]/).pop().slice(-16)) || p.label || t.id;
+      return { id: t.id, kind: p.kind || (t.box ? "勾選" : "填空"), sec: p.sec || tp.sec, value, sure, field: FIELD_OF[t.id] || "", label };
+    });
+    const now = [],
+      old = [];
+    const push = (arr, k, ch) => {
+      const last = arr[arr.length - 1];
+      if (last && last[0] === k) last[1] += ch;
+      else arr.push([k, ch]);
+    };
+    let j = 0;
+    for (let i = 0; i < a.length; i++) {
+      if (isPh(a[i])) {
+        push(now, "tok", a[i] === PH_BOX ? "□" : "＿＿");
+        continue;
+      }
+      if (map[i] < 0) {
+        push(now, "ins", a[i]);
+        continue;
+      }
+      for (; j < map[i]; j++) push(old, valRange[j] ? "val" : "del", raw[j]);
+      push(old, "eq", raw[j]);
+      push(now, "eq", a[i]);
+      j = map[i] + 1;
+    }
+    for (; j < b.length; j++) push(old, valRange[j] ? "val" : "del", raw[j]);
+    // 只差在標點或空白的不算改寫
+    const changed =
+      old.some(x => x[0] === "del" && /[^，。、；：,.;:（）()「」\s]/.test(x[1])) ||
+      now.some(x => x[0] === "ins" && /[^，。、；：,.;:（）()「」\s]/.test(x[1]));
+    return { items, old, now, changed };
+  }
+  /** 比對去年契約與今年範本。oldText：去年契約文字（docxText）；tplList：今年範本各段（tplParas）；
+      points：今年範本填寫點；found：已用條文定位讀到的填寫點（不再重複推估）。
+      回傳 { changed, added, removed, text, stats }，各項都依今年範本的順序 */
+  function compareVersions(oldText, tplList, points, found) {
+    found = found || {};
+    const pmap = {};
+    points.forEach(p => (pmap[p.id] = p));
+    // 今年範本：填寫處換成單一字元，記下位置與條次
+    let sec = "";
+    const T = [];
+    tplList.forEach(item => {
+      const raw = typeof item === "string" ? item : item.text,
+        s = squash(raw);
+      if (!s) return;
+      const toks = [];
+      let sk = "",
+        last = 0;
+      s.replace(/⟦(\w+)⟧/g, (m, id, off) => {
+        sk += s.slice(last, off);
+        const box = (pmap[id] || {}).kind === "勾選";
+        toks.push({ id, at: sk.length, box });
+        sk += box ? PH_BOX : PH_FILL;
+        last = off + m.length;
+        return m;
+      });
+      sk += s.slice(last);
+      if (typeof item !== "string" && item.sec) sec = item.sec;
+      else if (toks.length && pmap[toks[0].id]) sec = pmap[toks[0].id].sec;
+      T.push({ raw, sk, toks, sec, fixed: sk.replace(/[\uE000\uE001]/g, "") });
+    });
+    const O = String(oldText || "")
+      .split("\n")
+      .map(raw => ({ raw: raw.trim(), s: squash(raw) }))
+      .filter(x => x.s);
+    O.forEach(o => (o.n = nbox(o.s)));
+    // 1. 錨點：沒有填寫處的段落要文字相同；有填寫處的段落，固定文字依序都對上（填寫處任意）。
+    //    勾選處在去年契約一定是方框，併入固定文字比對
+    T.forEach(t => (t.segs = nbox(t.sk).replace(/\uE001/g, "□").split(PH_FILL)));
+    const fits = (t, o) => {
+      const sg = t.segs;
+      if (sg.length === 1) return o === sg[0];
+      if (!o.startsWith(sg[0])) return false;
+      let pos = sg[0].length;
+      for (let k = 1; k < sg.length - 1; k++) {
+        if (!sg[k]) continue;
+        const f = o.indexOf(sg[k], pos);
+        if (f < 0) return false;
+        pos = f + sg[k].length;
+      }
+      const tail = sg[sg.length - 1];
+      return o.length - tail.length >= pos && o.endsWith(tail);
+    };
+    const byPrefix = new Map();
+    O.forEach((o, i) => {
+      const k = o.n.slice(0, 2);
+      if (!byPrefix.has(k)) byPrefix.set(k, []);
+      byPrefix.get(k).push(i);
+    });
+    const allO = O.map((o, i) => i);
+    const pairs = [];
+    T.forEach((t, j) => {
+      const cand = t.segs[0].length >= 2 ? byPrefix.get(t.segs[0].slice(0, 2)) || [] : allO;
+      cand.forEach(i => {
+        if (fits(t, O[i].n)) pairs.push([i, j]);
+      });
+    });
+    // 最長的「兩邊順序都遞增」配對（同一段只用一次）
+    pairs.sort((x, y) => x[1] - y[1] || y[0] - x[0]);
+    const tails = [],
+      tIdx = [],
+      prev = new Int32Array(pairs.length).fill(-1);
+    pairs.forEach((pq, k) => {
+      let lo = 0,
+        hi = tails.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (tails[mid] < pq[0]) lo = mid + 1;
+        else hi = mid;
+      }
+      tails[lo] = pq[0];
+      tIdx[lo] = k;
+      prev[k] = lo ? tIdx[lo - 1] : -1;
+    });
+    const anchor = [];
+    for (let k = tails.length ? tIdx[tails.length - 1] : -1; k >= 0; k = prev[k]) anchor.unshift(pairs[k]);
+    const oUsed = new Uint8Array(O.length),
+      tPair = new Int32Array(T.length).fill(-1);
+    anchor.forEach(([i, j]) => {
+      oUsed[i] = 1;
+      tPair[j] = i;
+    });
+    // 2. 錨點之間：相似度 ≥ 0.5 的段落配成「改寫」
+    const bg = new Map();
+    const big = (key, s) => {
+      if (!bg.has(key)) bg.set(key, [bigramSet(s), Math.max(0, s.length - 1)]);
+      return bg.get(key);
+    };
+    const fuzzy = new Set();
+    const bounds = [[-1, -1]].concat(anchor, [[O.length, T.length]]);
+    for (let g = 0; g < bounds.length - 1; g++) {
+      const [ia, ja] = bounds[g],
+        [ib, jb] = bounds[g + 1];
+      let cur = ia + 1;
+      for (let j = ja + 1; j < jb; j++) {
+        const t = T[j],
+          tf = nbox(t.fixed);
+        if (tf.length < 4) continue;
+        const [A, na] = big("t" + j, tf),
+          hasFill = t.toks.some(x => !x.box);
+        let best = -1,
+          bs = 0;
+        for (let i = cur; i < ib; i++) {
+          if (oUsed[i]) continue;
+          const o = O[i];
+          if (o.n.length > tf.length * 3 + 40 || tf.length > o.n.length * 3 + 40) continue;
+          const [B, nb] = big("o" + i, o.n);
+          let sc = diceSim(A, B, na, nb);
+          // 有填空的段落，去年那段多了填寫的內容，改看「今年條文有多少出現在去年那段」
+          if (hasFill && na) sc = Math.max(sc, (0.85 * overlap(A, B)) / na);
+          if (sc > bs) {
+            bs = sc;
+            best = i;
+          }
+        }
+        if (best >= 0 && bs >= 0.5) {
+          oUsed[best] = 1;
+          tPair[j] = best;
+          fuzzy.add(j);
+          cur = best + 1;
+        }
+      }
+    }
+    // 去年契約的附件範圍：標「本案不適用」或刪除的附件，今年範本那段不算「新版新增」
+    const ofl = flatten(String(oldText || ""));
+    const oreg = regions(ofl.flat, ofl.starts) || {};
+    const attLive = k => !k || (oreg[k] && oreg[k][1] - oreg[k][0] > 80);
+    // 3. 整理
+    const changed = [],
+      text = [],
+      added = [];
+    T.forEach((t, j) => {
+      const i = tPair[j];
+      if (i < 0) {
+        const open = t.toks.filter(x => !(x.id in found));
+        // 只有方框、沒有文字的段落（例如表格裡的勾選格）不列出
+        if (open.length && nbox(t.fixed).replace(/□/g, "").length >= 4 && attLive(secKey(t.sec)))
+          added.push({ sec: t.sec, now: t.sk.replace(/\uE001/g, "□").replace(/\uE000/g, "＿＿"), ids: open.map(x => x.id) });
+        return;
+      }
+      if (!fuzzy.has(j)) return;
+      const d = diffPair(t, O[i], pmap);
+      if (!d || !d.changed) return;
+      const open = d.items.filter(x => !(x.id in found) && x.value !== null);
+      const row = { sec: t.sec, old: d.old, now: d.now, items: open, all: d.items };
+      if (open.length) changed.push(row);
+      else text.push(row);
+    });
+    const oSec = new Array(O.length).fill("");
+    T.forEach((t, j) => {
+      if (tPair[j] >= 0) oSec[tPair[j]] = t.sec;
+    });
+    for (let i = 1; i < O.length; i++) if (!oSec[i]) oSec[i] = oSec[i - 1];
+    const removed = O.map((o, i) => ({ o, i }))
+      .filter(({ o, i }) => !oUsed[i] && /[■☒☑✔✓▣]/.test(o.s))
+      .map(({ o, i }) => ({ sec: oSec[i] || "前言", old: o.raw }));
+    return {
+      changed,
+      added,
+      removed,
+      text,
+      stats: { tpl: T.length, old: O.length, same: anchor.length, rewritten: fuzzy.size },
+    };
+  }
+
   /* ---------- 不同版本的範本 ----------
      工程會每次改版，條文文字會變，填寫點前後的固定文字也跟著變。範本管理上傳過的每一版都有自己的填寫點，
      而且編號已和現行版對應好（templater.js 的 matchPoints），所以用「去年那一版」的填寫點辨識，結果可直接套到今年。 */
@@ -498,5 +845,18 @@
     const best = pool.reduce((a, b) => (b.found > a.found ? b : a), pool[0]);
     return { pick: cands[scores.indexOf(best)], want, exact: same.length > 0, scores };
   }
-  G.ContractImport = { reviewList, docxText, scan, analyze, amountsNear, norm, detectVersion, versionOf, pickTemplate };
+  G.ContractImport = {
+    reviewList,
+    docxText,
+    tplParas,
+    scan,
+    analyze,
+    amountsNear,
+    norm,
+    detectVersion,
+    versionOf,
+    pickTemplate,
+    compareVersions,
+    FIELD_OF,
+  };
 })(typeof globalThis !== "undefined" ? globalThis : this);
