@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""20261127m-lts 前端 Chromium 實測（15 項核心情境）
+"""20261127m-lts 前端 Chromium 實測（16 項核心情境）
 
     python3 tests/lts_smoke_and_core.py
 
@@ -173,7 +173,7 @@ def docx_check(data):
     return plain
 
 
-# ---------------- 15 項情境 ----------------
+# ---------------- 16 項情境 ----------------
 def t01_home_perf(B):
     pg = B.local(many_projects(100))
     times = []
@@ -636,7 +636,69 @@ def t14_digest():
     return line.replace("PASS  ", "")
 
 
-def t15_quality():
+def t15_import(B):
+    """匯入歷年契約：用網站產生「去年」的簽約版 Word，再匯入辨識（含不同版本範本的辨識）"""
+    title = "臺北市立東湖國民中學114年度外牆整修工程委託設計監造案"
+    last = proj(name="114年度外牆整修", title=title, vendor="示範建築師事務所", method="總包價法", fee="1280000", days="60",
+                adv={"F055": "V", "F295": "V"})
+    pg = B.local({"pLast": last})
+    open_project(pg, "pLast", "proj")
+    pg.click('#projBody button[data-stage="sign"]')
+    pg.click("#dl")
+    pg.wait_for_selector("#dlDlg[open]")
+    _, data = download(pg, "#dlGo")
+    pg.click("#impOld")
+    pg.wait_for_selector("#impPick")
+    ensure(not pg.locator("#impGo").is_visible(), "還沒選檔案就出現「建立今年工程」")
+    with pg.expect_file_chooser() as fc:
+        pg.click("#impPick")
+    mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    fc.value.set_files({"name": "114年度外牆整修.docx", "mimeType": mime, "buffer": data})
+    pg.wait_for_selector("#impBody table.impt", timeout=20000)
+    ensure(pg.locator("#impGo").is_visible(), "讀完檔案後應出現「建立今年工程」")
+    vals = pg.evaluate("Object.fromEntries([...document.querySelectorAll('#impBody [data-imp]')].map(e => [e.dataset.imp, e.value]))")
+    ensure(vals["title"] == title and vals["design"] == "是" and vals["super"] == "是" and vals["method"] == "總包價法",
+           f"基本欄位辨識：{vals}")
+    rev = pg.evaluate("[...document.querySelectorAll('#impRev [data-imprev]')].map(e => e.dataset.imprev)")
+    ensure("F055" in rev and "F295" in rev, f"去年加勾的第8條、第3條附件1 應列入需人工確認：{rev}")
+    ensure("F494" not in rev, "第3條附件1 的勾選不應對到附件4")
+    ensure("F098" not in rev and "F220" not in rev, f"「□其他＿＿」不應把後面的條文當成填寫值：{rev}")
+    # 不同版本：模擬去年用的是改過條文的舊版範本（113.6.5 版），範本庫有這一版時應能辨識被改寫的條文
+    b64 = __import__("base64").b64encode(data).decode()
+    r = pg.evaluate("""async (b64) => {
+        const buf = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer, CI = window.ContractImport;
+        const text = await CI.docxText(window.JSZip, DOMParser, buf);
+        const pts = await fetch('points.json').then(x => x.json());
+        const M = [['受託人：', '受託廠商：'], ['施工安全評估', '施工安全性評估'], ['（115.4.23版）', '（113.6.5版）'],
+                   ['乙方應於甲方書面通知指定之日起', '乙方應於甲方通知之日起']];
+        const sub = s => M.reduce((a, [x, y]) => a.split(x).join(y), s);
+        const old = sub(text), oldPts = pts.map(p => Object.assign({}, p, { ctx: sub(p.ctx), label: sub(p.label) }));
+        const a = CI.analyze(old, pts, { paras: true });
+        const pk = CI.pickTemplate(old, [{ id: 'builtin', version: '115.4.23', points: pts },
+                                         { id: 'u113', version: '113.6.5（待審）', points: oldPts }], { paras: true });
+        const b = CI.analyze(old, pk.pick.points, { paras: true, reviewPoints: pts });
+        return { want: pk.want, pick: pk.pick.id, exact: pk.exact, a: [a.fields.vendor.last, a.fields.days.last, a.values.F055 || ''],
+                 b: [b.fields.vendor.last, b.fields.days.last, b.values.F055 || ''], old };
+    }""", b64)
+    ensure(r["want"] == "113.6.5" and r["pick"] == "u113" and r["exact"], f"應選用範本庫的 113.6.5 版：{r['pick']}")
+    # 乙方另有不分版本的寫法比對（受託人／受託廠商），所以只檢查期限與第8條勾選
+    ensure(r["a"][1:] == ["", ""], f"只用現行版時，改寫過的條文應讀不到（測試前提）：{r['a']}")
+    ensure(r["a"][0] == "示範建築師事務所", f"「受託廠商：」寫法也應讀到乙方：{r['a']}")
+    ensure(r["b"] == ["示範建築師事務所", "60", "V"], f"用同一版範本應讀到廠商、期限、第8條勾選：{r['b']}")
+    # 範本庫沒有那一版時，核對畫面要說明並提示上傳（本機模式沒有範本庫）
+    pg.click("#impCancel")
+    pg.click("#impOld")
+    pg.click("#impPasteBox > summary")
+    pg.fill("#impPaste", r["old"])
+    pg.click("#impPasteGo")
+    pg.wait_for_selector("#impBody table.impt", timeout=20000)
+    note = pg.locator("#impBody").inner_text()
+    ensure("去年契約是工程會 113.6.5 版" in note and "範本管理裡沒有這一版" in note, "應說明去年契約的範本版本")
+    pg.context.close()
+    return "基本欄位正確；附件1 不錯置到附件4；「其他」空格不誤讀；選用同一版範本後讀到改寫條文；缺版本時有提示"
+
+
+def t16_quality():
     cfg = (ROOT / "config.js").read_text(encoding="utf-8")
     # 交付包的 API 必須是空字串；正式 repo 已填網址時，用 LTS_DEPLOYED=1 執行改為只檢查網址格式
     if os.environ.get("LTS_DEPLOYED") == "1":
@@ -693,7 +755,8 @@ def main():
             record(12, "附件上傳白名單", lambda: t12_upload(api))
             record(13, "日曆同步與完工清零", lambda: t13_calendar(B, api))
             record(14, "週報產出", t14_digest)
-            record(15, "程式碼品質檢查", t15_quality)
+            record(15, "匯入歷年契約（辨識、附件不錯置、不同版本範本）", lambda: t15_import(B))
+            record(16, "程式碼品質檢查", t16_quality)
             B.b.close()
     finally:
         proc.terminate()

@@ -35,6 +35,7 @@ LAYOUT: 頂列暫存鍵、左欄工程清單、中間單欄表單、右側輸出
   --danger:#A2473A;--dangerfill:#B45343;--ondanger:#ffffff;--wait:#55657A;--waitbg:#E8ECF1;
 }
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
 h1,h2,h3{font-family:"Huninn","Noto Sans TC",sans-serif;font-weight:400;line-height:1.2;margin:0;text-wrap:balance}
 button,input,select{font:inherit;color:inherit}
@@ -109,7 +110,10 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,su
 }
 .calc b{font:400 clamp(24px,3.2vw,32px) "Huninn","Noto Sans TC",sans-serif;white-space:nowrap}
 .calc span{color:var(--mute);font-size:16px}
-.seal{position:sticky;top:132px;border:1.5px solid var(--ink);border-radius:8px;padding:18px;background:var(--paper)}
+/* 黏在兩層選單（底部約 168px）下方；面板比畫面高時在面板內捲動，「下載 Word」不會跑出畫面。
+   高度留 232px：捲到整頁最底時面板會隨內容上移約 48px，仍不會被選單蓋住 */
+.seal{position:sticky;top:180px;max-height:calc(100vh - 232px);overflow-y:auto;overscroll-behavior:contain;
+  border:1.5px solid var(--ink);border-radius:8px;padding:18px;background:var(--paper)}
 .seal h3{font-size:20px;margin-bottom:12px;padding-inline-end:84px;min-height:56px}
 .stamp{
   position:absolute;top:14px;right:16px;width:64px;height:64px;border:3px solid var(--seal);border-radius:6px;color:var(--seal);
@@ -291,7 +295,7 @@ dialog.dlg::backdrop{background:rgba(0,0,0,.35)}
 .help li,.help p{max-width:72ch}
 @media(max-width:1100px){
   .grid{grid-template-columns:minmax(0,1fr)}
-  .seal{position:relative;top:0}
+  .seal{position:relative;top:0;max-height:none;overflow:visible}
 }
 .side-more>summary{display:none}
 .dlgf{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
@@ -601,6 +605,8 @@ dialog.dlg{border-radius:20px}
       <ul>
         <li>新增工程時可選從哪個階段開始（契約準備／已有技服／直接施工／驗收／保固追蹤），也可設定學校自辦或無委託技術服務；<!--
           -->中途建檔不必回頭補填前面的欄位。已經建好的工程，也可以在工程頁標題下方的「起始階段」選單隨時更改，已填的資料都會保留。</li>
+        <li>「匯入歷年契約」會讀出去年契約封面的範本版本（例如 115.4.23 版），用同一版範本辨識。去年用的是舊版範本時，<!--
+          -->先到「範本管理」上傳那一版範本，按「先存成待審版（不啟用）」，再匯入一次就能完整辨識；目前使用的範本不會改變。</li>
         <li>第一次使用先到「學校設定」確認一次（保險、違約金、仲裁、申訴會、放假日等）。每年人事行政總處公告新年度辦公日曆表後，<!--
           -->補上放假日，並在「已維護假日資料年度」加上該年；期限跨入沒有維護的年度時，會標示「日期為試算」。</li>
         <li>首頁最上方四張卡片：<b>優先處理</b>（逾期或 3 日內到期、追蹤日到了）、<b>輪到校內</b>（表件在學校承辦或校內核章）、
@@ -658,15 +664,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261128b-lts"></script>
-<script src="engine.js?v=20261128b-lts"></script>
-<script src="checklist.js?v=20261128b-lts"></script>
-<script src="lifecycle.js?v=20261128b-lts"></script>
-<script src="govdocs.js?v=20261128b-lts"></script>
+<script src="config.js?v=20261128c-lts"></script>
+<script src="engine.js?v=20261128c-lts"></script>
+<script src="checklist.js?v=20261128c-lts"></script>
+<script src="lifecycle.js?v=20261128c-lts"></script>
+<script src="govdocs.js?v=20261128c-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261128b-lts";
+  const VER = "20261128c-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
@@ -3686,6 +3692,39 @@ dialog.dlg{border-radius:20px}
     $("#impFoot").hidden = true;
     if (!$("#impDlg").open) $("#impDlg").showModal();
   }
+  /* 辨識去年契約要用哪一版範本：封面的版本號（例如「115.4.23版」）和目前範本相同就直接用；
+     不同時，找內建版與範本管理上傳過的版本（包含待審版）中同一版；範本庫沒有這一版，就比較幾個版本取辨識最多的 */
+  async function impTemplates(text) {
+    const want = ContractImport.detectVersion(text),
+      vOf = ContractImport.versionOf,
+      cur = { id: st.tpl.id, version: st.tpl.version, points: st.tpl.points };
+    if (!want || vOf(cur.version) === want) return [cur];
+    const lib = [{ id: "builtin", version: "115.4.23" }]
+      .concat(API ? st.templates.map(t => ({ id: t.id, version: t.version || "" })) : [])
+      .filter(t => t.id !== cur.id);
+    const same = lib.filter(t => vOf(t.version) === want);
+    const out = [cur];
+    for (const t of same.length ? same.slice(-1) : lib.slice(-4)) {
+      try {
+        out.push(Object.assign({}, t, { points: await impPoints(t.id) }));
+      } catch (e) {
+        /* 讀不到的版本略過，仍用其他版本辨識 */
+      }
+    }
+    return out;
+  }
+  async function impPoints(id) {
+    IMP.pts = IMP.pts || {};
+    if (!IMP.pts[id]) {
+      const pts =
+        id === "builtin"
+          ? await fetch("points.json?v=" + VER).then(r => r.json())
+          : await apiPost({ action: "tplfile", id, part: "points" });
+      if (!Array.isArray(pts)) throw new Error("範本欄位讀取失敗");
+      IMP.pts[id] = pts;
+    }
+    return IMP.pts[id];
+  }
   async function impRead(textOrFile) {
     const msg = $("#impMsg"),
       my = ++IMP.seq; // 只採用最後一次讀檔的結果
@@ -3709,8 +3748,13 @@ dialog.dlg{border-radius:20px}
         return;
       }
       if (my !== IMP.seq) return;
-      const defaults = E.computeValues(NEWP(), st.school, "sign").values;
-      IMP.res = ContractImport.analyze(text, st.tpl.points, { defaults });
+      const defaults = E.computeValues(NEWP(), st.school, "sign").values,
+        paras = typeof textOrFile !== "string";
+      // 去年契約若是舊版範本，用範本管理裡同一版的填寫點辨識（編號已和現行版對應），結果一樣套到今年
+      const pk = ContractImport.pickTemplate(text, await impTemplates(text), { paras });
+      if (my !== IMP.seq) return;
+      IMP.ver = { want: pk.want, used: pk.pick.version, cur: pk.pick.id === st.tpl.id, exact: pk.exact };
+      IMP.res = ContractImport.analyze(text, pk.pick.points, { defaults, paras, reviewPoints: st.tpl.points });
       IMP.file = name;
       IMP.id = null;
       IMP.dupOk = false;
@@ -3735,10 +3779,12 @@ dialog.dlg{border-radius:20px}
       let ctl;
       if (kind === "text" || kind === "money")
         ctl =
-          `<input type="text" class="inp" data-imp="${k}" ` +
+          `<input type="text" class="inp" data-imp="${k}" aria-label="今年採用值：${esc(label)}" ` +
           `value="${esc(now)}" ${kind === "money" ? 'inputmode="numeric"' : ""} placeholder="${pol === "blank" ? "今年留白" : "請填寫"}">`;
       else
-        ctl = `<select class="inp" data-imp="${k}"><option value="">${kind === "yn" ? "（未辨識，請選）" : "請選擇"}</option>${impOptions(k)
+        ctl =
+          `<select class="inp" data-imp="${k}" aria-label="今年採用值：${esc(label)}">` +
+          `<option value="">${kind === "yn" ? "（未辨識，請選）" : "請選擇"}</option>${impOptions(k)
           .map(o => `<option ${o === now ? "selected" : ""}>${esc(o)}</option>`)
           .join("")}</select>`;
       const use =
@@ -3774,6 +3820,7 @@ dialog.dlg{border-radius:20px}
     $("#impBody").innerHTML =
       `<div class="banner ok" style="margin:0 0 10px">來源：<b>${esc(IMP.file)}</b>　建立後套用目前啟用的契約範本：<b>` +
       `工程會 ${esc(st.tpl.version || "")}${st.tpl.id === "builtin" ? "（內建）" : "（上傳版）"}</b></div>
+    ${impVerNote()}
     ${low ? `<div class="banner">只辨識到 ${r.found} 處填寫點，去年可能用了不同版本的範本或改過條文，請逐欄核對。</div>` : ""}
     ${
       yr
@@ -3791,6 +3838,20 @@ dialog.dlg{border-radius:20px}
     $("#impGo").disabled = false;
     impRevRender();
     impSummary();
+  }
+  function impVerNote() {
+    const v = Object.assign({}, IMP.ver);
+    if (!v.want) return "";
+    v.used = ContractImport.versionOf(v.used) || v.used; // 不顯示「（待審）」等字樣
+    if (v.exact && v.cur) return "";
+    if (v.exact)
+      return `<p class="note">去年契約是工程會 ${esc(v.want)} 版，已用範本管理裡的 ${esc(v.used)} 版辨識；建立後套用目前的範本。</p>`;
+    return (
+      `<div class="banner">去年契約是工程會 ${esc(v.want)} 版，範本管理裡沒有這一版，先用 ${esc(v.used)} 版辨識，` +
+      `條文改過的地方可能讀不到。${
+        API ? `可到「範本管理」上傳 ${esc(v.want)} 版範本，按「先存成待審版（不啟用）」，再重新匯入一次。` : ""
+      }</div>`
+    );
   }
   /* 需人工確認：依「今年採用值」產生的契約重新比對（類型、階段、計價方式改了，清單跟著變） */
   function impRevRender() {

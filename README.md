@@ -54,8 +54,8 @@
 
 ```bash
 node tests/lts_backend_test.js         # 後端（Node VM 模擬 Apps Script），22 項
-python3 tests/lts_smoke_and_core.py    # 前端 Chromium 實測 15 項核心情境（需要 playwright）
+python3 tests/lts_smoke_and_core.py    # 前端 Chromium 實測 16 項核心情境（需要 playwright）
 ```
 
 執行紀錄在 `tests/logs/`。正式 repo 的 `config.js` 已填 Apps Script 網址，請用 `LTS_DEPLOYED=1 python3 tests/lts_smoke_and_core.py`
-執行（第 15 項改為檢查網址格式；測試本身仍只連本機模擬後端）。
+執行（第 16 項改為檢查網址格式；測試本身仍只連本機模擬後端）。

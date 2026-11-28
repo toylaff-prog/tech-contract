@@ -133,7 +133,7 @@
 ## 七、測試結果
 
 - `node tests/lts_backend_test.js`：後端 22 項（Node VM 模擬 Apps Script，實際執行 `後端_Code.gs`）。
-- `python3 tests/lts_smoke_and_core.py`：前端 Chromium 實測 15 項核心情境；雲端情境透過上面的模擬後端，
+- `python3 tests/lts_smoke_and_core.py`：前端 Chromium 實測 16 項核心情境；雲端情境透過上面的模擬後端，
   實際走「前端 ↔ 後端_Code.gs」的完整流程。
 - 執行紀錄：`tests/logs/lts_backend_test.log`、`tests/logs/lts_smoke_and_core.log`。
 

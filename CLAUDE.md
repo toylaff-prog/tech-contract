@@ -43,7 +43,7 @@
 ## 測試（改完、推送前都要跑）
 
 ```bash
-LTS_DEPLOYED=1 TZ=Asia/Taipei python3 tests/lts_smoke_and_core.py   # 前端 15 項，需要 Python Playwright 和 Chromium
+LTS_DEPLOYED=1 TZ=Asia/Taipei python3 tests/lts_smoke_and_core.py   # 前端 16 項，需要 Python Playwright 和 Chromium
 node tests/lts_backend_test.js                                       # 後端 22 項（在 Node 裡實際執行 後端_Code.gs）
 ```
 

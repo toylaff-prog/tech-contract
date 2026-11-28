@@ -85,20 +85,93 @@
     if (!m) return null;
     const L = norm(ctx.slice(0, m.index)),
       R = norm(ctx.slice(m.index + m[0].length));
-    const cutL = L.split(/[_□]|】|【【/)
-      .pop()
-      .slice(-10);
+    // 左側文字取到前一個底線或填寫點為止；緊鄰的勾選框（例如「□其他」）一起當定位文字，
+    // 否則「其他」兩個字會對到條文裡任何一個「其他」
+    const seg = L.split(/_|】|【【/).pop(),
+      bi = seg.lastIndexOf("□"),
+      tail = bi >= 0 ? seg.slice(bi + 1) : seg;
+    const cutL = (bi >= 0 && tail.length < 5 ? seg.slice(bi) : tail).slice(-10);
     const cutR = R.split(/[_□]|【/)[0].slice(0, 10);
     return { L: cutL, R: cutR, check: m[1] === "☐" };
   }
 
+  // 附件標題（與範本處理 templater.js 的 REGION_HEADS 相同）。附件的填寫點只在自己的附件範圍內找，
+  // 因為第3條附件1～4 都有一模一樣的「其他服務費用」條文，Word 裡通常只留下適用的那一份。
+  const HEADS = [
+    "第2條附件1",
+    "第2條附件2",
+    "第2條附件3",
+    "第2條其他附件",
+    "第3條附件1",
+    "第3條附件2",
+    "第3條附件3",
+    "第3條附件4",
+    "第5條附件1",
+    "第5條附件2",
+    "第5條附件3",
+    "第8條附件",
+  ];
+  const secKey = sec => HEADS.find(h => String(sec || "").replace(/\s+/g, "").startsWith(h)) || "";
+  /** 把文字整理成比對用的連續字串（去空白、底線合併），同時記下每個段落開頭在字串中的位置 */
+  function flatten(text) {
+    const src = String(text || "");
+    let flat = "";
+    const starts = new Set([0]);
+    for (const ch of src) {
+      if (ch === "\n") starts.add(flat.length);
+      if (/[\s　]/.test(ch)) continue;
+      if (ch === "_" && flat.endsWith("_")) continue;
+      flat += ch;
+    }
+    return { flat, starts };
+  }
+  /** 各附件標題段落的位置：{ 附件: [起, 迄] }；正文（第一個附件標題之前）為 body。找不到任何標題時回傳 null */
+  function regions(flat, starts) {
+    const at = {};
+    HEADS.forEach(h => {
+      let i = -1;
+      while ((i = flat.indexOf(h, i + 1)) >= 0) {
+        // 標題要在段落開頭，而且不是「第3條附件1至附件4」這類引用
+        if (starts.has(i) && !/^[至及、之所與或，。]/.test(flat.slice(i + h.length, i + h.length + 1))) {
+          at[h] = i;
+          break;
+        }
+      }
+    });
+    const order = Object.keys(at).sort((a, b) => at[a] - at[b]);
+    if (!order.length) return null;
+    const out = { body: [0, at[order[0]]] };
+    order.forEach((h, k) => {
+      out[h] = [at[h], k + 1 < order.length ? at[order[k + 1]] : flat.length];
+    });
+    return out;
+  }
+
   /** 依填寫點順序在文字中定位。每個填寫點先找出所有可能位置，再挑一組「位置隨填寫點順序遞增、對上最多點」的組合
-      （最長遞增子序列），避免某段條文被刪掉或改寫時，後面全部錯位。回傳 { values, ctx, found, total } */
-  function scan(text, points) {
-    const flat = String(text || "")
-      .replace(/[\s\u3000]+/g, "")
-      .replace(/_+/g, "_"); // 保留方框原字元
-    const nt = norm(text); // 與 flat 等長
+      （最長遞增子序列），避免某段條文被刪掉或改寫時，後面全部錯位。回傳 { values, ctx, found, total }
+      opts.paras：文字來自 Word（段落分明）時為 true，填寫值不跨段落；貼上的文字可能在句子中間換行，不套用。 */
+  function scan(text, points, opts) {
+    opts = opts || {};
+    const fl = flatten(text),
+      flat = fl.flat; // 保留方框原字元
+    const nt = norm(flat); // 與 flat 等長
+    // 段落開頭的累計數，用來判斷兩個位置之間有沒有換段
+    const brk = new Int32Array(flat.length + 1);
+    for (let i = 1, n = 0; i <= flat.length; i++) {
+      if (fl.starts.has(i)) n++;
+      brk[i] = n;
+    }
+    const crosses = (a, b) => !!opts.paras && brk[b] > brk[a];
+    const reg = regions(flat, fl.starts);
+    // 同一條（例如第3條）有任何附件標題時，找不到標題的附件視為整段刪除；完全找不到標題（例如舊版編排不同）就不限制
+    const art = h => h.replace(/(其他)?附件\d*$/, "");
+    const range = p => {
+      if (!reg) return null;
+      const k = secKey(p.sec);
+      if (!k) return reg.body;
+      if (reg[k]) return reg[k];
+      return Object.keys(reg).some(h => h !== "body" && art(h) === art(k)) ? [0, -1] : null;
+    };
     const snippet = (a, b) => flat.slice(Math.max(0, a - 24), Math.min(flat.length, b + 24));
     const occ = (w, f) => {
       const out = [];
@@ -116,6 +189,8 @@
       const a = anchors(p.ctx);
       if (!a || a.L.length + a.R.length < 3) return;
       total++;
+      const rg = range(p),
+        inRg = i => !rg || (i >= rg[0] && i < rg[1]);
       if (a.check) {
         const ok = i =>
           i >= 0 && nt[i] === "□" && (!a.R || nt.startsWith(a.R, i + 1)) && (!a.L || nt.slice(Math.max(0, i - a.L.length), i) === a.L);
@@ -126,17 +201,20 @@
           : occ(a.L, (j, o) => {
               if (ok(j + a.L.length)) o.push(j + a.L.length);
             });
-        list.forEach(i => cands.push([pi, i, BOX_ON.includes(flat[i]) ? "V" : "X", i, i + 1]));
+        list.filter(inRg).forEach(i => cands.push([pi, i, BOX_ON.includes(flat[i]) ? "V" : "X", i, i + 1]));
       } else if (a.L) {
         occ(a.L, (j, o) => {
           const st = j + a.L.length;
+          if (!inRg(st)) return;
           let en;
           if (a.R) {
             en = nt.indexOf(a.R, st);
-            if (en < 0 || en - st > 120) return;
+            // 填寫值和右側文字在範本裡是同一段，跨段落就是對錯位置
+            if (en < 0 || en - st > 120 || crosses(j, en)) return;
           } else {
             en = st;
-            while (en < flat.length && en - st < 60 && !/[，。；、（）]/.test(flat[en])) en++;
+            // 沒有右側文字時讀到標點或段落結尾為止（避免把下一段的條文當成填寫值）
+            while (en < flat.length && en - st < 60 && !/[，。；、（）]/.test(flat[en]) && !(opts.paras && fl.starts.has(en))) en++;
           }
           const v = flat.slice(st, en);
           if (/[□■☐☒☑]/.test(v) || v.length > 60 || v.includes(a.L)) return; // 含左側文字＝其實對到更前面的同名詞
@@ -217,7 +295,7 @@
   /** 把辨識結果整理成工程欄位：每欄 { last, ctx, sure, options? , candidates? } */
   function analyze(text, points, opts) {
     opts = opts || {};
-    const sc = scan(text, points),
+    const sc = scan(text, points, { paras: !!opts.paras }),
       v = sc.values,
       c = sc.ctx;
     const on = id => v[id] === "V";
@@ -231,7 +309,8 @@
       }
     }
     if (!v.F002) {
-      const m = /受託人：([^（：]{2,60})（以下簡稱乙方）/.exec(flatAll);
+      // 各版範本的寫法可能是「受託人：」「受託廠商：」等，冒號也可能是半形
+      const m = /受託(?:人|廠商|機構|單位)?[：:]([^（：:]{2,60})（以下簡稱乙方）/.exec(flatAll);
       if (m && !/^_+$/.test(m[1])) {
         v.F002 = m[1];
         c.F002 = flatAll.slice(Math.max(0, m.index - 6), m.index + m[0].length + 6);
@@ -354,7 +433,8 @@
         costC.push({ value: x.value, ctx: x.ctx, label: "全文「" + x.word + "」附近｜關鍵字附近，信心較低" });
     });
     field("cost", "", costC[0] ? costC[0].ctx : "", { sure: false, candidates: costC });
-    const review = reviewList(v, c, points, opts.defaults || {});
+    // 用舊版範本辨識時，「需人工確認」仍以目前使用的範本比對（填寫點編號在各版之間是對應好的）
+    const review = reviewList(v, c, opts.reviewPoints || points, opts.defaults || {});
     return { fields: F, review, found: sc.found, total: sc.total, values: v, ctx: c };
   }
 
@@ -394,5 +474,29 @@
       });
     return review;
   }
-  G.ContractImport = { reviewList, docxText, scan, analyze, amountsNear, norm };
+  /* ---------- 不同版本的範本 ----------
+     工程會每次改版，條文文字會變，填寫點前後的固定文字也跟著變。範本管理上傳過的每一版都有自己的填寫點，
+     而且編號已和現行版對應好（templater.js 的 matchPoints），所以用「去年那一版」的填寫點辨識，結果可直接套到今年。 */
+  const VER_RE = /\d{2,3}\.\d{1,2}\.\d{1,2}/;
+  /** 契約封面上的範本版本，例如「（115.4.23版）」→ "115.4.23"；找不到回傳 "" */
+  function detectVersion(text) {
+    const m = /[（(]\s*(\d{2,3}\.\d{1,2}\.\d{1,2})\s*版\s*[）)]/.exec(String(text || "").slice(0, 3000));
+    return m ? m[1] : "";
+  }
+  /** 範本名稱裡的版本號（「115.4.23」「114.3.10（待審）」都取出數字部分） */
+  const versionOf = s => (VER_RE.exec(String(s || "")) || [""])[0];
+  /** 從可用的範本中挑辨識效果最好的一版：版本號相同的優先，其次是對上最多填寫點的。
+      cands：[{ id, version, points }]，回傳 { pick, scores: [{ id, version, found, total }] } */
+  function pickTemplate(text, cands, opts) {
+    const want = detectVersion(text),
+      scores = cands.map(t => {
+        const sc = scan(text, t.points, opts);
+        return { id: t.id, version: t.version, found: sc.found, total: sc.total };
+      });
+    const same = scores.filter(x => want && versionOf(x.version) === want);
+    const pool = same.length ? same : scores;
+    const best = pool.reduce((a, b) => (b.found > a.found ? b : a), pool[0]);
+    return { pick: cands[scores.indexOf(best)], want, exact: same.length > 0, scores };
+  }
+  G.ContractImport = { reviewList, docxText, scan, analyze, amountsNear, norm, detectVersion, versionOf, pickTemplate };
 })(typeof globalThis !== "undefined" ? globalThis : this);
