@@ -402,7 +402,7 @@ details.calm>summary small{font-weight:400}
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
-/* ---------- 20261127r-lts 新增 ---------- */
+/* ---------- 20261128a-lts 新增 ---------- */
 fieldset.opts{border:1px solid var(--line);border-radius:8px;padding:8px 12px 10px;margin:0 0 12px}
 fieldset.opts legend{font-weight:700;padding:0 4px}
 label.opt{display:flex;gap:10px;align-items:flex-start;padding:6px 4px;cursor:pointer;min-height:44px}
@@ -569,19 +569,19 @@ dialog.dlg{border-radius:20px}
     <div class="view help" id="v-help">
       <h2 style="font-size:24px;margin-bottom:10px">3 步驟就會用</h2>
       <ol class="quick">
-        <li><b>看首頁</b><span>「優先處理」列出今天該辦的事，點一下就跳到那一格。</span></li>
+        <li><b>看首頁</b><span>上方「工程總表」就是首頁。「優先處理」列出今天該辦的事，點一下就跳到那一格。</span></li>
         <li><b>照「接下來要做什麼」做</b><span>每件工程最上方都有，按「前往」，填完那一格就好。</span></li>
         <li><b>改完按右上「暫存」</b><span>右上角出現「共用試算表已儲存」就完成了。</span></li>
       </ol>
       <h3 style="font-size:20px;margin:18px 0 6px">常見問題</h3>
       <dl class="faq">
         <dt>要新增一件工程？</dt><dd>按左上「＋ 新增工程」，選從哪個階段開始；已經在施工或驗收的工程，前面不用補填。</dd>
-        <dt>文件送出去了，怕忘記追？</dt><dd>點那份表件，選「目前等誰」和「下次追蹤日」，到時候首頁會提醒你。</dd>
-        <dt>要催廠商或監造？</dt><dd>首頁最下面「表件追蹤／LINE 催辦」，按「LINE 傳送」或「複製訊息」。</dd>
+        <dt>文件送出去了，怕忘記追？</dt><dd>點開首頁最下面的「表件追蹤／LINE 催辦」，按表件名稱，選「目前等誰」和「下次追蹤日」，按「儲存」；到時候首頁會提醒你。</dd>
+        <dt>要催廠商或監造？</dt><dd>點開首頁最下面的「表件追蹤／LINE 催辦」，按「LINE 傳送」或「複製訊息」。</dd>
         <dt>臨時聽到一件事？</dt><dd>首頁「先記下來」打一行，之後再處理。</dd>
-        <dt>跳出「同仁已更新」？</dt><dd>選一個版本再繼續；選同仁的版本時，你的修改會自動備份，不會不見。</dd>
-        <dt>忘記暫存就關掉了？</dt><dd>重開網頁會問你要不要還原草稿，按「還原」。</dd>
-        <dt>用的是共用電腦？</dt><dd>用完按左下「安全登出並清除本機資料」。</dd>
+        <dt>出現「已被○○更新，你的版本還沒存入」？</dt><dd>選「改用同仁版本」或「以我的版本覆蓋儲存」；改用同仁版本時，你的修改會先備份並下載一份，不會不見。</dd>
+        <dt>忘記暫存就關掉了？</dt><dd>重開網頁會問你要不要還原，按「還原草稿」，再按「暫存」。</dd>
+        <dt>用的是共用電腦？</dt><dd>用完按左側「你的名字」下方的「安全登出並清除本機資料」。</dd>
       </dl>
       <details class="more"><summary>進階說明（需要時再看）</summary>
       <p><b>正式簽約後</b>，到「技術服務履約」勾選「鎖定正式簽約內容快照」，之後改學校設定不會改動這件工程的期限。</p>
@@ -609,7 +609,7 @@ dialog.dlg{border-radius:20px}
         <li>「學校設定 → 同仁共用與通知」：一份名單，每人可勾選「日曆」「資料夾」「週報」；網站網址也在這裡設定（週報與日曆連結用）。<!--
           -->日曆同步失敗時，頁首會出現「日曆未同步（點此重試）」。</li>
         <li>「工程 → 公文簽稿」：付款簽呈的金額只接受非負整數（可有千分位逗號）；空白、負數、小數、1e4、全形數字、超付或零尾款都會擋下 Word。</li>
-        <li>共用電腦用完，按左下「安全登出並清除本機資料」。</li>
+        <li>共用電腦用完，按左側「你的名字」下方的「安全登出並清除本機資料」。</li>
       </ul>
       </details>
       <p class="note">產生的 Word 只動填寫處，其餘條文與範本一字不差；送出前仍請承辦人核對。正式契約以學校紙本用印與雲端資料夾歸檔為準。</p>
@@ -657,15 +657,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261127r-lts"></script>
-<script src="engine.js?v=20261127r-lts"></script>
-<script src="checklist.js?v=20261127r-lts"></script>
-<script src="lifecycle.js?v=20261127r-lts"></script>
-<script src="govdocs.js?v=20261127r-lts"></script>
+<script src="config.js?v=20261128a-lts"></script>
+<script src="engine.js?v=20261128a-lts"></script>
+<script src="checklist.js?v=20261128a-lts"></script>
+<script src="lifecycle.js?v=20261128a-lts"></script>
+<script src="govdocs.js?v=20261128a-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261127r-lts";
+  const VER = "20261128a-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
