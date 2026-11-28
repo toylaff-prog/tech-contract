@@ -402,7 +402,7 @@ details.calm>summary small{font-weight:400}
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
-/* ---------- 20261128a-lts 新增 ---------- */
+/* ---------- 20261128b-lts 新增 ---------- */
 fieldset.opts{border:1px solid var(--line);border-radius:8px;padding:8px 12px 10px;margin:0 0 12px}
 fieldset.opts legend{font-weight:700;padding:0 4px}
 label.opt{display:flex;gap:10px;align-items:flex-start;padding:6px 4px;cursor:pointer;min-height:44px}
@@ -577,7 +577,8 @@ dialog.dlg{border-radius:20px}
       <dl class="faq">
         <dt>要新增一件工程？</dt><dd>按左上「＋ 新增工程」，選從哪個階段開始；已經在施工或驗收的工程，前面不用補填。</dd>
         <dt>文件送出去了，怕忘記追？</dt><dd>點開首頁最下面的「表件追蹤／LINE 催辦」，按表件名稱，選「目前等誰」和「下次追蹤日」，按「儲存」；到時候首頁會提醒你。</dd>
-        <dt>要催廠商或監造？</dt><dd>點開首頁最下面的「表件追蹤／LINE 催辦」，按「LINE 傳送」或「複製訊息」。</dd>
+        <dt>要催廠商或監造？</dt><dd>點開首頁最下面的「表件追蹤／LINE 催辦」，按「LINE 傳送」或「複製訊息」。
+          用電腦時，按「LINE 傳送」會先複製訊息，再貼到電腦版 LINE 的聊天室就好。</dd>
         <dt>臨時聽到一件事？</dt><dd>首頁「先記下來」打一行，之後再處理。</dd>
         <dt>出現「已被○○更新，你的版本還沒存入」？</dt><dd>選「改用同仁版本」或「以我的版本覆蓋儲存」；改用同仁版本時，你的修改會先備份並下載一份，不會不見。</dd>
         <dt>忘記暫存就關掉了？</dt><dd>重開網頁會問你要不要還原，按「還原草稿」，再按「暫存」。</dd>
@@ -657,15 +658,15 @@ dialog.dlg{border-radius:20px}
   <div class="dlgh"><h2 id="histH">修改紀錄</h2><button type="button" class="ghost" data-close="1">關閉</button></div>
   <div id="histBody"></div>
 </dialog>
-<script src="config.js?v=20261128a-lts"></script>
-<script src="engine.js?v=20261128a-lts"></script>
-<script src="checklist.js?v=20261128a-lts"></script>
-<script src="lifecycle.js?v=20261128a-lts"></script>
-<script src="govdocs.js?v=20261128a-lts"></script>
+<script src="config.js?v=20261128b-lts"></script>
+<script src="engine.js?v=20261128b-lts"></script>
+<script src="checklist.js?v=20261128b-lts"></script>
+<script src="lifecycle.js?v=20261128b-lts"></script>
+<script src="govdocs.js?v=20261128b-lts"></script>
 <script>
 {
   /* 版本號：與 sw.js 的 VERSION、上方各個 script 標籤的 ?v= 參數保持一致 */
-  const VER = "20261128a-lts";
+  const VER = "20261128b-lts";
   const E = window.ContractEngine,
     CFG = window.TSC_CONFIG || {};
   /* 用到才載入：Word 壓縮（JSZip，放在本站，離線也能用）、範本比對、匯入去年契約、Excel 報表 */
@@ -691,6 +692,20 @@ dialog.dlg{border-radius:20px}
   const $ = s => document.querySelector(s);
   // 只允許 http(s) 連結（附件、資料夾網址來自共用資料，不能讓 javascript: 之類的網址被點開）
   const safeUrl = u => (/^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "#");
+  /* LINE 的分享網址（line.me/R/share）只有手機 LINE 收得到；電腦版 LINE 官方不支援從網頁帶訊息，
+     所以電腦上按「LINE 傳送」改成複製訊息，再請使用者貼到電腦版 LINE */
+  const PHONE =
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const DESK_LINE_TIP = PHONE ? "" : ' title="電腦上會先複製訊息，請貼到電腦版 LINE"';
+  async function copyText(t) {
+    try {
+      await navigator.clipboard.writeText(t);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const NF_ = new Intl.NumberFormat("en-US");
   const nf = v => {
@@ -2034,8 +2049,8 @@ dialog.dlg{border-radius:20px}
     const txt = LC.message(st.projects[id], r, st.school.party),
       k = esc(String(r.key));
     return (
-      `<div class="lineb"><a class="lbtn" href="${esc(LC.lineUrl(txt))}" target="_blank" ` +
-      `rel="noopener" data-ln="${esc(id)}" data-ph="${r.phase}" data-li="${k}">LINE 傳送</a><button ` +
+      `<div class="lineb"><a class="lbtn" href="${esc(LC.lineUrl(txt))}" target="_blank" rel="noopener"` +
+      `${DESK_LINE_TIP} data-ln="${esc(id)}" data-ph="${r.phase}" data-li="${k}">LINE 傳送</a><button ` +
       `type="button" class="lbtn ghostb" data-cp="${esc(id)}" data-ph="${r.phase}" data-li="${k}">` +
       `複製訊息</button>${r.nt ? `<span class="hint">已通知 ${esc(C.roc(r.nt))}</span>` : ""}</div>`
     );
@@ -2053,31 +2068,40 @@ dialog.dlg{border-radius:20px}
     renderList();
     window.scrollTo(0, y);
   }
+  /** 電腦上的「LINE 傳送」：把連結裡的訊息複製起來，提示貼到電腦版 LINE；回傳是否複製成功 */
+  async function deskLine(a) {
+    const ok = await copyText(new URL(a.href).searchParams.get("text") || "");
+    a.textContent = ok ? "已複製，請貼到電腦版 LINE" : "無法複製";
+    setTimeout(() => (a.textContent = "LINE 傳送"), 2500);
+    return ok;
+  }
   async function lineClick(e) {
     const a = e.target.closest("[data-ln],[data-cp]");
     if (!a) return;
     const id = a.dataset.ln || a.dataset.cp,
       r = findRow(id, a.dataset.ph, a.dataset.li);
     if (!r) return;
-    if (a.dataset.cp !== undefined) {
-      try {
-        await navigator.clipboard.writeText(LC.message(st.projects[id], r, st.school.party));
-        a.textContent = "已複製，貼到 LINE";
-      } catch (err) {
-        a.textContent = "無法複製";
-      }
-    }
+    const isCp = a.dataset.cp !== undefined,
+      desk = !isCp && !PHONE;
+    // 沒複製成功就不記「已通知」，以免首頁的追蹤提醒不準
+    if (isCp) {
+      const ok = await copyText(LC.message(st.projects[id], r, st.school.party));
+      a.textContent = ok ? "已複製，貼到 LINE" : "無法複製";
+      if (!ok) return;
+    } else if (desk && !(await deskLine(a))) return;
     LC.store(st.projects[id], r).nt = C.today();
     markDirty(id);
-    setTimeout(refreshWork, a.dataset.cp !== undefined ? 1200 : 300);
+    setTimeout(refreshWork, desk ? 2500 : isCp ? 1200 : 300);
   }
   document.addEventListener(
     "click",
     e => {
+      const ln = e.target.closest('a[href^="https://line.me/R/share"]');
+      if (ln && !PHONE) e.preventDefault(); // 電腦上不開 LINE 網頁，改成複製
       if (e.target.closest("[data-ln],[data-cp]")) {
         e.stopPropagation();
         lineClick(e);
-      }
+      } else if (ln && !PHONE) deskLine(ln);
     },
     true
   );
@@ -2898,7 +2922,7 @@ dialog.dlg{border-radius:20px}
     const n = Math.floor(Date.UTC(+today.slice(0, 4), +today.slice(5, 7) - 1, +today.slice(8, 10)) / 864e5);
     return (
       `<p class="quote">「${esc(QUOTES[n % QUOTES.length])}」` +
-      `<button type="button" class="link" data-quote="off" aria-label="關閉每日暖心語錄">關閉語錄</button></p>`
+      `<button type="button" class="link" data-quote="off" aria-label="關閉語錄（每日暖心語錄）">關閉語錄</button></p>`
     );
   }
   /* 先記下來：只存在這台裝置（localStorage：tsc-uiQuickNotes），可匯出、可帶入表件備註 */
@@ -4984,7 +5008,7 @@ dialog.dlg{border-radius:20px}
       .join("")}</ol>
     <div class="tools" style="margin:0"><button type="button" class="ghost" data-mcopy="1">` +
       `複製缺件清單</button><a class="lbtn" href="${esc(LC.lineUrl(missingText(p)))}" target="_blank" ` +
-      `rel="noopener">LINE 傳送</a><span class="hint">可傳給監造或廠商補件</span></div></div>`
+      `rel="noopener"${DESK_LINE_TIP}>LINE 傳送</a><span class="hint">可傳給監造或廠商補件</span></div></div>`
     );
   }
 

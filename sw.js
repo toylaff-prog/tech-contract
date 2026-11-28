@@ -7,7 +7,7 @@
    - install 時 skipWaiting()，activate 時刪除舊的 tc-* 快取並 clients.claim()
    - 不和頁面互相傳訊息、不輪詢；頁面也不因新版 Service Worker 自動重新整理，
      新版在下次開啟或手動重新整理時自然生效，不會打斷正在輸入的內容 */
-const VERSION = "20261128a-lts";
+const VERSION = "20261128b-lts";
 const CACHE = "tc-" + VERSION;
 const SCRIPTS = ["config", "engine", "templater", "checklist", "lifecycle", "govdocs", "exporter", "contract-import"];
 const SHELL = [
